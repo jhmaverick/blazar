@@ -1,0 +1,11 @@
+{
+  "map": {
+    "home": {
+      "class": "Application\\Pages\\Home",
+      "main": true
+    },
+    "midias": {
+      "class": "Application\\Midias"
+    }
+  }
+}

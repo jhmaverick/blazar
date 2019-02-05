@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8"/>
+
+    <base href="<?= BASE ?>"/>
+
+    <title></title>
+</head>
+
+<body>
+<h1>Lista de Usuários</h1>
+<br>
+{{#usuarios}}
+    {{user_nome}} |
+    {{user_email}} |
+    {{user_telefone}}
+    <br>
+{{/usuarios}}
+</body>
+</html>

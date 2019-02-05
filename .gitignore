@@ -1,0 +1,16 @@
+### Geral
+dev-logs.html
+
+### Composer
+composer.lock
+vendor/
+
+### Node NPM
+package-lock.json
+node_modules/
+
+### Outros
+/build/
+
+### JetBrains
+.idea/

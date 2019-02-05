@@ -1,0 +1,8 @@
+* text=auto
+* eol=crlf
+
+.gitattributes export-ignore
+.gitignore export-ignore
+readme.md export-ignore
+/docs export-ignore
+/test export-ignore

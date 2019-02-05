@@ -1,0 +1,32 @@
+{
+  "name": "jhmaverick/blazar",
+  "description": "Framework para desenvolvimento de aplicações PHP.",
+  "keywords": ["framework"],
+  "homepage": "https://github.com/jhmaverick/blazar",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "João Henrique",
+      "email": "joao_henriquee@outlook.com"
+    }
+  ],
+  "require": {
+    "php": "^7.1",
+    "ext-json": "*",
+    "ext-pdo": "*",
+    "ext-mbstring": "*",
+    "ext-gd": "*",
+    "ext-curl": "*",
+    "mustache/mustache": "^2.12",
+    "brightnucleus/mime-types": "^0.2.0",
+    "vlucas/phpdotenv": "^2.5"
+  },
+  "require-dev": {
+  },
+  "autoload": {
+    "files": [
+      "src/bootstrap.php"
+    ]
+  }
+}
