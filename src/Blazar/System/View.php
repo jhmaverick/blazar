@@ -18,40 +18,27 @@ use Mustache_Engine;
  * Controle de saida de dados para exibição
  */
 class View {
-    /**
-     * Tipo do dado de saida (text/html, text/json, text/plain...)
-     * @var null
-     */
+
+    // Retornos para preparação da página
+    const PAGE_VIEW = 1;
+    const PAGE_RESOURCE = 2;
+
+    // Se o render já foi executado nesta instancia
+    private $render_run = false;
+
+    // Tipo do dado de saida (text/html, text/json, text/plain...)
     private $data_type = null;
-    /**
-     * Codificação da página
-     * @var string
-     */
+    // Codificação da página
     private $codification = "utf-8";
-    /**
-     * Variavel setadas para a saida
-     * @var array
-     */
-    private $data = array();
-    /**
-     * Utilizar Mustache
-     * @var bool
-     */
+    // Variavel setadas para a saida
+    private $data = [];
+    // Utilizar Mustache para renderizar
     private $mustache = false;
-    /**
-     * Caminho para o arquivo que será passado para a view
-     * @var string
-     */
+    // Caminho para o arquivo que será passado para a view
     private $file_output = "";
-    /**
-     * Forçar o download do path
-     * @var bool
-     */
+    // Forçar o download do path
     private $force_download = false;
-    /**
-     * Remover o arquivo depois de forçar o download
-     * @var bool
-     */
+    // Remover o arquivo depois de forçar o download
     private $remove_file = false;
 
     /**
@@ -67,10 +54,19 @@ class View {
      * ["estilo.css" => __DIR__ . "/estilo.css", "estilo2.css" => "res/estilo.css"]
      * </code>
      * </p>
-     *
+     * @param string|null $view_callback <p>
+     * Callback para ser executado após a preparação da view.<br>
+     * O Metodo informado deve ser um membro da classe instanciada com visibilidade public ou protected
+     * </p>
+     * @param string|null $resource_callback <p>
+     * Ação a ser tomada para os recursos da página.<br>
+     * Um callback pode ser passado como string para executar após a preparação.<br>
+     * O padrão é chamar a o metodo render.
+     * </p>
      * @return string Retorna o tipo do carregamento que sera realizado (view ou resource)
+     * @throws ViewException
      */
-    public function preparePage(string $view_path, array $page_res = []) {
+    public function preparePage(string $view_path, array $page_res = [], ?string $view_callback = null, ?string $resource_callback = "render") {
         $param0 = Application::getParameter(0, Application::PARAMS_APP);
 
         if ($param0 !== null && isset($page_res[$param0])) {
@@ -82,19 +78,40 @@ class View {
             $this->setDataType($mime);
             $this->setFileOutput($page_res[$param0]);
 
-            return "resource";
+            // Verifica se algum callback foi passado para executar
+            if ($resource_callback !== null) {
+                if (method_exists($this, $resource_callback)) $this->$resource_callback();
+                else throw new ViewException("Metodo \"$resource_callback\" não existe na classe \"" . get_class($this) . "\".");
+
+                if ($resource_callback !== "render") $this->render();
+            }
+
+            return self::PAGE_RESOURCE;
         } else {
             $this->setDataType("text/html");
             $this->setFileOutput($view_path);
 
-            return "view";
+            // Verifica se algum callback foi passado para executar
+            if ($view_callback !== null) {
+                if (method_exists($this, $view_callback)) $this->$view_callback();
+                else throw new ViewException("Metodo \"$view_callback\" não existe na classe \"" . get_class($this) . "\".");
+
+                if ($view_callback !== "render") $this->render();
+            }
+
+            return self::PAGE_VIEW;
         }
     }
 
     /**
      * Exibir os dados preparados
+     *
+     * @return bool Retorna false caso o render já tenha sido executado na instancia
      */
     public function render() {
+        if ($this->render_run) return false;
+        $this->render_run = true;
+
         $nf_me = new Mustache_Engine();
 
         try {
@@ -197,6 +214,8 @@ class View {
             Log::e("View", $e, "view");
             echo "<br><br>Ocorreu um erro.<br>Favor entrar em contato com o Administrador.";
         }
+
+        return true;
     }
 
     /**

@@ -83,9 +83,7 @@ final class Log {
     /**
      * Salva um log
      *
-     * O Log sera salvo na tabela system_log no admin.
-     * Caso o sistema esteja rodando em um ambiente de desenvolvimento ou ocorra um erro online no salvamento,
-     * o log será gravado no arquivo dev-logs.html
+     * o log será gravado no arquivo *.log.html
      *
      * @param string $type_log Tipo do log (e, w, i, d)
      * @param string|array|Throwable|object $log A mensagem do Log ou um dado a ser tratado
@@ -114,7 +112,6 @@ final class Log {
         $texto .= ($auxiliar != null) ? "<br><p>" . self::gerarTexto($auxiliar) : "";
         $texto .= ($str_trace != "") ? "<br><p>" . str_replace("\n", "<br>\n", $str_trace) . "</p>" : "";
 
-        $salvar_txt = false;
         if (CURRENT_ENV == ENV_DEVELOPMENT) {
             $log_console = [
                 "type" => $type_log,
@@ -125,13 +122,11 @@ final class Log {
                 "url" => URL
             ];
 
-            $rs_console = self::logConsole($log_console);
-            if (!$rs_console) $salvar_txt = true;
+            // Envia o log para o console de desenvolvimento
+            self::logConsole($log_console);
         }
 
-        if (CURRENT_ENV != ENV_DEVELOPMENT) $salvar_txt = true;
-
-        if ($salvar_txt) self::addTxt($type_log, $texto, $date_time);
+        if (Manifest::getConfig("logs") !== false) self::addTxt($type_log, $texto, $date_time);
     }
 
     /**
@@ -157,7 +152,7 @@ final class Log {
     }
 
     /**
-     * Salva um log no arquivo dev-logs.html
+     * Salva um log no arquivo *.log.html
      *
      * @param $type_log
      * @param $msg
@@ -185,7 +180,11 @@ final class Log {
             $msg . "<br>" . URL .
             "<p style=\"font-size: 8px; color: #999999; border-bottom: 1px solid #CCCCCC\">" . self::dataExtenso($date_time) . "</p>\n";
 
-        $arquivo = ROOT . "dev-logs.html";
+        // Diretorio de saida dos logs
+        $log_dir = Files::pathJoin(ROOT, Manifest::getConfig("logs"));
+        if (!file_exists($log_dir)) mkdir($log_dir, 0777, true);
+
+        $arquivo = $log_dir . "/" . date("Ymd") . ".log.html";
 
         Files::write($arquivo, $msg, "append");
     }

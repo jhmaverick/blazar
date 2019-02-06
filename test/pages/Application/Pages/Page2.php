@@ -2,9 +2,11 @@
 
 namespace Application\Pages;
 
-use Blazar\Application;
-use Blazar\System\View;
 use Application\Controller;
+use Blazar\Application;
+use Blazar\System\Log;
+use Blazar\System\View;
+use Blazar\System\ViewException;
 
 class Page2 extends View {
     private $map_info;
@@ -15,14 +17,20 @@ class Page2 extends View {
      * Home constructor.
      */
     public function __construct() {
-        $this->map_info = Application::getNextParameter(true);
-        $type_load = $this->preparePage($this->view_path);
-        $this->setMustache(true);
+        try {
+            $this->map_info = Application::getNextParameter(true);
 
-        if ($type_load == "view") {
-            $this->mergeData(Controller::$info);
+            $this->setMustache(true);
+            $this->preparePage($this->view_path, [], "showView");
+        } catch (ViewException $e) {
+            Log::e($e);
         }
+    }
 
-        $this->render();
+    /**
+     * Callback para exibir a view
+     */
+    protected function showView() {
+        $this->mergeData(Controller::$info);
     }
 }

@@ -1,7 +1,9 @@
 {
   "name": "jhmaverick/blazar",
   "description": "Framework para desenvolvimento de aplicações PHP.",
-  "keywords": ["framework"],
+  "keywords": [
+    "framework"
+  ],
   "homepage": "https://github.com/jhmaverick/blazar",
   "type": "library",
   "license": "MIT",

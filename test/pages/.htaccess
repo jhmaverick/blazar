@@ -9,7 +9,7 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.+)$ index.php/$1 [L]
 
 # Remove acesso externo aos arquivos
-<Files ~ "(.htaccess|manifest.json|composer.json|composer.lock|.env|dev-logs.html|\.sql)">
+<Files ~ "(.htaccess|manifest.json|mf_develop.json|composer.json|composer.lock|.env|.log.html|.sql)">
     Order allow,deny
     Deny from all
 </Files>

@@ -41,9 +41,7 @@ try {
          *
          * Esta constante pode ser definida manualmente antes da inclusão do autoload do composer
          */
-        define("ROOT", str_replace("\\", "/", $real_dir) . "/");
-    } else if (substr(ROOT, -1) !== "/") {
-        exit("A constante ROOT deve terminar com \"/\".");
+        define("ROOT", str_replace("\\", "/", $real_dir));
     }
 
     // Verifica se a constante BASE foi definida manualmente
@@ -62,14 +60,11 @@ try {
         exit("A constante BASE deve terminar com \"/\".");
     }
 
-    /** Versão do Framework */
-    define("VERSION", "0.1");
-
     /** Protocolo de acesso: http ou https */
     define("HTTP", (isset($_SERVER['HTTPS']) ? "https" : "http"));
 
     /** O diretório raiz onde esta localizado o framework no vendor */
-    define("BLAZAR_ROOT", str_replace("\\", "/", __DIR__) . "/");
+    define("BLAZAR_ROOT", str_replace("\\", "/", __DIR__));
 
     /** URL real atual completa */
     define("URL", "//" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
@@ -85,13 +80,13 @@ try {
         try {
             // Retorna uma Exceção caso exista um arquivo com mesmo nome no projeto e no framework
             if (
-                file_exists(ROOT . $class_path . '.php') &&
-                file_exists(BLAZAR_ROOT . $class_path . '.php')
+                file_exists(ROOT . "/" . $class_path . '.php') &&
+                file_exists(BLAZAR_ROOT . "/" . $class_path . '.php')
             ) {
                 new Exception("Já existe uma classe com nome \"$class_path\" no framework.");
             }
 
-            if (file_exists(ROOT . $class_path . '.php') || file_exists(BLAZAR_ROOT . $class_path . '.php')) {
+            if (file_exists(ROOT . "/" . $class_path . '.php') || file_exists(BLAZAR_ROOT . "/" . $class_path . '.php')) {
                 /** @noinspection PhpIncludeInspection */
                 require_once $class_path . '.php';
             }
@@ -112,8 +107,8 @@ try {
 
     // Configurações de variaveis de ambiente
     $env_path = null;
-    if (file_exists(ROOT . ".env")) $env_path = ROOT;
-    else if (file_exists(ROOT . "../.env")) $env_path = ROOT . "../";
+    if (file_exists(ROOT . "/.env")) $env_path = ROOT;
+    else if (file_exists(ROOT . "/../.env")) $env_path = ROOT . "/../";
 
     if ($env_path !== null) {
         $dotenv = new Dotenv\Dotenv($env_path);

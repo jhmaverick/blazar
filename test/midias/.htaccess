@@ -13,7 +13,7 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.+)$ index.php/$1 [L]
 
-<Files ~ "(.htaccess|manifest.json|composer.json|composer.lock|.env|dev-logs.html|\.sql)">
+<Files ~ "(.htaccess|manifest.json|mf_develop.json|composer.json|composer.lock|.env|.log.html|.sql)">
     Order allow,deny
     Deny from all
 </Files>

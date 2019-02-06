@@ -51,7 +51,7 @@ final class StrRes {
      */
     public static function str_freplace(string $search, string $replace, string $subject): string {
         // Find the position of the first occurrence
-        $pos = strpos($subject, $search);
+        $pos = !empty($search) ? strpos($subject, $search) : 0;
 
         if ($pos !== false) {
             $subject = substr_replace($subject, $replace, $pos, strlen($search));
@@ -71,7 +71,7 @@ final class StrRes {
      */
     public static function str_lreplace(string $search, string $replace, string $subject): string {
         // Find the position of the last occurrence
-        $pos = strrpos($subject, $search);
+        $pos = !empty($search) ? strpos($subject, $search) : 0;
 
         if ($pos !== false) {
             $subject = substr_replace($subject, $replace, $pos, strlen($search));

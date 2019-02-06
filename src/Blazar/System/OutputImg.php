@@ -25,7 +25,7 @@ class OutputImg {
         try {
             // Pega o local do arquivo ou trata o que foi passado no parametro
             if ($local == null) $local = str_replace(BASE, "", URL);
-            else if (StrRes::startsWith($local, ROOT)) $local = str_replace(ROOT, "", $local);
+            else if (StrRes::startsWith($local, ROOT . "/")) $local = str_replace(ROOT . "/", "", $local);
             else if (StrRes::startsWith($local, BASE)) $local = str_replace(BASE, "", $local);
 
             // Chama uma imagem quebrando quando arquivo não existir

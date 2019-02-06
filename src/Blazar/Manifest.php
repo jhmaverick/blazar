@@ -30,7 +30,7 @@ class Manifest extends Application {
         "max_img_width" => 1920,
         "max_img_height" => 1080,
         "max_upload_filesize" => "10MB",
-        "logs_online" => false,
+        "logs" => "logs",
         "cors" => null,
         "console_url" => "http://localhost:4000"
     ];
@@ -53,15 +53,15 @@ class Manifest extends Application {
         }
 
         try {
-            if (file_exists(ROOT . self::MANIFEST_LOCAL)) {
-                $dados_manifest = self::readManifestFile(ROOT . self::MANIFEST_LOCAL);
+            if (file_exists(ROOT . "/" . self::MANIFEST_LOCAL)) {
+                $dados_manifest = self::readManifestFile(ROOT . "/" . self::MANIFEST_LOCAL);
 
                 // Verifica se existe um manifest alterado para o ambiente
                 if (CURRENT_ENV !== ENV_PRODUCTION &&
                     getenv('CUSTOM_MANIFEST') !== false &&
                     file_exists(getenv('CUSTOM_MANIFEST'))
                 ) {
-                    $custom = self::readManifestFile(ROOT . getenv('CUSTOM_MANIFEST'));
+                    $custom = self::readManifestFile(ROOT . "/" . getenv('CUSTOM_MANIFEST'));
                     $dados_manifest = array_replace_recursive($dados_manifest, $custom);
                 }
 
@@ -70,6 +70,9 @@ class Manifest extends Application {
                 // Configurações
                 if (isset($dados_manifest['configs'])) {
                     foreach ($dados_manifest['configs'] as $index => $value) {
+                        // Se o indice logs estiver como true altera para o padrão
+                        if ($index == "logs" && $value === true) $value = self::$config[$index];
+
                         self::$config[$index] = $value;
                     }
                 }
@@ -136,8 +139,8 @@ class Manifest extends Application {
 
         // Aplica o que foi encontrado nos includes no json principal
         foreach ($retorno[0] as $index => $value) {
-            if (file_exists(ROOT . $retorno[1][$index])) {
-                $conteudo_json = file_get_contents(ROOT . $retorno[1][$index]);
+            if (file_exists(ROOT . "/" . $retorno[1][$index])) {
+                $conteudo_json = file_get_contents(ROOT . "/" . $retorno[1][$index]);
 
                 if (json_decode($conteudo_json, true) != null) {
                     $dados_manifest = StrRes::str_freplace($retorno[0][$index], $conteudo_json, $dados_manifest);
@@ -296,7 +299,7 @@ class Manifest extends Application {
             $current_url[] = $params_full[$i];
         }
 
-        $param_info["url_path"] = implode("/", $current_url);
+        $param_info["url_path"] = BASE . implode("/", $current_url);
 
         Application::addParametersTree($param_info);
     }

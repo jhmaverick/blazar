@@ -1,5 +1,5 @@
 ### Geral
-dev-logs.html
+*.log.html
 
 ### Composer
 composer.lock

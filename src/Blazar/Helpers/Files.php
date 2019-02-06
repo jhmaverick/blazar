@@ -225,6 +225,39 @@ class Files {
     }
 
     /**
+     * Combina varios caminhos
+     *
+     * @param string ...$args Caminhos para unir
+     * @return string
+     */
+    public static function pathJoin(string ...$args): string {
+        $starts_with_bar = false;
+        $paths = [];
+
+        // Quebra cada argumento pela barra
+        foreach ($args as $arg) {
+            $arg = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $arg);
+
+            if (count($paths) == 0 && StrRes::startsWith($arg, DIRECTORY_SEPARATOR))
+                $starts_with_bar = true;
+
+            $subitems = array_filter(explode(DIRECTORY_SEPARATOR, $arg), 'strlen');
+            $paths = array_merge($paths, $subitems);
+        }
+
+        $final = [];
+        // Monta o caminho final
+        foreach ($paths as $path) {
+            if ('.' == $path) continue;
+
+            if ('..' == $path) array_pop($final);
+            else $final[] = $path;
+        }
+
+        return ($starts_with_bar ? DIRECTORY_SEPARATOR : "") . implode(DIRECTORY_SEPARATOR, $final);
+    }
+
+    /**
      * @deprecated Use o metodo self::write
      * @param $arquivo
      * @param $texto
