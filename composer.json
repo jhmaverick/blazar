@@ -20,6 +20,7 @@
     "ext-mbstring": "*",
     "ext-gd": "*",
     "ext-curl": "*",
+    "ext-dom": "*",
     "mustache/mustache": "^2.12",
     "brightnucleus/mime-types": "^0.2.0",
     "vlucas/phpdotenv": "^2.5"
