@@ -3,6 +3,7 @@
 namespace Blazar\Helpers;
 
 use DOMDocument;
+use DOMElement;
 use DOMNodeList;
 use DOMXPath;
 
@@ -19,9 +20,9 @@ use DOMXPath;
  *
  * @author TJ Holowaychuk <tj@vision-media.ca>
  * @link https://github.com/tj/php-selector
- * @version 1.1.6
  */
 class SelectorDOM {
+
     private $xpath;
 
     /**
@@ -29,10 +30,15 @@ class SelectorDOM {
      * @param string|DOMDocument $data Um objeto DOMDocument ou uma string contendo um html.
      */
     public function __construct($data) {
+        $data = mb_convert_encoding($data, 'HTML-ENTITIES', 'UTF-8');
+
         if ($data instanceof DOMDocument) {
             $this->xpath = new DOMXpath($data);
         } else {
             $dom = new DOMDocument();
+            $dom->preserveWhiteSpace = true;
+            $dom->formatOutput = false;
+
             @$dom->loadHTML($data);
             $this->xpath = new DOMXpath($dom);
         }
@@ -53,38 +59,72 @@ class SelectorDOM {
      * @return array|DOMNodeList Otherwise regular DOMElement's will be returned.
      */
     public function select(string $selector, bool $as_array = true) {
-        $elements = $this->xpath->evaluate($this->selector_to_xpath($selector));
-        return $as_array ? $this->elements_to_array($elements) : $elements;
+        $elements = $this->xpath->evaluate($this->selectorToXpath($selector));
+        return $as_array ? $this->elementsToArray($elements) : $elements;
+    }
+
+    /**
+     * Convert $element to a string html
+     *
+     * @param DOMElement $element
+     * @param bool $inner_html
+     * @return string
+     */
+    public function elementToHtml(DOMElement $element, bool $inner_html = true): string {
+        if ($inner_html) {
+            $innerHTML = [];
+            $children = $element->childNodes;
+
+            foreach ($children as $child) {
+                $innerHTML[] = $child->ownerDocument->saveHTML($child);
+            }
+
+            $html = implode("", $innerHTML);
+        } else {
+            $html = $element->ownerDocument->saveHTML($element);
+        }
+
+        $html = str_replace("&gt;", ">", $html);
+
+        return $html;
     }
 
     /**
      * Convert $elements to an array.
-     * @param object $elements
+     * @param DOMNodeList $elements
      * @return array
      */
-    private function elements_to_array($elements) {
-        $array = array();
-        for ($i = 0, $length = $elements->length; $i < $length; ++$i)
-            if ($elements->item($i)->nodeType == XML_ELEMENT_NODE)
-                array_push($array, $this->element_to_array($elements->item($i)));
+    public function elementsToArray(DOMNodeList $elements): array {
+        $array = [];
+
+        for ($i = 0, $length = $elements->length; $i < $length; ++$i) {
+            if ($elements->item($i)->nodeType == XML_ELEMENT_NODE) {
+                array_push($array, $this->elementToArray($elements->item($i)));
+            }
+        }
+
         return $array;
     }
 
     /**
      * Convert $element to an array.
-     * @param object $element
+     * @param DOMElement $element
      * @return array
      */
-    private function element_to_array($element) {
+    public function elementToArray(DOMElement $element): array {
         $array = array(
             'name' => $element->nodeName,
             'attributes' => array(),
             'text' => $element->textContent,
-            'children' => $this->elements_to_array($element->childNodes)
+            'children' => $this->elementsToArray($element->childNodes)
         );
-        if ($element->attributes->length)
-            foreach ($element->attributes as $key => $attr)
+
+        if ($element->attributes->length) {
+            foreach ($element->attributes as $key => $attr) {
                 $array['attributes'][$key] = $attr->value;
+            }
+        }
+
         return $array;
     }
 
@@ -93,7 +133,7 @@ class SelectorDOM {
      * @param string $selector
      * @return string|string[]|null
      */
-    private function selector_to_xpath(string $selector) {
+    public function selectorToXpath(string $selector): string {
         // remove spaces around operators
         $selector = preg_replace('/\s*>\s*/', '>', $selector);
         $selector = preg_replace('/\s*~\s*/', '~', $selector);
@@ -102,7 +142,6 @@ class SelectorDOM {
         $selectors = preg_split('/\s+(?![^\[]+\])/', $selector);
 
         foreach ($selectors as $i => $selector) {
-            // ,
             $selector = preg_replace('/,/', '|descendant-or-self::', $selector);
             // input:checked, :disabled, etc.
             $selector = preg_replace('/(.+)?:(checked|disabled|required|autofocus)/', '\1[@\2="\2"]', $selector);
@@ -154,7 +193,6 @@ class SelectorDOM {
             $selectors[$i] = $selector;
         }
 
-        // ' '
         $selector = implode('/descendant::', $selectors);
         $selector = 'descendant-or-self::' . $selector;
         // :scope
