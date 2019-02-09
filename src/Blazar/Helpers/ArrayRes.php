@@ -16,7 +16,7 @@ use RecursiveIteratorIterator;
 /**
  * Recursos para tratamento de arrays
  */
-final class ArrayRes {
+class ArrayRes {
 
     /**
      * Realiza busca em array multidimensional

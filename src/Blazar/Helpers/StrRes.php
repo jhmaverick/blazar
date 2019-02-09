@@ -13,7 +13,7 @@ namespace Blazar\Helpers;
 /**
  * Recursos para tratamento de strings
  */
-final class StrRes {
+class StrRes {
     /**
      * Verifica caracteres no inicio da string
      *

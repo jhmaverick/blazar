@@ -110,14 +110,16 @@ try {
     if (file_exists(ROOT . "/.env")) $env_path = ROOT;
     else if (file_exists(ROOT . "/../.env")) $env_path = ROOT . "/../";
 
+    // Verifica se existe um arquivo .env
     if ($env_path !== null) {
         $dotenv = new Dotenv\Dotenv($env_path);
         $dotenv->load();
+    }
 
-        $novo = getenv('ENVIRONMENT_TYPE');
-        if ($novo == ENV_DEVELOPMENT || $novo == ENV_TESTING || $novo = ENV_PRODUCTION) {
-            $environment = (int)$novo;
-        }
+    // Verifica se o tipo de ambiente foi setado em uma variavel de ambiente
+    $custom_env = getenv('ENVIRONMENT_TYPE');
+    if ($custom_env == ENV_DEVELOPMENT || $custom_env == ENV_TESTING || $custom_env == ENV_PRODUCTION) {
+        $environment = (int)$custom_env;
     }
 
     /**

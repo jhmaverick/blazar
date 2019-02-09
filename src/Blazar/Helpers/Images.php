@@ -15,7 +15,7 @@ use Blazar\Manifest;
 /**
  * Recursos para manipulação de imagens
  */
-abstract class Images {
+class Images {
     const RETURN_BASE64 = "return_base64";
     const SHOW_WINDOW = "show_window";
 

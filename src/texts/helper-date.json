@@ -1,0 +1,24 @@
+// Nomes para datas
+{
+  // Dias da semana
+  "w1": "Domingo",
+  "w2": "Segunda-Feira",
+  "w3": "Terça-Feira",
+  "w4": "Quarta-Feira",
+  "w5": "Quinta-Feira",
+  "w6": "Sexta-Feira",
+  "w7": "Sábado",
+  // Meses
+  "m1": "Janeiro",
+  "m2": "Fevereiro",
+  "m3": "Março",
+  "m4": "Abril",
+  "m5": "Maio",
+  "m6": "Junho",
+  "m7": "Julho",
+  "m8": "Agosto",
+  "m9": "Setembro",
+  "m10": "Outubro",
+  "m11": "Novembro",
+  "m12": "Dezembro"
+}

@@ -15,7 +15,7 @@ use Exception;
 /**
  * Responsavel por pegar e enviar requisições _POST e _GET
  */
-final class Request {
+class Request {
     const POST = 1;
     const GET = 2;
 

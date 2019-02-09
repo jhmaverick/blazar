@@ -1,13 +1,13 @@
 <?php
 
-use Blazar\System\API;
+use Blazar\System\Api;
 
 /**
  * API de gerenciamento de Login e Sessão
  *
  * Responsavel por criar, verificar e excluir logins
  */
-class SingleAPI extends API {
+class SingleApi extends Api {
 
     /**
      * Login no sistema.

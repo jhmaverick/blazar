@@ -256,24 +256,4 @@ class Files {
 
         return ($starts_with_bar ? DIRECTORY_SEPARATOR : "") . implode(DIRECTORY_SEPARATOR, $final);
     }
-
-    /**
-     * @deprecated Use o metodo self::write
-     * @param $arquivo
-     * @param $texto
-     * @param null $local
-     * @return bool
-     */
-    public static function escrita($arquivo, $texto, $local = null) {
-        return self::write($arquivo, $texto, $local);
-    }
-
-    /**
-     * @deprecated Use o metodo self::read
-     * @param $arquivo
-     * @return String
-     */
-    public static function leitura($arquivo) {
-        return self::read($arquivo);
-    }
 }

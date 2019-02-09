@@ -19,7 +19,7 @@ use ReflectionMethod;
 /**
  * Classe de criação de APIs para o manifest>map
  */
-abstract class API {
+abstract class Api {
     private static $autostart = true;
 
     private $class_api = true;

@@ -2,17 +2,17 @@
 
 namespace Application;
 
-use Blazar\System\API;
+use Blazar\System\Api;
 use Blazar\Helpers\Request;
 
 /**
  * Class API
  */
-class Controller extends API {
+class Controller extends Api {
 
     public function __construct() {
         $this->autoLogin();
-        API::setAutostart(false);
+        Api::setAutostart(false);
 
         parent::__construct(true, false);
     }
