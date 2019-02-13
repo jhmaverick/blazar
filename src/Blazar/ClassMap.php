@@ -37,24 +37,6 @@ class ClassMap extends Application {
     }
 
     /**
-     * Pega as informações do ultimo parâmetro chamado pelo método ClassMap::next.
-     *
-     * @param string|null $index Força o retorno de apenas um indice do array vindo do método ClassMap::get.
-     *
-     * @return array|mixed|null <p>
-     * Retorna os dados vindos do metodo ClassMap::get ou null caso um indice tenha sido informado e não exista no
-     *     array.<br> Para mais informações sobre o retorno veja a documentação de {@see ClassMap::get}
-     * </p>
-     */
-    public static function current(string $index = null) {
-        $param = ClassMap::get(ClassMap::$current_index - 1);
-
-        if ($index !== null) return $param[$index] ?? null;
-
-        return $param;
-    }
-
-    /**
      * Pegar os dados do parâmetro da URL processada.
      *
      * Os dados são gerados atraves do "map" do manifest e o que foi requisitado nos parâmetros da URL.<br>
@@ -65,6 +47,7 @@ class ClassMap extends Application {
      * [main] => bool(Se é o modulo principal do seu nível)<br>
      * [name] => string(O nome do indice)<br>
      * [index] => int(Seu nível no map)<br>
+     * [route] => string(A rota no map)
      * [url_path] => string(Seu path junto a url base)
      *
      * @param int|string|null $index <p>
@@ -108,6 +91,24 @@ class ClassMap extends Application {
             // Retorna todos os parâmetros
             return Application::$map_params;
         }
+    }
+
+    /**
+     * Pega as informações do ultimo parâmetro chamado pelo método ClassMap::next.
+     *
+     * @param string|null $index Força o retorno de apenas um indice do array vindo do método ClassMap::get.
+     *
+     * @return array|mixed|null <p>
+     * Retorna os dados vindos do metodo ClassMap::get ou null caso um indice tenha sido informado e não exista no
+     *     array.<br> Para mais informações sobre o retorno veja a documentação de {@see ClassMap::get}
+     * </p>
+     */
+    public static function current(string $index = null) {
+        $param = ClassMap::get(ClassMap::$current_index - 1);
+
+        if ($index !== null) return $param[$index] ?? null;
+
+        return $param;
     }
 
     /**

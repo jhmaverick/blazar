@@ -333,12 +333,13 @@ class Manifest extends Application {
         $params_full = Application::param(null, Application::PARAMS_ALL);
 
         // Gera a rota do parâmetro na url
-        $current_url = [];
+        $route = [];
         for ($i = 0; $i < count($params_map) + 1; $i++) {
-            $current_url[] = $params_full[$i];
+            $route[] = $params_full[$i];
         }
 
-        $param_info["url_path"] = BASE . implode("/", $current_url);
+        $param_info["route"] = implode("/", $route);
+        $param_info["url_path"] = BASE . $param_info["route"];
 
         return $param_info;
     }
