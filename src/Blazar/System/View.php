@@ -42,6 +42,147 @@ class View {
     private $remove_file = false;
 
     /**
+     * @param string $codification
+     *
+     * @return View
+     */
+    public function setCodification(string $codification) {
+        $this->codification = $codification;
+        return $this;
+    }
+
+    /**
+     * Utilizar mustache
+     *
+     * @param bool $mustache
+     *
+     * @return View
+     */
+    public function setMustache(bool $mustache) {
+        $this->mustache = $mustache;
+        return $this;
+    }
+
+    /**
+     * Diz para a view que ela deve forçar um download no path informado
+     *
+     * @param bool $removeFile Excluir o arquivo depois do download
+     *
+     * @return $this
+     */
+    public function forceDownload(bool $removeFile = false) {
+        $this->force_download = true;
+        $this->remove_file = $removeFile;
+
+        return $this;
+    }
+
+    /**
+     * Substitui todos os valores do atributo $data
+     *
+     * @param mixed $data
+     *
+     * @return View
+     */
+    public function replaceAllData($data) {
+        $this->data = $data;
+        return $this;
+    }
+
+    /**
+     * Seta variaveis
+     *
+     * @param string $name O nome da variavel
+     * @param mixed $value
+     *
+     * @return bool|View Retorna false se o nome for reservado
+     */
+    public function set(string $name, $value) {
+        if (
+            $name == "header" ||
+            $name == "includes" ||
+            $name == "text"
+        ) {
+            return false;
+        }
+
+        $this->data[$name] = $value;
+        return $this;
+    }
+
+    /**
+     * Mescla um array com os dados já setados
+     *
+     * @param array $dados <p>
+     * Os indices já setados serão substituidos<br>
+     * Caso o tipo da variavel data tenha sido setado com um valor que não seja um array, o valor antigo sera
+     *     substituido pela nova variavel.
+     * </p>
+     *
+     * @return bool|View Retorna false se o nome for reservado
+     */
+    public function mergeData(array $dados) {
+        if (
+            isset($dados['header']) ||
+            isset($dados['includes']) ||
+            isset($dados['text'])
+        ) {
+            return false;
+        }
+
+        if (is_array($this->data)) $this->data = array_merge($this->data, $dados);
+        else $this->data = $dados;
+
+        return $this;
+    }
+
+    /**
+     * Faz um push em uma variavel do tipo array
+     *
+     * Se a variavel não existir, uma nova do tipo array é setada.
+     * Caso a variavel já exista e não seja do tipo array, uma ViewException é gerada.
+     *
+     * @param string $name Nome da variavel
+     * @param mixed $value
+     *
+     * @return View
+     * @throws ViewException
+     */
+    public function pushArray(string $name, $value) {
+        if (
+            $name == "header" ||
+            $name == "includes" ||
+            $name == "text"
+        ) {
+            throw new ViewException("Variáveis reservadas.");
+        }
+
+        if (!isset($this->data[$name]))
+            $this->data[$name] = [$value];
+        else if (is_array($this->data[$name]))
+            $this->data[$name][] = $value;
+        else
+            throw new ViewException("Variável não é um array.");
+
+        return $this;
+    }
+
+    /**
+     * Pega variavel
+     *
+     * @param string $name O nome da variavel desejada
+     *
+     * @return array|bool
+     */
+    public function get(string $name) {
+        if (isset($this->data[$name])) {
+            return $this->data[$name];
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Metodo de auxilio para gerar páginas
      *
      * Prepara a saida de dados da página verificando se deve exibir um recurso ou a view
@@ -54,20 +195,21 @@ class View {
      * ["estilo.css" => __DIR__ . "/estilo.css", "estilo2.css" => "res/estilo.css"]
      * </code>
      * </p>
-     * @param string|null $view_callback <p>
+     * @param string|object|null $view_callback <p>
      * Callback para ser executado após a preparação da view.<br>
      * O Metodo informado deve ser um membro da classe instanciada com visibilidade public ou protected
      * </p>
-     * @param string|null $resource_callback <p>
+     * @param string|object|null $resource_callback <p>
      * Ação a ser tomada para os recursos da página.<br>
      * Um callback pode ser passado como string para executar após a preparação.<br>
      * O padrão é chamar a o metodo render.
      * </p>
+     *
      * @return string Retorna o tipo do carregamento que sera realizado (view ou resource)
      * @throws ViewException
      */
-    public function preparePage(string $view_path, array $page_res = [], ?string $view_callback = null, ?string $resource_callback = "render") {
-        $param0 = Application::getParameter(0, Application::PARAMS_APP);
+    protected function preparePage(string $view_path, array $page_res = [], $view_callback = null, $resource_callback = "render") {
+        $param0 = Application::param(0, Application::PARAMS_APP);
 
         if ($param0 !== null && isset($page_res[$param0])) {
             $ext = pathinfo($page_res[$param0], PATHINFO_EXTENSION);
@@ -80,7 +222,8 @@ class View {
 
             // Verifica se algum callback foi passado para executar
             if ($resource_callback !== null) {
-                if (method_exists($this, $resource_callback)) $this->$resource_callback();
+                if (gettype($resource_callback) === "string" && method_exists($this, $resource_callback)) $this->$resource_callback();
+                else if (is_callable($resource_callback)) call_user_func($resource_callback);
                 else throw new ViewException("Metodo \"$resource_callback\" não existe na classe \"" . get_class($this) . "\".");
 
                 if ($resource_callback !== "render") $this->render();
@@ -93,7 +236,8 @@ class View {
 
             // Verifica se algum callback foi passado para executar
             if ($view_callback !== null) {
-                if (method_exists($this, $view_callback)) $this->$view_callback();
+                if (gettype($view_callback) === "string" && method_exists($this, $view_callback)) $this->$view_callback();
+                else if (is_callable($view_callback)) call_user_func($view_callback);
                 else throw new ViewException("Metodo \"$view_callback\" não existe na classe \"" . get_class($this) . "\".");
 
                 if ($view_callback !== "render") $this->render();
@@ -101,6 +245,28 @@ class View {
 
             return self::PAGE_VIEW;
         }
+    }
+
+    /**
+     * @param string $data_type
+     *
+     * @return View
+     */
+    public function setDataType(?string $data_type) {
+        $this->data_type = $data_type;
+        return $this;
+    }
+
+    /**
+     * Define o arquivo que sera exibido na view
+     *
+     * @param string $file_output Caminho para o arquivo de saida de dados
+     *
+     * @return View
+     */
+    public function setFileOutput(string $file_output) {
+        $this->file_output = $file_output;
+        return $this;
     }
 
     /**
@@ -216,168 +382,5 @@ class View {
         }
 
         return true;
-    }
-
-    /**
-     * @param string $codification
-     *
-     * @return View
-     */
-    public function setCodification(string $codification) {
-        $this->codification = $codification;
-        return $this;
-    }
-
-    /**
-     * @param string $data_type
-     *
-     * @return View
-     */
-    public function setDataType(?string $data_type) {
-        $this->data_type = $data_type;
-        return $this;
-    }
-
-    /**
-     * Define o arquivo que sera exibido na view
-     *
-     * @param string $file_output Caminho para o arquivo de saida de dados
-     *
-     * @return View
-     */
-    public function setFileOutput(string $file_output) {
-        $this->file_output = $file_output;
-        return $this;
-    }
-
-    /**
-     * Utilizar mustache
-     *
-     * @param bool $mustache
-     *
-     * @return View
-     */
-    public function setMustache(bool $mustache) {
-        $this->mustache = $mustache;
-        return $this;
-    }
-
-    /**
-     * Diz para a view que ela deve forçar um download no path informado
-     *
-     * @param bool $removeFile Excluir o arquivo depois do download
-     *
-     * @return $this
-     */
-    public function forceDownload(bool $removeFile = false) {
-        $this->force_download = true;
-        $this->remove_file = $removeFile;
-
-        return $this;
-    }
-
-    /**
-     * Substitui todos os valores do atributo $data
-     *
-     * @param mixed $data
-     *
-     * @return View
-     */
-    public function replaceAllData($data) {
-        $this->data = $data;
-        return $this;
-    }
-
-    /**
-     * Seta variaveis
-     *
-     * @param string $name O nome da variavel
-     * @param mixed $value
-     *
-     * @return bool|View Retorna false se o nome for reservado
-     */
-    public function set(string $name, $value) {
-        if (
-            $name == "header" ||
-            $name == "includes" ||
-            $name == "text"
-        ) {
-            return false;
-        }
-
-        $this->data[$name] = $value;
-        return $this;
-    }
-
-    /**
-     * Mescla um array com os dados já setados
-     *
-     * @param array $dados <p>
-     * Os indices já setados serão substituidos<br>
-     * Caso o tipo da variavel data tenha sido setado com um valor que não seja um array, o valor antigo sera substituido
-     * pela nova variavel.
-     * </p>
-     *
-     * @return bool|View Retorna false se o nome for reservado
-     */
-    public function mergeData(array $dados) {
-        if (
-            isset($dados['header']) ||
-            isset($dados['includes']) ||
-            isset($dados['text'])
-        ) {
-            return false;
-        }
-
-        if (is_array($this->data)) $this->data = array_merge($this->data, $dados);
-        else $this->data = $dados;
-
-        return $this;
-    }
-
-    /**
-     * Faz um push em uma variavel do tipo array
-     *
-     * Se a variavel não existir, uma nova do tipo array é setada.
-     * Caso a variavel já exista e não seja do tipo array, uma ViewException é gerada.
-     *
-     * @param string $name Nome da variavel
-     * @param mixed $value
-     *
-     * @return View
-     * @throws ViewException
-     */
-    public function pushArray(string $name, $value) {
-        if (
-            $name == "header" ||
-            $name == "includes" ||
-            $name == "text"
-        ) {
-            throw new ViewException("Variáveis reservadas.");
-        }
-
-        if (!isset($this->data[$name]))
-            $this->data[$name] = [$value];
-        else if (is_array($this->data[$name]))
-            $this->data[$name][] = $value;
-        else
-            throw new ViewException("Variável não é um array.");
-
-        return $this;
-    }
-
-    /**
-     * Pega variavel
-     *
-     * @param string $name O nome da variavel desejada
-     *
-     * @return array|bool
-     */
-    public function get(string $name) {
-        if (isset($this->data[$name])) {
-            return $this->data[$name];
-        } else {
-            return false;
-        }
     }
 }

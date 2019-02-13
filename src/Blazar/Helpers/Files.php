@@ -59,6 +59,7 @@ class Files {
      * @param string $file Caminho ate o arquivo.
      * @param string $text - Texto para adicionar.
      * @param string $insert_in_position Posição onde o texto será inserido prepend, append ou overwrite.
+     *
      * @return bool
      */
     public static function write(string $file, string $text, string $insert_in_position = self::WRITE_OVERWRITE): bool {
@@ -67,7 +68,7 @@ class Files {
             $ln = self::read($file);
             if ($ln !== null) $text = $text . $ln;
             else return false;
-        } elseif ($insert_in_position === self::WRITE_APPEND && file_exists($file)) {
+        } else if ($insert_in_position === self::WRITE_APPEND && file_exists($file)) {
             $ln = self::read($file);
             if ($ln !== null) $text = $ln . $text;
             else return false;
@@ -143,6 +144,7 @@ class Files {
      * @param int|string $base_medida O tamanho que será checado.<br>
      *  Pode ser um inteiro com o tamanho ou a string com o caminho para um arquivo.
      * @param bool $separar_medida Se true retorna o tamanho e a unidade de medida separados em um array.
+     *
      * @return array|string
      * @throws FilesException
      */
@@ -179,6 +181,7 @@ class Files {
      *  Se a unidade de medida não for passada a unidade usada será BYTE.
      * @param int|string $base_checar O tamanho que será checado.<br>
      *  Pode ser um inteiro com o tamanho em BYTE ou uma string com o caminho para um arquivo.
+     *
      * @return bool
      * @throws FilesException
      */
@@ -228,6 +231,7 @@ class Files {
      * Combina varios caminhos
      *
      * @param string ...$args Caminhos para unir
+     *
      * @return string
      */
     public static function pathJoin(string ...$args): string {

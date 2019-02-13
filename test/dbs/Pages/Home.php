@@ -2,7 +2,7 @@
 
 namespace Pages;
 
-use Blazar\Application;
+use Blazar\ClassMap;
 use Blazar\System\Log;
 use Blazar\System\View;
 use Model\Usuario;
@@ -16,7 +16,7 @@ class Home extends View {
      * Home constructor.
      */
     public function __construct() {
-        $this->map_info = Application::getNextParameter(true);
+        $this->map_info = ClassMap::current();
         $type_load = $this->preparePage($this->view_path);
         $this->setMustache(true);
 

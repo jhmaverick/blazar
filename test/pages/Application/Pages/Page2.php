@@ -2,8 +2,8 @@
 
 namespace Application\Pages;
 
-use Application\Controller;
-use Blazar\Application;
+use Application\PageController;
+use Blazar\ClassMap;
 use Blazar\System\Log;
 use Blazar\System\View;
 use Blazar\System\ViewException;
@@ -18,7 +18,7 @@ class Page2 extends View {
      */
     public function __construct() {
         try {
-            $this->map_info = Application::getNextParameter(true);
+            $this->map_info = ClassMap::current();
 
             $this->setMustache(true);
             $this->preparePage($this->view_path, [], "showView");
@@ -31,6 +31,6 @@ class Page2 extends View {
      * Callback para exibir a view
      */
     protected function showView() {
-        $this->mergeData(Controller::$info);
+        $this->mergeData(PageController::$info);
     }
 }

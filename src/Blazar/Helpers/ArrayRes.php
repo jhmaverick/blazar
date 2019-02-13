@@ -24,6 +24,7 @@ class ArrayRes {
      * @param $haystack
      * @param $needle
      * @param null $index
+     *
      * @return int|mixed
      */
     public static function search($haystack, $needle, $index = null) {

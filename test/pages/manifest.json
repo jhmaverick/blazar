@@ -20,7 +20,7 @@
   },
   "map": {
     "pages": {
-      "class": "Application\\Controller",
+      "class": "Application\\PageController",
       "main": true,
       "sub": {
         "home": {

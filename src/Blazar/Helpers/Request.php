@@ -29,7 +29,7 @@ class Request {
      * @return array
      */
     public static function get($acao = false) {
-        $request = array("acao" => null, "dados" => array());
+        $request = ["acao" => null, "dados" => []];
 
         // Pega os valores do _POST
         foreach ($_POST as $index => $valor) {
@@ -70,6 +70,7 @@ class Request {
      * @param array $data Parâmetros para envio
      * @param bool $send_json Enviar os parâmetros como um JSON
      * @param null $timeout Tempo de execução
+     *
      * @return string
      * @throws Exception
      */

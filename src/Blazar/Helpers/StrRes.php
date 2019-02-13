@@ -41,53 +41,13 @@ class StrRes {
     }
 
     /**
-     * Aplica o str_replace apenas na primeira ocorrencia
-     *
-     * @param string $search O texto que deve ser substituido
-     * @param string $replace Qual texto será inserido no lugar
-     * @param string $subject O texto original onde as as buscar irão ocorrer
-     *
-     * @return mixed
-     */
-    public static function str_freplace(string $search, string $replace, string $subject): string {
-        // Find the position of the first occurrence
-        $pos = !empty($search) ? strpos($subject, $search) : 0;
-
-        if ($pos !== false) {
-            $subject = substr_replace($subject, $replace, $pos, strlen($search));
-        }
-
-        return $subject;
-    }
-
-    /**
-     * Aplica o str_replace apenas na ultima ocorrencia
-     *
-     * @param string $search O texto que deve ser substituido
-     * @param string $replace Qual texto será inserido no lugar
-     * @param string $subject O texto original onde as as buscar irão ocorrer
-     *
-     * @return mixed
-     */
-    public static function str_lreplace(string $search, string $replace, string $subject): string {
-        // Find the position of the last occurrence
-        $pos = !empty($search) ? strpos($subject, $search) : 0;
-
-        if ($pos !== false) {
-            $subject = substr_replace($subject, $replace, $pos, strlen($search));
-        }
-
-        return $subject;
-    }
-
-    /**
      * Gera string randomica
      *
      * @param int $length Quantidade de caracteres
      *
      * @return string
      */
-    public static function randstring(int $length = 10): string {
+    public static function randstring(int $length): string {
         return substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, $length);
     }
 
@@ -100,7 +60,7 @@ class StrRes {
      *
      * @return string
      */
-    public static function addCaracter(string $str, string $caracter, int $pos): string {
+    public static function addCharacter(string $str, string $caracter, int $pos): string {
         $antes = substr($str, 0, $pos);
         $depois = substr($str, $pos);
         $str = $antes . $caracter . $depois;
@@ -116,7 +76,7 @@ class StrRes {
      *
      * @return string
      */
-    public static function limitarTexto(string $str, int $num): string {
+    public static function limit(string $str, int $num): string {
         $count = null;
         $total = 0;
         $arr = [];
@@ -143,18 +103,18 @@ class StrRes {
     }
 
     /**
-     * Gera URL
+     * Prepara um texto para ser usado na url
      *
      * @param string $texto
      * @param string $separador
      *
      * @return string
      */
-    public static function tratarStrUrl(string $texto, string $separador = "-"): string {
+    public static function prepareUrl(string $texto, string $separador = "-"): string {
         $texto = strtolower(html_entity_decode($texto));
 
-        $charComAcento = array("á", "à", "â", "ã", "ä", "é", "è", "ê", "ë", "í", "ì", "î", "ï", "ó", "ò", "ô", "õ", "ö", "ú", "ù", "û", "ü", "ç", "Á", "À", "Â", "Ã", "Ä", "É", "È", "Ê", "Ë", "Í", "Ì", "Î", "Ï", "Ó", "Ò", "Ô", "Õ", "Ö", "Ú", "Ù", "Û", "Ü", "Ç");
-        $charSemAcento = array("a", "a", "a", "a", "a", "e", "e", "e", "e", "i", "i", "i", "i", "o", "o", "o", "o", "o", "u", "u", "u", "u", "c", "A", "A", "A", "A", "A", "E", "E", "E", "E", "I", "I", "I", "I", "O", "O", "O", "O", "O", "U", "U", "U", "U", "C");
+        $charComAcento = ["á", "à", "â", "ã", "ä", "é", "è", "ê", "ë", "í", "ì", "î", "ï", "ó", "ò", "ô", "õ", "ö", "ú", "ù", "û", "ü", "ç", "Á", "À", "Â", "Ã", "Ä", "É", "È", "Ê", "Ë", "Í", "Ì", "Î", "Ï", "Ó", "Ò", "Ô", "Õ", "Ö", "Ú", "Ù", "Û", "Ü", "Ç"];
+        $charSemAcento = ["a", "a", "a", "a", "a", "e", "e", "e", "e", "i", "i", "i", "i", "o", "o", "o", "o", "o", "u", "u", "u", "u", "c", "A", "A", "A", "A", "A", "E", "E", "E", "E", "I", "I", "I", "I", "O", "O", "O", "O", "O", "U", "U", "U", "U", "C"];
         $texto = str_replace($charComAcento, $charSemAcento, $texto);
 
         $texto = str_replace(" ", $separador, $texto);
@@ -200,5 +160,71 @@ class StrRes {
      */
     public static function isValidMd5(string $md5): bool {
         return preg_match('/^[a-f0-9]{32}$/', $md5) === 1 ? true : false;
+    }
+
+    /**
+     * @deprecated Use StrRes::replaceFirst
+     *
+     * @param string $search
+     * @param string $replace
+     * @param string $subject
+     *
+     * @return string
+     */
+    public static function str_freplace(string $search, string $replace, string $subject): string {
+        return self::replaceFirst($subject, $search, $replace);
+    }
+
+    /**
+     * Aplica o str_replace apenas na primeira ocorrencia
+     *
+     * @param string $subject O texto original onde as as buscar irão ocorrer
+     * @param string $search O texto que deve ser substituido
+     * @param string $replace Qual texto será inserido no lugar
+     *
+     * @return mixed
+     */
+    public static function replaceFirst(string $subject, string $search, string $replace): string {
+        // Find the position of the first occurrence
+        $pos = !empty($search) ? strpos($subject, $search) : 0;
+
+        if ($pos !== false) {
+            $subject = substr_replace($subject, $replace, $pos, strlen($search));
+        }
+
+        return $subject;
+    }
+
+    /**
+     * @deprecated Use StrRes::replaceLast
+     *
+     * @param string $search
+     * @param string $replace
+     * @param string $subject
+     *
+     * @return string
+     */
+    public static function str_lreplace(string $search, string $replace, string $subject): string {
+        return self::replaceLast($subject, $search, $replace);
+    }
+
+    /**
+     * Aplica o str_replace apenas na ultima ocorrencia
+     *
+     * @param string $subject O texto original onde as as buscar irão ocorrer
+     * @param string $search O texto que deve ser substituido
+     * @param string $replace Qual texto será inserido no lugar
+     *
+     * @return mixed
+     */
+    public static function replaceLast(string $subject, string $search, string $replace): string {
+        // Find the position of the last occurrence
+        $pos = !empty($search) ? strpos($subject, $search) : 0;
+
+        if ($pos !== false) {
+            $subject = substr_replace($subject, $replace, $pos, strlen($search));
+        }
+
+        return $subject;
     }
 }

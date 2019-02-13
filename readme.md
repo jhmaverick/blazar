@@ -62,3 +62,6 @@ CUSTOM_MANIFEST = "mf_develop.json"
     Deny from all
 </Files>
 ```
+
+## TODO
+* Mover os textos dos logs e outras mensagens para um arquivo de texto chamado "alerts.json"

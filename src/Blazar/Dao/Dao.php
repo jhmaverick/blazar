@@ -23,13 +23,27 @@ use ReflectionException;
  * Responsavel pelo controle de acesso ao Banco de dados
  */
 abstract class Dao {
+    const PREPARE_SELECT = 1;
+    const PREPARE_INSERT = 2;
+    const PREPARE_DEFAULT = 3;
+    /**
+     * Conexão
+     *
+     * @var PDO
+     */
+    protected $con = null;
+    /**
+     * Statement
+     *
+     * @var PDOStatement|false
+     */
+    protected $stmt = null;
     /**
      * Lista de conexões abertas
      *
      * @var array
      */
     private static $opened_connection = [];
-
     /**
      * Dados da conexão
      *
@@ -44,7 +58,6 @@ abstract class Dao {
         "port" => null,
         "socket" => null
     ];
-
     /**
      * Uma chave de identificação para a conexão aberta
      *
@@ -53,38 +66,18 @@ abstract class Dao {
      * @var string
      */
     private $key_connection = "";
-
     /**
      * Informa se a conexão foi aberta automaticamente ou manualmente
      *
      * @var bool
      */
     private $auto_open_close = false;
-
     /**
      * @var array Lista de colunas da tabela
      *
      * Esse atributo guarda os campos da tabela após a classe ser instanciada
      */
     private $columns = null;
-
-    /**
-     * Conexão
-     *
-     * @var PDO
-     */
-    protected $con = null;
-
-    /**
-     * Statement
-     *
-     * @var PDOStatement|false
-     */
-    protected $stmt = null;
-
-    const PREPARE_SELECT = 1;
-    const PREPARE_INSERT = 2;
-    const PREPARE_DEFAULT = 3;
 
     /**
      * Dao constructor.
@@ -100,45 +93,6 @@ abstract class Dao {
             $this->prepareColumns();
         } catch (DaoException $e) {
             Log::e($e);
-        }
-    }
-
-    /**
-     * Adiciona ou pega uma conexão
-     *
-     * Se $object for = null retorna uma conexão
-     * Se $object for = "delete" remove o indice
-     *
-     * @param string $key A chave de identificação da conexão
-     * @param PDO $object Os dados ou a operação
-     *
-     * @return bool|PDO
-     * @throws DaoException
-     * @throws DaoException
-     */
-    private static function openedConnection($key, $object = null) {
-        if ($object === null) {
-            if (isset(self::$opened_connection[$key])) {
-                return self::$opened_connection[$key];
-            } else {
-                return false;
-            }
-        } else if ($object == "delete") {
-            if (isset(self::$opened_connection[$key])) {
-                //self::$opened_connection[$key]->closeDB();
-                unset(self::$opened_connection[$key]);
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            if (is_a($object, 'PDO')) {
-                self::$opened_connection[$key] = $object;
-
-                return true;
-            } else {
-                throw new DaoException("Object deve ser uma instancia PDO");
-            }
         }
     }
 
@@ -181,181 +135,6 @@ abstract class Dao {
     }
 
     /**
-     * Abre Conexão
-     *
-     * @param bool $disable_autocommit Desabilitar auto commit
-     *
-     * @throws DaoException
-     */
-    protected final function openDB(bool $disable_autocommit = false) {
-        if ($this->con)
-            throw new DaoException("Já existe uma conexão aberta.");
-
-        if (self::openedConnection($this->key_connection) !== false) {
-            $this->con = self::openedConnection($this->key_connection);
-        } else {
-            try {
-                $dsn = $this->data_connection['drive'] . ":";
-
-                //Verifica se a conexão será por socket ou hostname/IP
-                if (isset($this->data_connection['socket'])) {
-                    $dsn .= "unix_socket=" . $this->data_connection['socket'] . ";";
-                } else {
-                    $dsn .= "host=" . $this->data_connection['host'] . ";";
-                }
-
-                //Verifica se há porta para conexão
-                if (isset($this->data_connection['port'])) {
-                    $dsn .= "port=" . $this->data_connection['port'] . ";";
-                }
-
-                //Escreve o nome do banco de dados
-                $dsn .= "dbname=" . $this->data_connection['db'] . ";";
-                $dsn .= "charset=utf8mb4;";
-
-                //Define utf8 como a formatação padrão de caracteres
-                $options = array(
-                    PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci',
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-                );
-
-                //Habilita o auto-commit
-                if (!$disable_autocommit) {
-                    $options[PDO::ATTR_PERSISTENT] = true;
-                }
-
-                //Instancia o objeto PDO
-                @$this->con = new PDO($dsn,
-                    $this->data_connection['user'],
-                    $this->data_connection['pass'],
-                    $options
-                );
-
-                if ($disable_autocommit) {
-                    $this->con->beginTransaction();
-                }
-
-                self::openedConnection($this->key_connection, $this->con);
-            } catch (Error $e) {
-                throw new DaoException("Não foi possível conectar-se ao banco de dados");
-            } catch (PDOException $e) {
-                throw new DaoException($e->getMessage() . "=PDO: Não foi possível conectar-se ao banco de dados");
-            }
-        }
-    }
-
-    /**
-     * Fecha Conexão
-     *
-     * @throws DaoException
-     */
-    protected final function closeDB() {
-        if ($this->con === null) {
-            throw new DaoException("Nenhuma conexão aberta para fechar.");
-        }
-
-        if ($this->stmt !== null) {
-            if ($this->stmt) $this->stmt->closeCursor();
-            $this->stmt = null;
-        }
-
-        self::openedConnection($this->key_connection, "delete");
-
-        $this->con = null;
-    }
-
-
-    /**
-     * Inicia uma conexão apenas se ela não existir
-     * @throws DaoException
-     */
-    protected function autoOpenDB() {
-        if ($this->con === null && self::openedConnection($this->key_connection) !== false) {
-            $this->con = self::openedConnection($this->key_connection);
-        } else if ($this->con === null && self::openedConnection($this->key_connection) === false) {
-            self::openDB();
-            $this->auto_open_close = true;
-        }
-    }
-
-    /**
-     * Caso a conexão tenha sido iniciada pelo metodo autoOpenDB ele a encerra
-     * @throws DaoException
-     */
-    protected function autoCloseDB() {
-        if ($this->con !== null && $this->auto_open_close === true) {
-            self::closeDB();
-            $this->auto_open_close = false;
-        }
-    }
-
-    /**
-     * Forma generica de executar uma consulta com prepare
-     *
-     * @param string $sql
-     * @param array $where_val
-     * @param string $force self::PREPARE_SELECT ou self::PREPARE_INSERT
-     *
-     * @return array|bool|int
-     * @throws DaoException
-     */
-    protected function prepare(string $sql, array $where_val = [], $force = null) {
-        if ($this->stmt = $this->con->prepare($sql)) {
-            $i = 1;
-            while ($i <= count($where_val)) {
-                $this->stmt->bindValue($i, $where_val[$i - 1]);
-                $i++;
-            }
-
-            $result = $this->stmt->execute();
-        } else {
-            throw new DaoException("Erro de conexão " . $this->con->errorInfo()[2]);
-        }
-
-        $final = null;
-        if ($force == self::PREPARE_SELECT || StrRes::startsWith(strtolower(trim($sql)), "select")) {
-            $final = $this->stmt->fetchAll(PDO::FETCH_ASSOC);
-        } else if ($force == self::PREPARE_INSERT || StrRes::startsWith(strtolower(trim($sql)), "insert")) {
-            if ($this->stmt->rowCount() > 0) {
-                $id = $this->con->lastInsertId();
-
-                // Verifica se o id e auto increment.
-                // Se tiver auto increment retorna o inteiro
-                // e se não, retorna true para indicar sucesso
-                if ($id > 0) {
-                    $final = $id;
-                } else {
-                    $final = true;
-                }
-            } else {
-                $final = $result;
-            }
-        } else {
-            $final = $result;
-        }
-
-        return $final;
-    }
-
-    /**
-     * Retorna o valor de uma constant
-     *
-     * @param string $name
-     *
-     * @return mixed retorna null se não for definida
-     */
-    protected function getConst($name) {
-        $class = get_class($this);
-
-        // Caso a constante buscada seja a "TABLE" e ela não exista, tenta a constante "TABELA"
-        if ($name == "TABLE" && !defined($class . "::" . $name)) {
-            $name = "TABELA";
-        }
-
-        return defined($class . "::" . $name) ? constant($class . "::" . $name) : null;
-    }
-
-    /**
      * Lista de campos da tabela
      *
      * Salva a lista com os nomes das constantes com o index e seu valor no atributo "columns".<br>
@@ -384,6 +163,24 @@ abstract class Dao {
         }
 
         $this->columns = $list_columns;
+    }
+
+    /**
+     * Retorna o valor de uma constant
+     *
+     * @param string $name
+     *
+     * @return mixed retorna null se não for definida
+     */
+    protected function getConst($name) {
+        $class = get_class($this);
+
+        // Caso a constante buscada seja a "TABLE" e ela não exista, tenta a constante "TABELA"
+        if ($name == "TABLE" && !defined($class . "::" . $name)) {
+            $name = "TABELA";
+        }
+
+        return defined($class . "::" . $name) ? constant($class . "::" . $name) : null;
     }
 
     /**
@@ -433,6 +230,29 @@ abstract class Dao {
         }
 
         return $list_columns;
+    }
+
+    /**
+     * Verifica se a estrutura segue o padrão da tabela
+     *
+     * @param array $dados [index => valor, index => valor...]
+     * @param bool $completa Verifica se não esta faltando indexes
+     *
+     * @return bool
+     */
+    public function checkStruct(array $dados, bool $completa = false) {
+        $list = $this->columns;
+
+        foreach ($dados as $i => $v) {
+            if (!in_array($i, $list)) {
+                return false;
+            }
+        }
+
+        if ($completa && count($dados) != count($list))
+            return false;
+
+        return true;
     }
 
     /**
@@ -537,7 +357,8 @@ abstract class Dao {
      * </code>
      *
      * Apenas os prefixos da tabela serão removidos, resultados retornados por JOIN continuarão com seus prefixos.<br>
-     * Se for necessario remover os prefixos desses resultados, esse metodo deve ser chamado atraves da instancia da classe responsavel.
+     * Se for necessario remover os prefixos desses resultados, esse metodo deve ser chamado atraves da instancia da
+     *     classe responsavel.
      *
      * @param string|array[]|string[] $dados <p>
      * O prefixo só é removido se existir um campo na tabela com o nome.<br>
@@ -569,7 +390,7 @@ abstract class Dao {
 
         // Verifica se é apenas uma string
         if (gettype($dados) === "string") {
-            $novo_valor = StrRes::str_freplace($pre, "", $dados);
+            $novo_valor = StrRes::replaceFirst($dados, $pre, "");
 
             if (in_array($novo_valor, $this->columns))
                 return $novo_valor;
@@ -589,7 +410,7 @@ abstract class Dao {
         // Aplicado em casos onde é necessario apenas tratar indices
         if (!$multidimensional && array_values($dados) === $dados) {
             foreach ($dados as $nome => $valor) {
-                $novo_valor = StrRes::str_freplace($pre, "", $valor);
+                $novo_valor = StrRes::replaceFirst($valor, $pre, "");
 
                 // Verifica se o indice é uma coluna da tabela
                 // Verifica se no array já não existe um indice com o novo nome ou se deve substituir
@@ -615,7 +436,7 @@ abstract class Dao {
 
                 foreach ($ln as $nome => $valor) {
                     // Novo nome sem o prefixo
-                    $novo_nome = StrRes::str_freplace($pre, "", $nome);
+                    $novo_nome = StrRes::replaceFirst($nome, $pre, "");
 
                     // Verifica se o indice é uma coluna da tabela
                     // Verifica se no array já não existe um indice com o novo nome ou se deve substituir
@@ -632,29 +453,6 @@ abstract class Dao {
             // Verifica se o valor que chegou era um array de array
             return ($multidimensional) ? $novo : $novo[0];
         }
-    }
-
-    /**
-     * Verifica se a estrutura segue o padrão da tabela
-     *
-     * @param array $dados [index => valor, index => valor...]
-     * @param bool $completa Verifica se não esta faltando indexes
-     *
-     * @return bool
-     */
-    public function checkStruct(array $dados, bool $completa = false) {
-        $list = $this->columns;
-
-        foreach ($dados as $i => $v) {
-            if (!in_array($i, $list)) {
-                return false;
-            }
-        }
-
-        if ($completa && count($dados) != count($list))
-            return false;
-
-        return true;
     }
 
     /**
@@ -696,7 +494,8 @@ abstract class Dao {
      * Caso deseje retornar com "AS" então adicione a constante no index e a nomeação no valor
      * Se passado como null ou "*" então retorna todas as colunas
      * </p>
-     * @param string|null $tb_name O nome que a tabela esta usando na query para ser adicionado em cada coluna, padrão [a-zA-Z0-9_]
+     * @param string|null $tb_name O nome que a tabela esta usando na query para ser adicionado em cada coluna, padrão
+     *     [a-zA-Z0-9_]
      * @param bool $as_array Retornar como array
      *
      * @return array|string
@@ -743,7 +542,8 @@ abstract class Dao {
      * Retorna uma string com as colunas da tabela que não estão na lista passada pronta para uso em um select
      *
      * @param array $columns Array com as constantes das colunas que não serão retornadas
-     * @param string|null $tb_name O nome que a tabela esta usando na query para ser adicionado em cada coluna, padrão [a-zA-Z0-9_]
+     * @param string|null $tb_name O nome que a tabela esta usando na query para ser adicionado em cada coluna, padrão
+     *     [a-zA-Z0-9_]
      * @param bool $as_array Retornar como array
      *
      * @return array|string
@@ -811,7 +611,6 @@ abstract class Dao {
         return $final_ordem;
     }
 
-
     /**
      * Trata valores do limit contra sql injection
      *
@@ -845,5 +644,200 @@ abstract class Dao {
         }
 
         return true;
+    }
+
+    /**
+     * Inicia uma conexão apenas se ela não existir
+     * @throws DaoException
+     */
+    protected function autoOpenDB() {
+        if ($this->con === null && self::openedConnection($this->key_connection) !== false) {
+            $this->con = self::openedConnection($this->key_connection);
+        } else if ($this->con === null && self::openedConnection($this->key_connection) === false) {
+            self::openDB();
+            $this->auto_open_close = true;
+        }
+    }
+
+    /**
+     * Adiciona ou pega uma conexão
+     *
+     * Se $object for = null retorna uma conexão
+     * Se $object for = "delete" remove o indice
+     *
+     * @param string $key A chave de identificação da conexão
+     * @param PDO $object Os dados ou a operação
+     *
+     * @return bool|PDO
+     * @throws DaoException
+     * @throws DaoException
+     */
+    private static function openedConnection($key, $object = null) {
+        if ($object === null) {
+            if (isset(self::$opened_connection[$key])) {
+                return self::$opened_connection[$key];
+            } else {
+                return false;
+            }
+        } else if ($object == "delete") {
+            if (isset(self::$opened_connection[$key])) {
+                //self::$opened_connection[$key]->closeDB();
+                unset(self::$opened_connection[$key]);
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            if (is_a($object, 'PDO')) {
+                self::$opened_connection[$key] = $object;
+
+                return true;
+            } else {
+                throw new DaoException("Object deve ser uma instancia PDO");
+            }
+        }
+    }
+
+    /**
+     * Abre Conexão
+     *
+     * @param bool $disable_autocommit Desabilitar auto commit
+     *
+     * @throws DaoException
+     */
+    protected final function openDB(bool $disable_autocommit = false) {
+        if ($this->con)
+            throw new DaoException("Já existe uma conexão aberta.");
+
+        if (self::openedConnection($this->key_connection) !== false) {
+            $this->con = self::openedConnection($this->key_connection);
+        } else {
+            try {
+                $dsn = $this->data_connection['drive'] . ":";
+
+                //Verifica se a conexão será por socket ou hostname/IP
+                if (isset($this->data_connection['socket'])) {
+                    $dsn .= "unix_socket=" . $this->data_connection['socket'] . ";";
+                } else {
+                    $dsn .= "host=" . $this->data_connection['host'] . ";";
+                }
+
+                //Verifica se há porta para conexão
+                if (isset($this->data_connection['port'])) {
+                    $dsn .= "port=" . $this->data_connection['port'] . ";";
+                }
+
+                //Escreve o nome do banco de dados
+                $dsn .= "dbname=" . $this->data_connection['db'] . ";";
+                $dsn .= "charset=utf8mb4;";
+
+                //Define utf8 como a formatação padrão de caracteres
+                $options = [
+                    PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci',
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+                ];
+
+                //Habilita o auto-commit
+                if (!$disable_autocommit) {
+                    $options[PDO::ATTR_PERSISTENT] = true;
+                }
+
+                //Instancia o objeto PDO
+                @$this->con = new PDO($dsn,
+                    $this->data_connection['user'],
+                    $this->data_connection['pass'],
+                    $options
+                );
+
+                if ($disable_autocommit) {
+                    $this->con->beginTransaction();
+                }
+
+                self::openedConnection($this->key_connection, $this->con);
+            } catch (Error $e) {
+                throw new DaoException("Não foi possível conectar-se ao banco de dados");
+            } catch (PDOException $e) {
+                throw new DaoException($e->getMessage() . "=PDO: Não foi possível conectar-se ao banco de dados");
+            }
+        }
+    }
+
+    /**
+     * Caso a conexão tenha sido iniciada pelo metodo autoOpenDB ele a encerra
+     * @throws DaoException
+     */
+    protected function autoCloseDB() {
+        if ($this->con !== null && $this->auto_open_close === true) {
+            self::closeDB();
+            $this->auto_open_close = false;
+        }
+    }
+
+    /**
+     * Fecha Conexão
+     *
+     * @throws DaoException
+     */
+    protected final function closeDB() {
+        if ($this->con === null) {
+            throw new DaoException("Nenhuma conexão aberta para fechar.");
+        }
+
+        if ($this->stmt !== null) {
+            if ($this->stmt) $this->stmt->closeCursor();
+            $this->stmt = null;
+        }
+
+        self::openedConnection($this->key_connection, "delete");
+
+        $this->con = null;
+    }
+
+    /**
+     * Forma generica de executar uma consulta com prepare
+     *
+     * @param string $sql
+     * @param array $where_val
+     * @param string $force self::PREPARE_SELECT ou self::PREPARE_INSERT
+     *
+     * @return array|bool|int
+     * @throws DaoException
+     */
+    protected function prepare(string $sql, array $where_val = [], $force = null) {
+        if ($this->stmt = $this->con->prepare($sql)) {
+            $i = 1;
+            while ($i <= count($where_val)) {
+                $this->stmt->bindValue($i, $where_val[$i - 1]);
+                $i++;
+            }
+
+            $result = $this->stmt->execute();
+        } else {
+            throw new DaoException("Erro de conexão " . $this->con->errorInfo()[2]);
+        }
+
+        $final = null;
+        if ($force == self::PREPARE_SELECT || StrRes::startsWith(strtolower(trim($sql)), "select")) {
+            $final = $this->stmt->fetchAll(PDO::FETCH_ASSOC);
+        } else if ($force == self::PREPARE_INSERT || StrRes::startsWith(strtolower(trim($sql)), "insert")) {
+            if ($this->stmt->rowCount() > 0) {
+                $id = $this->con->lastInsertId();
+
+                // Verifica se o id e auto increment.
+                // Se tiver auto increment retorna o inteiro
+                // e se não, retorna true para indicar sucesso
+                if ($id > 0) {
+                    $final = $id;
+                } else {
+                    $final = true;
+                }
+            } else {
+                $final = $result;
+            }
+        } else {
+            $final = $result;
+        }
+
+        return $final;
     }
 }

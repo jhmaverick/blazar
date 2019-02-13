@@ -27,6 +27,7 @@ class SelectorDOM {
 
     /**
      * SelectorDOM constructor.
+     *
      * @param string|DOMDocument $data Um objeto DOMDocument ou uma string contendo um html.
      */
     public function __construct($data) {
@@ -56,6 +57,7 @@ class SelectorDOM {
      *
      * @param string $selector
      * @param bool $as_array
+     *
      * @return array|DOMNodeList Otherwise regular DOMElement's will be returned.
      */
     public function select(string $selector, bool $as_array = true) {
@@ -64,73 +66,10 @@ class SelectorDOM {
     }
 
     /**
-     * Convert $element to a string html
-     *
-     * @param DOMElement $element
-     * @param bool $inner_html
-     * @return string
-     */
-    public function elementToHtml(DOMElement $element, bool $inner_html = true): string {
-        if ($inner_html) {
-            $innerHTML = [];
-            $children = $element->childNodes;
-
-            foreach ($children as $child) {
-                $innerHTML[] = $child->ownerDocument->saveHTML($child);
-            }
-
-            $html = implode("", $innerHTML);
-        } else {
-            $html = $element->ownerDocument->saveHTML($element);
-        }
-
-        $html = str_replace("&gt;", ">", $html);
-
-        return $html;
-    }
-
-    /**
-     * Convert $elements to an array.
-     * @param DOMNodeList $elements
-     * @return array
-     */
-    public function elementsToArray(DOMNodeList $elements): array {
-        $array = [];
-
-        for ($i = 0, $length = $elements->length; $i < $length; ++$i) {
-            if ($elements->item($i)->nodeType == XML_ELEMENT_NODE) {
-                array_push($array, $this->elementToArray($elements->item($i)));
-            }
-        }
-
-        return $array;
-    }
-
-    /**
-     * Convert $element to an array.
-     * @param DOMElement $element
-     * @return array
-     */
-    public function elementToArray(DOMElement $element): array {
-        $array = array(
-            'name' => $element->nodeName,
-            'attributes' => array(),
-            'text' => $element->textContent,
-            'children' => $this->elementsToArray($element->childNodes)
-        );
-
-        if ($element->attributes->length) {
-            foreach ($element->attributes as $key => $attr) {
-                $array['attributes'][$key] = $attr->value;
-            }
-        }
-
-        return $array;
-    }
-
-    /**
      * Convert $selector into an XPath string.
+     *
      * @param string $selector
+     *
      * @return string|string[]|null
      */
     public function selectorToXpath(string $selector): string {
@@ -216,5 +155,78 @@ class SelectorDOM {
         $selector = implode(',', $sub_selectors);
 
         return $selector;
+    }
+
+    /**
+     * Convert $elements to an array.
+     *
+     * @param DOMNodeList $elements
+     *
+     * @return array
+     */
+    public function elementsToArray(DOMNodeList $elements): array {
+        $array = [];
+
+        for ($i = 0, $length = $elements->length; $i < $length; ++$i) {
+            if ($elements->item($i)->nodeType == XML_ELEMENT_NODE) {
+                array_push($array, $this->elementToArray($elements->item($i)));
+            }
+        }
+
+        return $array;
+    }
+
+    /**
+     * Convert $element to an array.
+     *
+     * @param DOMElement $element
+     *
+     * @return array
+     */
+    public function elementToArray(DOMElement $element): array {
+        $array = [
+            'name' => $element->nodeName,
+            'attributes' => [],
+            'text' => $element->textContent,
+            'children' => $this->elementsToArray($element->childNodes)
+        ];
+
+        if ($element->attributes->length) {
+            foreach ($element->attributes as $key => $attr) {
+                $array['attributes'][$key] = $attr->value;
+            }
+        }
+
+        return $array;
+    }
+
+    /**
+     * Convert $element to a string html
+     *
+     * @param DOMElement $element
+     * @param bool $inner_html
+     *
+     * @return string
+     */
+    public function elementToHtml(DOMElement $element, bool $inner_html = true): string {
+        if ($inner_html) {
+            $innerHTML = [];
+            $children = $element->childNodes;
+
+            foreach ($children as $child) {
+                $innerHTML[] = $child->ownerDocument->saveHTML($child);
+            }
+
+            $html = implode("", $innerHTML);
+        } else {
+            $html = $element->ownerDocument->saveHTML($element);
+        }
+
+        $html = str_replace("&gt;", ">", $html);
+        // TODO colocar para substituir apenas dentro do href
+        $html = str_replace("%7B", "{", $html);
+        $html = str_replace("%7D", "}", $html);
+
+        return $html;
     }
 }

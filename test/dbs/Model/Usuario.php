@@ -21,7 +21,7 @@ class Usuario extends CRUDMysql {
     const SYSTEM_USER_ID = 1;
 
     public function __construct() {
-        parent::__construct(Manifest::getDB("main_db"));
+        parent::__construct(Manifest::db("main_db"));
     }
 
     public function adicionar(array $valores) {

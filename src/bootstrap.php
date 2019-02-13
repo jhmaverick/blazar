@@ -8,9 +8,6 @@
  * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
  */
 
-use Blazar\Application;
-use Blazar\System\Log;
-
 try {
     // Define codificação do Projeto
     mb_internal_encoding("UTF-8");
@@ -91,7 +88,7 @@ try {
                 require_once $class_path . '.php';
             }
         } catch (Exception|Error $e) {
-            Log::e("AutoLoad", $e);
+            \Blazar\System\Log::e("AutoLoad", $e);
             exit("Não foi possível concluir a operação. Por favor tente mais tarde.");
         }
     }
@@ -133,8 +130,8 @@ try {
     else ini_set('display_errors', 'On');
 
     // Aplica configurações do framework
-    Application::prepare();
+    new \Blazar\Manifest();
 } catch (Throwable|Error|Exception $e) {
-    Log::e("Erro ao configurar o framework", $e);
+    \Blazar\System\Log::e("Erro ao configurar o framework", $e);
     exit("Não foi possível concluir a operação. Por favor tente mais tarde.");
 }

@@ -17,6 +17,7 @@ class SingleApi extends Api {
      * $dados[<b>senha</b>] string Senha para o login.
      *
      * @param array $dados
+     *
      * @return array|int
      */
     public function login(array $dados) {

@@ -1,7 +1,7 @@
 {
   "map": {
     "multi_api": {
-      "class": "Application\\Controller",
+      "class": "Application\\ApiController",
       "main": true,
       "sub": {
         "teste1": {

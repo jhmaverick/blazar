@@ -2,8 +2,8 @@
 
 namespace Application\Pages;
 
-use Application\Controller;
-use Blazar\Application;
+use Application\PageController;
+use Blazar\ClassMap;
 use Blazar\System\Log;
 use Blazar\System\Text;
 use Blazar\System\View;
@@ -22,7 +22,8 @@ class Home extends View {
      */
     public function __construct() {
         try {
-            $this->map_info = Application::getNextParameter(true);
+            $this->map_info = ClassMap::current();
+
             $this->preparePage($this->view_path, $this->page_res, "showView");
         } catch (ViewException $e) {
             Log::e($e);
@@ -36,6 +37,6 @@ class Home extends View {
         $this->set("home_css", $this->map_info['url_path'] . "/home.css");
         $this->set("blazar", Text::get("blazar"));
         $this->set("msg", "Bem-vindo");
-        $this->mergeData(Controller::$info);
+        $this->mergeData(PageController::$info);
     }
 }

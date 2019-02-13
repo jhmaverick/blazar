@@ -10,7 +10,7 @@
 
 namespace Blazar\System;
 
-use Blazar\Application;
+use Blazar\ClassMap;
 use Blazar\Helpers\Request;
 use Blazar\Helpers\StrRes;
 use Exception;
@@ -20,8 +20,13 @@ use ReflectionMethod;
  * Classe de criação de APIs para o manifest>map
  */
 abstract class Api {
-    private static $autostart = true;
 
+    const DEFAULT_ACTION = "action";
+
+    // Ação padrão para a chamada dos métodos das requisições
+    protected $action_name = self::DEFAULT_ACTION;
+    // Nome do parâmetro que irá informar qual método da classe sera chamado
+    private static $autostart = true;
     private $class_api = true;
     private $started = false;
     private $api_map;
@@ -33,8 +38,8 @@ abstract class Api {
      * API constructor
      *
      * Esta classe deve ser chamada apenas em classes listadas no map do manifest.<br>
-     * Para utilizar com multiplas apis, a classe controladora deve ser a ultima a ser chamada no map para que a API consiga
-     * identificar os descendentes dela.
+     * Para utilizar com multiplas apis, a classe controladora deve ser a ultima a ser chamada no map para que a API
+     * consiga identificar os descendentes dela.
      *
      * @param bool|null $autostart <p>
      * Inicia a API com base na requisições já na instancia da classe.<br>
@@ -53,18 +58,6 @@ abstract class Api {
     }
 
     /**
-     * Altera a forma que as APIs irão se comportar durante a instancia
-     *
-     * Se true toda vez que uma classe que herde a API o auto start já sera executado.<br>
-     * O padrão do sistema é true
-     *
-     * @param bool $status
-     */
-    public static function setAutostart(bool $status) {
-        self::$autostart = $status;
-    }
-
-    /**
      * Inicia o processamento das APIs
      *
      * Define automaticamente qual é o tipo de requisição dependo dos parametros informados
@@ -74,7 +67,7 @@ abstract class Api {
         if ($this->started) return;
         $this->started = true;
 
-        $this->api_map = Application::getNextParameter(true);
+        $this->api_map = ClassMap::current();
         $this->view = new View();
 
         $request = Request::get(true);
@@ -86,8 +79,8 @@ abstract class Api {
                 $this->multiRequest($dados);
             } else if (isset($dados['long_polling'])) {
                 $this->longPolling($dados);
-            } else if (isset($request['acao']) && is_string($request['acao'])) {
-                $this->requestCommon($request['acao'], $dados);
+            } else if (isset($request[$this->action_name]) && is_string($request[$this->action_name])) {
+                $this->requestCommon($request[$this->action_name], $dados);
             } else {
                 $this->retornos = "Nenhuma ação foi passada para a API";
             }
@@ -123,10 +116,10 @@ abstract class Api {
         $dados['params'] = json_decode($dados['params'], true);
 
         foreach ($dados['params'] as $i => $v) {
-            if (isset($v['acao']) && substr_count($v['acao'], "/") == 1) {
+            if (isset($v[$this->action_name]) && substr_count($v[$this->action_name], "/") == 1) {
                 // Separa a API da ação
-                $d = explode("/", $v['acao']);
-                unset($v['acao']);
+                $d = explode("/", $v[$this->action_name]);
+                unset($v[$this->action_name]);
 
                 try {
                     if ($this->class_api) {
@@ -167,6 +160,22 @@ abstract class Api {
     }
 
     /**
+     * Converte o nome de uma ação para o padrão dos metodos
+     *
+     * Exemplo: "cadastrar_usuario" -> "cadastrarUsuario"
+     *
+     * @param string $nome o nome da ação que será convertida para o nome do metodo
+     *
+     * @return mixed
+     */
+    private function action2method(string $nome) {
+        $nome = ucwords(str_replace("_", " ", $nome));
+        $nome = str_replace(" ", "", $nome);
+
+        return lcfirst($nome);
+    }
+
+    /**
      * Metodo de requisição por long polling
      *
      * @param $dados
@@ -190,10 +199,10 @@ abstract class Api {
             $atualizacao = false;
 
             foreach ($dados['params'] as $i => $v) {
-                if (isset($v['acao']) && substr_count($v['acao'], "/") == 1) {
+                if (isset($v[$this->action_name]) && substr_count($v[$this->action_name], "/") == 1) {
                     // Separa a API da ação
-                    $d = explode("/", $v['acao']);
-                    unset($v['acao']);
+                    $d = explode("/", $v[$this->action_name]);
+                    unset($v[$this->action_name]);
 
                     try {
                         if ($this->class_api) {
@@ -265,7 +274,7 @@ abstract class Api {
                 $ControllerClass = get_class($this);
             } else {
                 // Pega o parametro da URL para obter a classe
-                $ControllerClass = Application::getNextParameter()['class'];
+                $ControllerClass = ClassMap::next()['class'];
                 if (StrRes::endsWith($ControllerClass, "\\Error")) {
                     throw new class("API não existe") extends Exception {
                         public $api_exception = true;
@@ -295,18 +304,14 @@ abstract class Api {
     }
 
     /**
-     * Converte o nome de uma ação para o padrão dos metodos
+     * Altera a forma que as APIs irão se comportar durante a instancia
      *
-     * Exemplo: "cadastrar_usuario" -> "cadastrarUsuario"
+     * Se true toda vez que uma classe que herde a API o auto start já sera executado.<br>
+     * O padrão do sistema é true
      *
-     * @param string $nome o nome da ação que será convertida para o nome do metodo
-     *
-     * @return mixed
+     * @param bool $status
      */
-    private function action2method(string $nome) {
-        $nome = ucwords(str_replace("_", " ", $nome));
-        $nome = str_replace(" ", "", $nome);
-
-        return lcfirst($nome);
+    public static function setAutostart(bool $status) {
+        self::$autostart = $status;
     }
 }

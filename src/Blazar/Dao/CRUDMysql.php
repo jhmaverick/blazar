@@ -18,22 +18,6 @@ use PDO;
  */
 abstract class CRUDMysql extends Dao {
     /**
-     * Ultimo sql gerado
-     *
-     * @var string
-     */
-    private $last_sql = "";
-
-    /**
-     * Retorna o ultimo sql gerado
-     *
-     * @return string
-     */
-    protected function getLastSql() {
-        return $this->last_sql;
-    }
-
-    /**
      * Tipo de insert normal
      */
     const TP_INSERT_NORMAL = 1;
@@ -49,7 +33,6 @@ abstract class CRUDMysql extends Dao {
      * Tipo de insert aplicando um ignore
      */
     const TP_INSERT_IGNORE = 4;
-
     /**
      * Valor a ser inserido
      * É obrigatorio caso o valor do dados seja passado em um array
@@ -63,6 +46,21 @@ abstract class CRUDMysql extends Dao {
      * Se o campo deve ser inserido no update quando ocorrer um "ON DUPLICATE KEY"
      */
     const FIELD_UPDATE = "update";
+    /**
+     * Ultimo sql gerado
+     *
+     * @var string
+     */
+    private $last_sql = "";
+
+    /**
+     * Retorna o ultimo sql gerado
+     *
+     * @return string
+     */
+    protected function getLastSql() {
+        return $this->last_sql;
+    }
 
     /**
      * Insert
@@ -97,9 +95,9 @@ abstract class CRUDMysql extends Dao {
      * Ex: <code>[fields => ["id", "nome", ...], values => [1, "exemplo", ...]]</code><br>
      * <br>
      * Ao utilizar uma inserção com multiplas linhas, o indice de cada campo deve ser passado mesmo se<br>
-     * o campo "fields" for informado. Nesse caso, informar o "fields" serve apenas para diminuir as chances dos indices<br>
-     * entrarem em posições erradas.<br>
-     * Ex: <code>[fields => ["id", "nome", ...], values => [id => [1, "exemplo"...], nome => [2, "exemplo 2"...], ...]]</code>
+     * o campo "fields" for informado. Nesse caso, informar o "fields" serve apenas para diminuir as chances dos
+     *     indices<br> entrarem em posições erradas.<br> Ex: <code>[fields => ["id", "nome", ...], values => [id => [1,
+     *     "exemplo"...], nome => [2, "exemplo 2"...], ...]]</code>
      * </p>
      * @param int $tipo_insert <p>
      * Qual sera o tipo do insert. Os tipos possíveis estão nas constantes iniciadas com "<b>TP_INSERT_...</b>".

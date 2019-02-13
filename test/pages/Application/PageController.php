@@ -2,9 +2,9 @@
 
 namespace Application;
 
-use Blazar\Application;
+use Blazar\ClassMap;
 
-class Controller {
+class PageController {
 
     public static $info = [];
 
@@ -14,8 +14,8 @@ class Controller {
             "hora" => date("H:i")
         ];
 
-        $modulo_inicial = Application::getNextParameter()['class'];
-        new $modulo_inicial();
+        $Page = ClassMap::next('class');
+        new $Page();
     }
 
 }

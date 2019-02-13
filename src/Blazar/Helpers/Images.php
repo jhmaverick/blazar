@@ -39,9 +39,9 @@ class Images {
 
         if ($formato == 'jpg' || $formato == 'jpeg') {
             $img = imagecreatefromjpeg($temp);
-        } elseif ($formato == 'png') {
+        } else if ($formato == 'png') {
             $img = imagecreatefrompng($temp);
-        } elseif ($formato == 'gif') {
+        } else if ($formato == 'gif') {
             $img = imagecreatefromgif($temp);
         } else {
             throw new ImagesException("Formato inválido.");
@@ -57,10 +57,10 @@ class Images {
         }
 
         // Evita que imagem seja maior que o permitido pelo sistema
-        if ($largura != null && $largura > Manifest::getConfig("max_img_width"))
-            $largura = Manifest::getConfig("max_img_width");
-        if ($altura != null && $altura > Manifest::getConfig("max_img_height"))
-            $altura = Manifest::getConfig("max_img_height");
+        if ($largura != null && $largura > Manifest::config("max_img_width"))
+            $largura = Manifest::config("max_img_width");
+        if ($altura != null && $altura > Manifest::config("max_img_height"))
+            $altura = Manifest::config("max_img_height");
 
         // Calcula dimensão que estiver faltando
         if ($largura != null && (imagesx($img) >= imagesy($img) || $altura == null)) {
@@ -98,9 +98,9 @@ class Images {
 
         if ($formato == 'jpg' || $formato == 'jpeg') {
             imagejpeg($nova, $salvar);
-        } elseif ($formato == 'png') {
+        } else if ($formato == 'png') {
             imagepng($nova, $salvar);
-        } elseif ($formato == 'gif') {
+        } else if ($formato == 'gif') {
             imagegif($nova, $salvar);
         }
 
@@ -108,44 +108,6 @@ class Images {
         imagedestroy($img);
 
         return $nome;
-    }
-
-    /**
-     * Calculo Redimensionamento
-     *
-     * @param int $x
-     * @param int $y
-     * @param int $n_largura
-     * @param int $n_altura
-     *
-     * @return array
-     */
-    private static function calcRedimensionar($x, $y, $n_largura, $n_altura) {
-        if ($x > $y) {
-            $largura = ($x * $n_altura) / $y;
-            $altura = $n_altura;
-
-            if ($largura < $n_largura) {
-                $diferenca = $n_largura - $largura;
-                $largura = $largura + $diferenca;
-
-                $aaltura = ($y * $diferenca) / $x;
-                $altura = $n_altura + $aaltura;
-            }
-        } else {
-            $altura = ($y * $n_largura) / $x;
-            $largura = $n_largura;
-
-            if ($altura < $n_altura) {
-                $diferenca = $n_altura - $altura;
-                $altura = $altura + $diferenca;
-
-                $alargura = ($x * $diferenca) / $y;
-                $largura = $n_largura + $alargura;
-            }
-        }
-
-        return array($largura, $altura);
     }
 
     /**
@@ -218,7 +180,7 @@ class Images {
 
             $nova = imagecreatetruecolor($largura, $altura);
             imagecopyresampled($nova, $img, 0, 0, 0, 0, $largura, $altura, $x, $y);
-        } elseif ($imagetype == IMAGETYPE_PNG) {
+        } else if ($imagetype == IMAGETYPE_PNG) {
             $img = imagecreatefrompng($source);
             $x = imagesx($img);
             $y = imagesy($img);
@@ -245,7 +207,7 @@ class Images {
             }
 
             imagecopyresampled($nova, $img, 0, 0, 0, 0, $largura, $altura, $x, $y);
-        } elseif ($imagetype == IMAGETYPE_GIF) {
+        } else if ($imagetype == IMAGETYPE_GIF) {
             $img = imagecreatefromgif($source);
             $x = imagesx($img);
             $y = imagesy($img);
@@ -294,9 +256,9 @@ class Images {
 
             if ($imagetype == IMAGETYPE_JPEG) {
                 imagejpeg($final);
-            } elseif ($imagetype == IMAGETYPE_PNG) {
+            } else if ($imagetype == IMAGETYPE_PNG) {
                 imagepng($final);
-            } elseif ($imagetype == IMAGETYPE_GIF) {
+            } else if ($imagetype == IMAGETYPE_GIF) {
                 imagegif($final);
             }
 
@@ -307,9 +269,9 @@ class Images {
         } else {
             if ($imagetype == IMAGETYPE_JPEG) {
                 imagejpeg($final, $salvar);
-            } elseif ($imagetype == IMAGETYPE_PNG) {
+            } else if ($imagetype == IMAGETYPE_PNG) {
                 imagepng($final, $salvar);
-            } elseif ($imagetype == IMAGETYPE_GIF) {
+            } else if ($imagetype == IMAGETYPE_GIF) {
                 imagegif($final, $salvar);
             }
 
@@ -328,6 +290,60 @@ class Images {
     }
 
     /**
+     * Pega os dados de uma imagem dependendo da origem
+     *
+     * @param $source
+     *
+     * @return array|bool
+     */
+    private static function getImageSize($source) {
+        if (base64_decode($source, true) === false) {
+            return getimagesize($source);
+        } else {
+            $uri = 'data://application/octet-stream;base64,' . $source;
+            return getimagesize($uri);
+        }
+    }
+
+    /**
+     * Calculo Redimensionamento
+     *
+     * @param int $x
+     * @param int $y
+     * @param int $n_largura
+     * @param int $n_altura
+     *
+     * @return array
+     */
+    private static function calcRedimensionar($x, $y, $n_largura, $n_altura) {
+        if ($x > $y) {
+            $largura = ($x * $n_altura) / $y;
+            $altura = $n_altura;
+
+            if ($largura < $n_largura) {
+                $diferenca = $n_largura - $largura;
+                $largura = $largura + $diferenca;
+
+                $aaltura = ($y * $diferenca) / $x;
+                $altura = $n_altura + $aaltura;
+            }
+        } else {
+            $altura = ($y * $n_largura) / $x;
+            $largura = $n_largura;
+
+            if ($altura < $n_altura) {
+                $diferenca = $n_altura - $altura;
+                $altura = $altura + $diferenca;
+
+                $alargura = ($x * $diferenca) / $y;
+                $largura = $n_largura + $alargura;
+            }
+        }
+
+        return [$largura, $altura];
+    }
+
+    /**
      * Exibir Imagem
      *
      * @param string $imagem
@@ -341,7 +357,7 @@ class Images {
         if ($imagetype == IMAGETYPE_JPEG) {
             $img = imagecreatefromjpeg($imagem);
             imagejpeg($img);
-        } elseif ($imagetype == IMAGETYPE_PNG) {
+        } else if ($imagetype == IMAGETYPE_PNG) {
             $img = imagecreatefrompng($imagem);
 
             // Verifica se a imagem tem transparencia
@@ -364,7 +380,7 @@ class Images {
             imagecopyresampled($nova, $img, 0, 0, 0, 0, $img_info[0], $img_info[1], $img_info[0], $img_info[1]);
 
             imagepng($nova);
-        } elseif ($imagetype == IMAGETYPE_GIF) {
+        } else if ($imagetype == IMAGETYPE_GIF) {
             $img = imagecreatefromgif($imagem);
             imagegif($img);
         } else {
@@ -403,9 +419,9 @@ class Images {
             $img = imagecreatefromstring(base64_decode($source));
         } else if ($imagetype == IMAGETYPE_JPEG) {
             $img = imagecreatefromjpeg($source);
-        } elseif ($imagetype == IMAGETYPE_PNG) {
+        } else if ($imagetype == IMAGETYPE_PNG) {
             $img = imagecreatefrompng($source);
-        } elseif ($imagetype == IMAGETYPE_GIF) {
+        } else if ($imagetype == IMAGETYPE_GIF) {
             $img = imagecreatefromgif($source);
         } else {
             throw new ImagesException("Formato inválido.");
@@ -448,9 +464,9 @@ class Images {
 
             if ($imagetype == IMAGETYPE_JPEG) {
                 imagejpeg($nova);
-            } elseif ($imagetype == IMAGETYPE_PNG) {
+            } else if ($imagetype == IMAGETYPE_PNG) {
                 imagepng($nova);
-            } elseif ($imagetype == IMAGETYPE_GIF) {
+            } else if ($imagetype == IMAGETYPE_GIF) {
                 imagegif($nova);
             }
 
@@ -461,9 +477,9 @@ class Images {
         } else {
             if ($imagetype == IMAGETYPE_JPEG) {
                 imagejpeg($nova, $salvar);
-            } elseif ($imagetype == IMAGETYPE_PNG) {
+            } else if ($imagetype == IMAGETYPE_PNG) {
                 imagepng($nova, $salvar);
-            } elseif ($imagetype == IMAGETYPE_GIF) {
+            } else if ($imagetype == IMAGETYPE_GIF) {
                 imagegif($nova, $salvar);
             }
 
@@ -496,7 +512,7 @@ class Images {
      * @return array
      */
     public static function redimensionamento($real_width, $real_height, $pos_w, $pos_h, $pos_x, $pos_y, $tela_width, $tela_height, $inverter = false) {
-        $real = array();
+        $real = [];
 
         if (!$inverter) {
             $real[0] = ($pos_x * $real_width) / $tela_width;
@@ -511,21 +527,5 @@ class Images {
         }
 
         return $real;
-    }
-
-    /**
-     * Pega os dados de uma imagem dependendo da origem
-     *
-     * @param $source
-     *
-     * @return array|bool
-     */
-    private static function getImageSize($source) {
-        if (base64_decode($source, true) === false) {
-            return getimagesize($source);
-        } else {
-            $uri = 'data://application/octet-stream;base64,' . $source;
-            return getimagesize($uri);
-        }
     }
 }

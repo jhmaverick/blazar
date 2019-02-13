@@ -21,9 +21,8 @@ use Exception;
  */
 class Manifest extends Application {
 
-    const MANIFEST_LOCAL = "manifest.json";
-
-    private static $manifest = [];
+    const PATH = ROOT . "/manifest.json";
+    private static $started = false;
     private static $config = [
         "force_https" => false,
         "force_www" => 0,
@@ -40,21 +39,21 @@ class Manifest extends Application {
 
     /**
      * Inicia a configuração do sistema com os dados do manifest
+     * TODO Gerar um arquivo serialise dos dados carregados para não ser necessario esse processamento todas as vezes
+     * O codigo do arquivo deve ser gerado com base no conteudo do json e só ser recriado caso o conteudo mude
+     * @throws ManifestException
      */
     public function __construct() {
-        // Evita que este metodo seja chamado 2 vezes
-        if (count(self::$manifest) > 0) return;
+        // Impede que a função seja iniciada mais de uma vez
+        if (self::$started) throw new ManifestException("Metodo \Blazar\Manifest::prepare foi chamado novamente.");
+        self::$started = true;
 
         try {
-            // Gera os parametros da url
+            // Gera os parâmetros da url
             self::gerarUrl();
-        } catch (ManifestException $e) {
-            Log::e("Main, Gerando parametros da url", $e, "manifest");
-        }
 
-        try {
-            if (file_exists(ROOT . "/" . self::MANIFEST_LOCAL)) {
-                $dados_manifest = self::readManifestFile(ROOT . "/" . self::MANIFEST_LOCAL);
+            if (file_exists(self::PATH)) {
+                $dados_manifest = self::readManifestFile(self::PATH);
 
                 // Verifica se existe um manifest alterado para o ambiente
                 if (CURRENT_ENV !== ENV_PRODUCTION &&
@@ -64,8 +63,6 @@ class Manifest extends Application {
                     $custom = self::readManifestFile(ROOT . "/" . getenv('CUSTOM_MANIFEST'));
                     $dados_manifest = array_replace_recursive($dados_manifest, $custom);
                 }
-
-                self::$manifest = $dados_manifest;
 
                 // Configurações
                 if (isset($dados_manifest['configs'])) {
@@ -98,10 +95,7 @@ class Manifest extends Application {
                     self::$map = $dados_manifest['map'];
 
                     // Reajusta os index da url com os padrões
-                    $system_param = self::preencherParametro(0, $dados_manifest['map']);
-
-                    // Cria um array com as urls que não são usadas diretamente pelo sistema
-                    Application::setFinalIndexSystem($system_param);
+                    self::$max_index_map = self::preencherParametro(0, $dados_manifest['map']);
                 }
             }
         } catch (Exception $e) {
@@ -111,6 +105,41 @@ class Manifest extends Application {
             Log::e($e);
             exit("Erro ao iniciar o sistema.");
         }
+    }
+
+    /**
+     * Gera um array com parâmetros da url
+     * @throws ManifestException
+     */
+    private static function gerarUrl() {
+        $url = [];
+
+        $un_get = explode("?", URL);
+        $url_completa = $un_get[0];
+
+        // Pega parâmetros da URL
+        if ($url_completa != BASE) {
+            // remove caminho raiz da página
+            $p_atual = explode(BASE, $url_completa);
+
+            if (isset($p_atual[1])) {
+                $p_atual = $p_atual[1];
+
+                // corta url se ela tiver mais de 1 parâmetro
+                if (substr_count($p_atual, '/') != 0) {
+                    $url = explode('/', $p_atual);
+
+                    // Evita que barras no final da url sejam interpretadas com um parâmetro
+                    if ($url[count($url) - 1] == "") unset($url[count($url) - 1]);
+                } else {
+                    $url[0] = $p_atual;
+                }
+            } else {
+                throw new ManifestException("Problemas ao gerar url.");
+            }
+        }
+
+        self::$parameters = self::$url_params = $url;
     }
 
     /**
@@ -143,7 +172,7 @@ class Manifest extends Application {
                 $conteudo_json = file_get_contents(ROOT . "/" . $retorno[1][$index]);
 
                 if (json_decode($conteudo_json, true) != null) {
-                    $dados_manifest = StrRes::str_freplace($retorno[0][$index], $conteudo_json, $dados_manifest);
+                    $dados_manifest = StrRes::replaceFirst($dados_manifest, $retorno[0][$index], $conteudo_json);
                 } else {
                     throw new ManifestException("O código encontrado não é um JSON.\n" .
                         "arquivo: " . htmlspecialchars($retorno[0][$index]) . "\n" .
@@ -166,164 +195,25 @@ class Manifest extends Application {
     }
 
     /**
-     * Retorna o manifesto completo em array e sem tratamentos
-     *
-     * @return array
-     */
-    public static function getManifest(): array {
-        return self::$manifest;
-    }
-
-    /**
-     * Pega configurações para o funcionamento do sistema
-     *
-     * @param $index
-     *
-     * @return mixed
-     */
-    public static function getConfig(string $index) {
-        if ($index !== null) {
-            return self::$config[$index] ?? null;
-        } else {
-            return self::$config;
-        }
-    }
-
-    /**
-     * Pega dados e informações da aplicação
-     *
-     * @param $index
-     *
-     * @return mixed
-     */
-    public static function getData($index = null) {
-        if ($index !== null) {
-            return self::$data[$index] ?? null;
-        } else {
-            return self::$data;
-        }
-    }
-
-    /**
-     * Dados do banco
-     *
-     * @param string $index
-     *
-     * @return array (host, user, pass, db)
-     */
-    public static function getDB(string $index): array {
-        return self::$dbs[$index];
-    }
-
-    /**
-     * Retorna o mapa de classes do manifest
-     *
-     * @return array
-     */
-    public static function getMap(): array {
-        return self::$map;
-    }
-
-    /**
-     * Preenche os parametros vazios
-     *
-     * @param int $index indice do parametro
-     * @param array $map_list Mapa de parametro do manifest
-     *
-     * @return mixed
-     * @throws ManifestException
-     */
-    private static function preencherParametro(int $index, array $map_list) {
-        $main = null;
-        // Pega o app principal do index
-        foreach ($map_list as $nome => $value) {
-            if (isset($value['main']) && $value['main'] === true) {
-                if ($main == null) {
-                    $main = $nome;
-                } else {
-                    throw new ManifestException("Existe mais de 1 parâmetro definido como principal.");
-                }
-            }
-        }
-
-        // Verifica conflitos de apps principais
-        if ($main == null) {
-            throw new ManifestException("Nenhum parâmetro foi definido como principal no index \"" . key($map_list) . "\".");
-        }
-
-        // Verifica se o index da url é um parametro do sistema
-        if (!isset($map_list[Application::getParameter($index)])) {
-            $url = Application::getParameter();
-
-            $new_url = array();
-            $new_url[0] = array_slice($url, 0, $index);
-            $new_url[1] = array_slice($url, $index);
-            array_unshift($new_url[1], $main);
-
-            $url = array_merge($new_url[0], $new_url[1]);
-            Application::setUrlParameters($url);
-        }
-
-        self::addInParameterInfo($index, $map_list[Application::getParameter($index)]);
-
-        // Verifica proximo index
-        if (isset($map_list[Application::getParameter($index)]['sub'])) {
-            $index = self::preencherParametro($index + 1, $map_list[Application::getParameter($index)]['sub']);
-        }
-
-        return $index;
-    }
-
-    /**
-     * Adiciona o parametro na array
-     *
-     * @param string $name Nome do parametro
-     * @param array $param_info Dados do parametro
-     *
-     * @throws ManifestException
-     */
-    private static function addInParameterInfo(string $name, array $param_info) {
-        $param_info['name'] = $name;
-
-        if (isset($map_tree['sub'])) $param_info['sub'] = [];
-
-        if (!class_exists($param_info['class']))
-            throw new ManifestException("A Classe \"" . $param_info['class'] . "\" informada no map não existe.");
-
-        $params_map = Application::getParameterInfo();
-        $params_full = Application::getParameter(null, Application::PARAMS_FULL);
-
-        // Gera a rota do parametro na url
-        $current_url = [];
-        for ($i = 0; $i < count($params_map) + 1; $i++) {
-            $current_url[] = $params_full[$i];
-        }
-
-        $param_info["url_path"] = BASE . implode("/", $current_url);
-
-        Application::addParametersTree($param_info);
-    }
-
-    /**
-     * Tratamento de https e www
+     * Aplica algumas configurações setadas.
      */
     private static function applyConfigs() {
         // Redirecionar para https
-        if (CURRENT_ENV == ENV_PRODUCTION && self::getConfig("force_https") && !isset($_SERVER['HTTPS'])) {
+        if (CURRENT_ENV == ENV_PRODUCTION && self::config("force_https") && !isset($_SERVER['HTTPS'])) {
             header("location: https://" . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"]);
             exit();
         }
 
         // Força redirecionamento para url com "www."
         if (CURRENT_ENV == ENV_PRODUCTION &&
-            self::getConfig("force_www") == 1 &&
+            self::config("force_www") == 1 &&
             substr_count($_SERVER['SERVER_NAME'], 'www.') == 0
         ) {
             header("location: //www." . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
             exit();
         } // Força redirecionamento para url sem "www."
         else if (CURRENT_ENV == ENV_PRODUCTION &&
-            self::getConfig("force_www") == -1 &&
+            self::config("force_www") == -1 &&
             substr_count($_SERVER['SERVER_NAME'], 'www.') != 0
         ) {
             header("location: //" . substr($_SERVER['HTTP_HOST'], 4) . $_SERVER['REQUEST_URI']);
@@ -331,7 +221,7 @@ class Manifest extends Application {
         }
 
         // Controle de Cross Origin
-        if (($cors = self::getConfig("cors")) !== null) {
+        if (($cors = self::config("cors")) !== null) {
             // Verifica se é uma requisição cross origin e se ela esta liberada
             if (isset($_SERVER['HTTP_ORIGIN']) &&
                 ((is_string($cors) && (trim($cors) === "*" || trim($cors) === $_SERVER['HTTP_ORIGIN'])) ||
@@ -355,38 +245,165 @@ class Manifest extends Application {
     }
 
     /**
-     * Gera um array com parametros da url
+     * Pega configurações o indice configurações
+     *
+     * @param string|null $index Nome do indice desejado ou null para retornar um array com todos.
+     *
+     * @return mixed
+     */
+    public static function config(string $index = null) {
+        if ($index !== null) {
+            return self::$config[$index] ?? null;
+        } else {
+            return self::$config;
+        }
+    }
+
+    /**
+     * Preenche os parâmetros vazios
+     *
+     * @param int $index indice do parâmetro
+     * @param array $map_list Mapa de parâmetro do manifest
+     *
+     * @return mixed
      * @throws ManifestException
      */
-    private static function gerarUrl() {
-        $url = array();
-
-        $un_get = explode("?", URL);
-        $url_completa = $un_get[0];
-
-        // Pega parametros da URL
-        if ($url_completa != BASE) {
-            // remove caminho raiz da página
-            $p_atual = explode(BASE, $url_completa);
-
-            if (isset($p_atual[1])) {
-                $p_atual = $p_atual[1];
-
-                // corta url se ela tiver mais de 1 parametro
-                if (substr_count($p_atual, '/') != 0) {
-                    $url = explode('/', $p_atual);
-
-                    // Evita que barras no final da url sejam interpretadas com um parametro
-                    if ($url[count($url) - 1] == "") unset($url[count($url) - 1]);
+    private static function preencherParametro(int $index, array $map_list) {
+        $main = null;
+        // Pega o app principal do index
+        foreach ($map_list as $nome => $value) {
+            if (isset($value['main']) && $value['main'] === true) {
+                if ($main == null) {
+                    $main = $nome;
                 } else {
-                    $url[0] = $p_atual;
+                    throw new ManifestException("Existe mais de 1 parâmetro definido como principal.");
                 }
-            } else {
-                throw new ManifestException("Problemas ao gerar url.");
             }
         }
 
-        Application::setUrlParamsPreManifest($url);
-        Application::setUrlParameters($url);
+        // Verifica conflitos de apps principais
+        if ($main == null) {
+            throw new ManifestException("Nenhum parâmetro foi definido como principal no index \"" . key($map_list) . "\".");
+        }
+
+        // Verifica se o index da url é um parâmetro do sistema
+        if (!isset($map_list[Application::param($index)])) {
+            $url = Application::param();
+
+            $new_url = [];
+            $new_url[0] = array_slice($url, 0, $index);
+            $new_url[1] = array_slice($url, $index);
+            array_unshift($new_url[1], $main);
+
+            $url = array_merge($new_url[0], $new_url[1]);
+            self::$parameters = $url;
+        }
+
+        self::$map_params[] = self::paramInfo($index, $map_list[Application::param($index)]);
+
+        // Verifica proximo index
+        if (isset($map_list[Application::param($index)]['sub'])) {
+            $index = self::preencherParametro($index + 1, $map_list[Application::param($index)]['sub']);
+        }
+
+        return $index;
+    }
+
+    /**
+     * Completa as informações do parâmetro
+     *
+     * @param string $index Indice do parâmetro
+     * @param array $param_info Dados do parâmetro
+     *
+     * @return array
+     * @throws ManifestException
+     */
+    private static function paramInfo(string $index, array $param_info): array {
+        if (!isset($param_info['main'])) $param_info['main'] = false;
+        //if (!isset($param_info['sub'])) $param_info['sub'] = [];
+        if (isset($param_info['sub'])) unset($param_info['sub']);
+
+        $param_info['name'] = Application::param($index);
+        $param_info['index'] = $index;
+
+        if (!class_exists($param_info['class']))
+            throw new ManifestException("A Classe \"" . $param_info['class'] . "\" informada no map não existe.");
+
+        $params_map = ClassMap::get();
+        $params_full = Application::param(null, Application::PARAMS_ALL);
+
+        // Gera a rota do parâmetro na url
+        $current_url = [];
+        for ($i = 0; $i < count($params_map) + 1; $i++) {
+            $current_url[] = $params_full[$i];
+        }
+
+        $param_info["url_path"] = BASE . implode("/", $current_url);
+
+        return $param_info;
+    }
+
+    /**
+     * Pega dados e informações da aplicação
+     *
+     * @param string|null $index Nome do indice desejado ou null para retornar um array com todos.
+     *
+     * @return mixed
+     */
+    public static function data(string $index = null) {
+        if ($index !== null) {
+            return self::$data[$index] ?? null;
+        } else {
+            return self::$data;
+        }
+    }
+
+    /**
+     * Pega os dados de um Banco
+     *
+     * @param string|null $connection_name Nome da conexão desejada ou null para retornar um array com todas.
+     *
+     * @return array
+     */
+    public static function db(string $connection_name = null): array {
+        if ($connection_name !== null) {
+            return self::$dbs[$connection_name] ?? null;
+        } else {
+            return self::$dbs;
+        }
+    }
+
+    /**
+     * Retorna o mapa de classes definido no manifest.
+     *
+     * @param string|null $route <p>
+     * Se for informado irá percorrer o array ate completar a rota informada.<br>
+     * Ex: nivel1/nivel2/nivel3
+     * </p>
+     *
+     * @return array|null Retorna null caso uma rota tenha sido informada e não exista no manifest.
+     */
+    public static function map(string $route = null): ?array {
+        // Percorre a rota informada
+        if ($route !== null) {
+            $arvore = explode("/", $route);
+
+            $final = ["sub" => self::$map];
+
+            for ($i = 0; $i < count($arvore); $i++) {
+                $atual = $arvore[$i];
+
+                if (!isset($final["sub"]) || !isset($final["sub"][$atual])) {
+                    return null;
+                }
+
+                $final = $final["sub"][$atual];
+            }
+
+            return $final;
+        } else {
+            // Retorna todos os parâmetros
+            return self::$map;
+        }
     }
 }
