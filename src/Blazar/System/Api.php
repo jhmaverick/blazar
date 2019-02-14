@@ -13,6 +13,7 @@ namespace Blazar\System;
 use Blazar\ClassMap;
 use Blazar\Helpers\Request;
 use Blazar\Helpers\StrRes;
+use Blazar\Manifest;
 use Exception;
 use ReflectionMethod;
 
@@ -68,6 +69,7 @@ abstract class Api {
         $this->started = true;
 
         $this->api_map = ClassMap::current();
+        $this->api_map = Manifest::map($this->api_map["route"]);
         $this->view = new View();
 
         $request = Request::get(true);
