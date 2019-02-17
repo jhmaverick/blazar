@@ -10,6 +10,8 @@ use Blazar\System\Api;
  */
 class ApiController extends Api {
 
+    protected $action_name = "acao";
+
     public function __construct() {
         $this->autoLogin();
         Api::setAutostart(false);
