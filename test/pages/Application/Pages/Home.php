@@ -24,7 +24,7 @@ class Home extends View {
         try {
             $this->map_info = ClassMap::current();
 
-            $this->preparePage($this->view_path, $this->page_res, "showView");
+            $this->preparePage($this->view_path, $this->page_res, "showView")->render();
         } catch (ViewException $e) {
             Log::e($e);
         }
@@ -37,6 +37,6 @@ class Home extends View {
         $this->set("home_css", $this->map_info['url_path'] . "/home.css");
         $this->set("blazar", Text::get("blazar"));
         $this->set("msg", "Bem-vindo");
-        $this->mergeData(PageController::$info);
+        $this->merge(PageController::$info);
     }
 }

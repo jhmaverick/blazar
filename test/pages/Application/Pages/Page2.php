@@ -20,8 +20,8 @@ class Page2 extends View {
         try {
             $this->map_info = ClassMap::current();
 
-            $this->setMustache(true);
-            $this->preparePage($this->view_path, [], "showView");
+            $this->mustache(true);
+            $this->preparePage($this->view_path, [], "showView")->render();
         } catch (ViewException $e) {
             Log::e($e);
         }
@@ -31,6 +31,6 @@ class Page2 extends View {
      * Callback para exibir a view
      */
     protected function showView() {
-        $this->mergeData(PageController::$info);
+        $this->merge(PageController::$info);
     }
 }

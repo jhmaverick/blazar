@@ -19,15 +19,15 @@ use Throwable;
 
 /**
  * Controle de logs do sistema
+ *
  */
 class Log {
 
-    // Callback para repassar o log para outro metodo
-    private static $callback = null;
-    // Caso algum erro ocorra no callback ele é desabilitado
-    private static $callback_disabled = false;
-    // Previne que o callback inicie uma chamada recursiva nos logs
-    private static $callback_run = false;
+    private const MAX_FILE_SIZE = (1024 * 1024);
+
+    /* Essa classe é responsavel por receber todos os Logs do sistema, incluindo os de erro, por isto ela
+     * não deve ter muitas dependencias de outras classes para evitar o inicio de um loop infinito.
+     */
 
     /**
      * Error Log
@@ -39,17 +39,88 @@ class Log {
      * @param bool $trace
      * @param string $tag
      *
-     * @return bool|mixed
+     * @return array|null
      */
-    public static function e($log, $auxiliar = null, bool $trace = false, string $tag = null) {
+    public static function e($log, $auxiliar = null, bool $trace = false, string $tag = null): ?array {
         return self::add("e", $log, $auxiliar, $trace, $tag);
+    }
+
+    /**
+     * Warning Log
+     *
+     * @see \Blazar\System\Log::add()
+     *
+     * @param string|array|Throwable|object $log
+     * @param string|array|Throwable|object|null $auxiliar
+     * @param bool $trace
+     * @param string $tag
+     *
+     * @return array|null
+     */
+    public static function w($log, $auxiliar = null, bool $trace = false, string $tag = null): ?array {
+        return self::add("w", $log, $auxiliar, $trace, $tag);
+    }
+
+    /**
+     * Info Log
+     *
+     * @see \Blazar\System\Log::add()
+     *
+     * @param string|array|Throwable|object $log
+     * @param string|array|Throwable|object|null $auxiliar
+     * @param bool $trace
+     * @param string $tag
+     *
+     * @return array|null
+     */
+    public static function i($log, $auxiliar = null, bool $trace = false, string $tag = null): ?array {
+        return self::add("i", $log, $auxiliar, $trace, $tag);
+    }
+
+    /**
+     * Debug Log
+     *
+     * Esse log deve ser utilizado apenas para debug em desenvolvimento e removido.<br>
+     * Logs de debug em produção irão gerar um log warning
+     *
+     * @see \Blazar\System\Log::add()
+     *
+     * @param string|array|Throwable|object $log
+     * @param string|array|Throwable|object|null $auxiliar
+     * @param bool $trace
+     * @param string $tag
+     *
+     * @return array|null
+     */
+    public static function d($log, $auxiliar = null, bool $trace = false, string $tag = null): ?array {
+        if (CURRENT_ENV == ENV_PRODUCTION)
+            self::add("w", "Um log de debug pode ter sido esquecido e entrou em produção.", null, true, $tag);
+
+        return self::add("d", $log, $auxiliar, $trace, $tag);
     }
 
     /**
      * Salva um log
      *
      * O log será gravado no arquivo *.log.html<br>
-     * A gravação do log pode ser desabilitada nas configs do manifest setando "logs" com false
+     * A gravação do log pode ser desabilitada nas configs do manifest setando "logs" com false<br>
+     * <br>
+     * O callback receberá um array como parâmetro com os indices: <br>
+     * [type] => e|w|i|d<br>
+     * [main] => array<br>
+     * [main][type] => text|throwable|object<br>
+     * [main][text] => string(text|object)<br>
+     * [main][title] => string(throwable)<br>
+     * [main][trace] => string(throwable)<br>
+     * [aux] => null|array<br>
+     * [aux][type] => text|throwable|object<br>
+     * [aux][text] => string(text|object)<br>
+     * [aux][title] => string(throwable)<br>
+     * [aux][trace] => string(throwable)<br>
+     * [date] => string (2019-02-09 18:32:34)<br>
+     * [trace] => null|string<br>
+     * [tag] => null|string<br>
+     * [url] => string
      *
      * @param string $type_log Tipo do log (e, w, i, d)
      * @param string|array|Throwable|object $log A mensagem do Log ou um dado a ser tratado
@@ -59,79 +130,97 @@ class Log {
      * @param bool $trace Gera uma arvore com os locais que passaram ate chegar aqui
      * @param string $tag Uma tag para o log.
      *
-     * @return bool|mixed Retorna bool no padrão da função ou o retorno do callback setado.
+     * @return array|null Retorna null caso o log não consiga ser salvo.
      */
-    private static function add(string $type_log, $log, $auxiliar = null, bool $trace = false, string $tag = null) {
+    private static function add(string $type_log, $log, $auxiliar = null, bool $trace = false, string $tag = null): ?array {
         try {
-            // Verifica se o callback tentou uma chamada recursiva
-            if (self::$callback_run === true) {
-                self::$callback_run = false;
-                self::$callback_disabled = true;
-
-                throw new Exception("O callback tentou iniciar uma chamada recursiva.", 1);
-            }
-
             $date_time = date("Y-m-d H:i:s");
             $str_trace = "";
 
             if ($trace) {
-                $str_trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+                $ls_trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
 
-                ob_start();
-                print_r($str_trace);
-                $str_trace = ob_get_clean();
+                // Verifica se a chamada foi repassada por um dos métodos intermediarios
+                if (isset($ls_trace[0]) && $ls_trace[0]["class"] == __CLASS__ && $ls_trace[0]["function"] == "add" &&
+                    isset($ls_trace[1]) && $ls_trace[1]["class"] == __CLASS__ && in_array($ls_trace[1]["function"], ["e", "w", "i", "d"])) {
+                    array_shift($ls_trace);
+                }
+
+                $str_trace = self::strTrace($ls_trace);
             }
 
             // Se a msg for uma throwable, gera uma string com os dados.
             if ($log === null) $log = "null";
-            $texto = self::gerarTexto($log);
-            $texto .= ($auxiliar != null) ? "<br><p>" . self::gerarTexto($auxiliar) : "";
+            $texto = self::formatText($log);
+            $texto .= ($auxiliar != null) ? "<br><p>" . self::formatText($auxiliar) : "";
             $texto .= ($str_trace != "") ? "<br><p>" . str_replace("\n", "<br>\n", $str_trace) . "</p>" : "";
 
             $log_info = [
                 "type" => $type_log,
-                "main" => self::gerarTexto($log, true),
-                "aux" => ($auxiliar != null ? self::gerarTexto($auxiliar, true) : null),
-                "date" => date("d/m/Y à\s H:i:s", strtotime($date_time)),
-                "datetime" => $date_time,
+                "main" => self::formatText($log, true),
+                "aux" => ($auxiliar != null ? self::formatText($auxiliar, true) : null),
+                "date" => $date_time,
                 "trace" => $str_trace,
                 "tag" => $tag,
                 "url" => URL
             ];
 
-            if (CURRENT_ENV == ENV_DEVELOPMENT) {
-                // Envia o log para o console de desenvolvimento
-                self::logConsole($log_info);
-            }
+            // Envia o log para o console de desenvolvimento
+            if (CURRENT_ENV == ENV_DEVELOPMENT) self::logConsole($log_info);
 
             // Verifica se deve salvar o Log no .log.html
-            if (Manifest::config("logs") !== false) self::saveFile($type_log, $texto, $date_time, $tag);
+            //if (Manifest::config("logs") !== false) self::saveHTML($type_log, $texto, $date_time, $tag);
+            // Verifica se deve salvar o Log no .log.json
+            if (Manifest::config("logs") !== false) self::saveJSON($log_info);
 
-            // Envia o log para um callback
-            if (self::$callback !== null && self::$callback_disabled === false && self::$callback_run === false) {
-                try {
-                    self::$callback_run = true;
-                    $retorno = call_user_func(self::$callback, $log_info);
-                    self::$callback_run = false;
+            return $log_info;
+        } catch (Throwable|Error|Exception $e) {
+            // Se catch tenta capturar todas as possíveis exceções
+            if (CURRENT_ENV == ENV_DEVELOPMENT) {
+                echo "<pre>\n== Erro ao adicionar Log =====================\n\n";
+                print_r($e);
+                echo "\n</pre>\n\n";
+            }
 
-                    // Verifica se o retorno foi void para mandar o retorno padrão do metodo
-                    return ($retorno === null) ? true : $retorno;
-                } catch (Throwable|Error|Exception $e) {
-                    throw new Exception("Exceção não tratada no callback.", 1);
+            return null;
+        }
+    }
+
+    /**
+     * Monta uma exibição amigavel para a trace
+     *
+     * @param array $trace
+     *
+     * @return string
+     */
+    private static function strTrace(array $trace): string {
+        $final_trace = [];
+        $i = 0;
+
+        foreach ($trace as $v) {
+            $file = isset($v['file']) ? $v['file'] : "";
+            $line = isset($v['line']) ? $v['line'] : "";
+            $class = isset($v['class']) ? $v['class'] : "";
+            $type = isset($v['type']) ? $v['type'] : "";
+            $function = isset($v['function']) ? $v['function'] : "";
+            $args = [];
+
+            if (isset($v['args'])) {
+                foreach ($v['args'] as $value) {
+                    $arg = substr($value, 0, 15);
+                    $args[] = "'" . $arg . (strlen($value) > 15 ? "..." : "") . "'";
                 }
             }
 
-            return true;
-        } catch (Exception $e) {
-            if ($e->getCode() === 1) {
-                self::$callback_run = false;
-                self::$callback_disabled = true;
+            $args = implode(", ", $args);
 
-                self::e("Ocorreu um erro no callback \"" . self::$callback . "\" de Logs e seu uso foi desativado.", $e, true);
-            }
-
-            return false;
+            $final_trace[] = "#$i " . $file . "(" . $line . "): " . $class . $type . $function . "($args)";
+            $i++;
         }
+
+        $final_trace[] = "#$i {main}";
+
+        return implode("\n", $final_trace);
     }
 
     /**
@@ -142,7 +231,7 @@ class Log {
      *
      * @return string|array
      */
-    private static function gerarTexto($log, bool $in_array = false) {
+    private static function formatText($log, bool $in_array = false) {
         $array_log = [];
 
         if (is_a($log, 'Throwable')) {
@@ -161,9 +250,7 @@ class Log {
                     "<span style=\"color: #FD0017;\">" . str_replace("\n", "<br>\n", $log->getTraceAsString()) . "</span></p>";
             }
         } else if (is_array($log) || is_object($log)) {
-            ob_start();
-            print_r($log);
-            $obj_string = ob_get_clean();
+            $obj_string = print_r($log, true);
 
             if ($in_array) {
                 $array_log['type'] = 'object';
@@ -212,14 +299,24 @@ class Log {
     }
 
     /**
-     * Salva um log no arquivo *.log.html
+     * Salva o log em um arquivo *.log.html
      *
      * @param $type_log
      * @param $msg
      * @param $date_time
      * @param string $tag
+     *
+     * @return bool
      */
-    private static function saveFile($type_log, $msg, $date_time, string $tag = null) {
+    private static function saveHTML($type_log, $msg, $date_time, string $tag = null): bool {
+        // Diretorio de saida dos logs
+        $log_dir = Files::pathJoin(ROOT, Manifest::config("logs"));
+        if (!file_exists($log_dir)) mkdir($log_dir, 0777, true);
+
+        $arquivo = $log_dir . "/" . date("Y-m-d") . ".log.html";
+
+        if (file_exists($arquivo) && filesize($arquivo) > self::MAX_FILE_SIZE) return false;
+
         // Titulo para a mensagem
         $title_color = "color: #CCCCCC;";
         if ($type_log == "d") {
@@ -243,106 +340,35 @@ class Log {
             $msg . "<br>" . URL .
             "<p style=\"font-size: 8px; color: #999999; border-bottom: 1px solid #CCCCCC\">" . date("d/m/Y à\s H:i:s", strtotime($date_time)) . "</p>\n";
 
+        Files::write($arquivo, $msg, Files::WRITE_APPEND);
+
+        return true;
+    }
+
+    /**
+     * Salva o log em um arquivo *.log.json
+     *
+     * @param array $log_info
+     *
+     * @return bool
+     */
+    private static function saveJSON(array $log_info): bool {
         // Diretorio de saida dos logs
         $log_dir = Files::pathJoin(ROOT, Manifest::config("logs"));
         if (!file_exists($log_dir)) mkdir($log_dir, 0777, true);
 
-        $arquivo = $log_dir . "/" . date("Ymd") . ".log.html";
+        $arquivo = $log_dir . "/" . date("Y-m-d") . ".log.json";
 
-        Files::write($arquivo, $msg, "append");
-    }
+        if (file_exists($arquivo) && filesize($arquivo) > self::MAX_FILE_SIZE) return false;
 
-    /**
-     * Warning Log
-     *
-     * @see \Blazar\System\Log::add()
-     *
-     * @param string|array|Throwable|object $log
-     * @param string|array|Throwable|object|null $auxiliar
-     * @param bool $trace
-     * @param string $tag
-     *
-     * @return bool|mixed
-     */
-    public static function w($log, $auxiliar = null, bool $trace = false, string $tag = null) {
-        return self::add("w", $log, $auxiliar, $trace, $tag);
-    }
+        // Verifica se o arquivo já existe
+        $logs = json_decode(Files::read($arquivo), true) ?? [];
+        $logs[] = $log_info;
 
-    /**
-     * Info Log
-     *
-     * @see \Blazar\System\Log::add()
-     *
-     * @param string|array|Throwable|object $log
-     * @param string|array|Throwable|object|null $auxiliar
-     * @param bool $trace
-     * @param string $tag
-     *
-     * @return bool|mixed
-     */
-    public static function i($log, $auxiliar = null, bool $trace = false, string $tag = null) {
-        return self::add("i", $log, $auxiliar, $trace, $tag);
-    }
+        // Salva o log com o novo index
+        $logs_str = json_encode($logs, JSON_PRETTY_PRINT);
+        Files::write($arquivo, $logs_str);
 
-    /**
-     * Debug Log
-     *
-     * Esse log deve ser utilizado apenas para debug em desenvolvimento e removido.<br>
-     * Logs de debug em produção irão gerar um log warning
-     *
-     * @see \Blazar\System\Log::add()
-     *
-     * @param string|array|Throwable|object $log
-     * @param string|array|Throwable|object|null $auxiliar
-     * @param bool $trace
-     * @param string $tag
-     *
-     * @return bool|mixed
-     */
-    public static function d($log, $auxiliar = null, bool $trace = false, string $tag = null) {
-        if (CURRENT_ENV == ENV_PRODUCTION)
-            self::add("w", "Um log de debug pode ter sido esquecido e entrou em produção.", null, true, $tag);
-
-        return self::add("d", $log, $auxiliar, $trace, $tag);
-    }
-
-    /**
-     * Adiciona um metodo para repassar os logs recebidos
-     *
-     * Se o método informado retornar void ou null o retorno padrão(bool) do Log::add será retornado, sendo true para
-     * sucesso ou false para erro.<br>
-     * <br>
-     * O callback receberá um array como parâmetro com os indices: <br>
-     * [type] => e|w|i|d<br>
-     * [main] => array<br>
-     * [main][type] => text|throwable|object<br>
-     * [main][text] => string(text|object)<br>
-     * [main][title] => string(throwable)<br>
-     * [main][trace] => string(throwable)<br>
-     * [aux] => null|array<br>
-     * [aux][type] => text|throwable|object<br>
-     * [aux][text] => string(text|object)<br>
-     * [aux][title] => string(throwable)<br>
-     * [aux][trace] => string(throwable)<br>
-     * [date] => string (09 de Fevereiro de 2019 às 18:32:34)<br>
-     * [datetime] => string (2019-02-09 18:32:34)<br>
-     * [trace] => null|string<br>
-     * [tag] => null|string<br>
-     * [url] => string
-     *
-     * @param string $callback <p>
-     * Método que recebera o callback<br>
-     * O método deve ser estatico e possuir 1 parâmetro para receber 1 array.<br>
-     * Ex: \Namespace\MinhaClasse::Metodo
-     * </p>
-     *
-     * @throws Exception
-     */
-    public static function addCallback(string $callback) {
-        if (is_callable($callback)) {
-            self::$callback = $callback;
-        } else {
-            throw new Exception("Método \"$callback\" passado para a classe Log não existe.");
-        }
+        return true;
     }
 }

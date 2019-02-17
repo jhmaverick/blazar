@@ -19,168 +19,28 @@ use Mustache_Engine;
  */
 class View {
 
-    // Retornos para preparação da página
-    const PAGE_VIEW = 1;
-    const PAGE_RESOURCE = 2;
+    // Ações para preparação da página
+    const PAGE_RENDER_NONE = 1;
+    const PAGE_RENDER_RESOURCE = 2;
+    const PAGE_RENDER_VIEW = 3;
+    const PAGE_RENDER_ALL = 4;
+
+    // Renderizar com mustache
+    private static $mustache_default = false;
 
     // Se o render já foi executado nesta instancia
     private $render_run = false;
 
-    // Tipo do dado de saida (text/html, text/json, text/plain...)
-    private $data_type = null;
-    // Codificação da página
-    private $codification = "utf-8";
-    // Variavel setadas para a saida
+    // variáveis setadas para a saida
     private $data = [];
-    // Utilizar Mustache para renderizar
-    private $mustache = false;
     // Caminho para o arquivo que será passado para a view
-    private $file_output = "";
-    // Forçar o download do path
-    private $force_download = false;
-    // Remover o arquivo depois de forçar o download
-    private $remove_file = false;
-
-    /**
-     * @param string $codification
-     *
-     * @return View
-     */
-    public function setCodification(string $codification) {
-        $this->codification = $codification;
-        return $this;
-    }
-
-    /**
-     * Utilizar mustache
-     *
-     * @param bool $mustache
-     *
-     * @return View
-     */
-    public function setMustache(bool $mustache) {
-        $this->mustache = $mustache;
-        return $this;
-    }
-
-    /**
-     * Diz para a view que ela deve forçar um download no path informado
-     *
-     * @param bool $removeFile Excluir o arquivo depois do download
-     *
-     * @return $this
-     */
-    public function forceDownload(bool $removeFile = false) {
-        $this->force_download = true;
-        $this->remove_file = $removeFile;
-
-        return $this;
-    }
-
-    /**
-     * Substitui todos os valores do atributo $data
-     *
-     * @param mixed $data
-     *
-     * @return View
-     */
-    public function replaceAllData($data) {
-        $this->data = $data;
-        return $this;
-    }
-
-    /**
-     * Seta variaveis
-     *
-     * @param string $name O nome da variavel
-     * @param mixed $value
-     *
-     * @return bool|View Retorna false se o nome for reservado
-     */
-    public function set(string $name, $value) {
-        if (
-            $name == "header" ||
-            $name == "includes" ||
-            $name == "text"
-        ) {
-            return false;
-        }
-
-        $this->data[$name] = $value;
-        return $this;
-    }
-
-    /**
-     * Mescla um array com os dados já setados
-     *
-     * @param array $dados <p>
-     * Os indices já setados serão substituidos<br>
-     * Caso o tipo da variavel data tenha sido setado com um valor que não seja um array, o valor antigo sera
-     *     substituido pela nova variavel.
-     * </p>
-     *
-     * @return bool|View Retorna false se o nome for reservado
-     */
-    public function mergeData(array $dados) {
-        if (
-            isset($dados['header']) ||
-            isset($dados['includes']) ||
-            isset($dados['text'])
-        ) {
-            return false;
-        }
-
-        if (is_array($this->data)) $this->data = array_merge($this->data, $dados);
-        else $this->data = $dados;
-
-        return $this;
-    }
-
-    /**
-     * Faz um push em uma variavel do tipo array
-     *
-     * Se a variavel não existir, uma nova do tipo array é setada.
-     * Caso a variavel já exista e não seja do tipo array, uma ViewException é gerada.
-     *
-     * @param string $name Nome da variavel
-     * @param mixed $value
-     *
-     * @return View
-     * @throws ViewException
-     */
-    public function pushArray(string $name, $value) {
-        if (
-            $name == "header" ||
-            $name == "includes" ||
-            $name == "text"
-        ) {
-            throw new ViewException("Variáveis reservadas.");
-        }
-
-        if (!isset($this->data[$name]))
-            $this->data[$name] = [$value];
-        else if (is_array($this->data[$name]))
-            $this->data[$name][] = $value;
-        else
-            throw new ViewException("Variável não é um array.");
-
-        return $this;
-    }
-
-    /**
-     * Pega variavel
-     *
-     * @param string $name O nome da variavel desejada
-     *
-     * @return array|bool
-     */
-    public function get(string $name) {
-        if (isset($this->data[$name])) {
-            return $this->data[$name];
-        } else {
-            return false;
-        }
-    }
+    private $file_output = null;
+    // Tipo do dado de saida (text/html, text/json, text/plain...)
+    private $content_type = null;
+    // Codificação da página
+    private $charset = "utf-8";
+    // Utilizar Mustache para renderizar
+    private $mustache = null;
 
     /**
      * Metodo de auxilio para gerar páginas
@@ -204,56 +64,196 @@ class View {
      * Um callback pode ser passado como string para executar após a preparação.<br>
      * O padrão é chamar a o metodo render.
      * </p>
+     * @param int $render Chama o render e mata o processo
      *
-     * @return string Retorna o tipo do carregamento que sera realizado (view ou resource)
+     * @return View
      * @throws ViewException
      */
-    protected function preparePage(string $view_path, array $page_res = [], $view_callback = null, $resource_callback = "render") {
+    protected function preparePage(string $view_path, array $page_res = [], $view_callback = null, $resource_callback = null, int $render = self::PAGE_RENDER_RESOURCE) {
         $param0 = Application::param(0, Application::PARAMS_APP);
 
         if ($param0 !== null && isset($page_res[$param0])) {
-            $ext = pathinfo($page_res[$param0], PATHINFO_EXTENSION);
+            if ($resource_callback == "render") {
+                $resource_callback = null;
+                $render = self::PAGE_RENDER_RESOURCE;
+            }
 
-            $mimes = new MimeTypes();
-            $mime = $mimes->getTypesForExtension($ext)[0];
-
-            $this->setDataType($mime);
+            // Recursos da view
             $this->setFileOutput($page_res[$param0]);
 
             // Verifica se algum callback foi passado para executar
             if ($resource_callback !== null) {
                 if (gettype($resource_callback) === "string" && method_exists($this, $resource_callback)) $this->$resource_callback();
                 else if (is_callable($resource_callback)) call_user_func($resource_callback);
-                else throw new ViewException("Metodo \"$resource_callback\" não existe na classe \"" . get_class($this) . "\".");
-
-                if ($resource_callback !== "render") $this->render();
+                else throw new ViewException("Callback inválido.");
             }
 
-            return self::PAGE_RESOURCE;
+            if ($render == self::PAGE_RENDER_RESOURCE || $render == self::PAGE_RENDER_ALL) {
+                $this->render();
+                exit;
+            }
         } else {
-            $this->setDataType("text/html");
+            if ($view_callback == "render") {
+                $view_callback = null;
+                $render = self::PAGE_RENDER_VIEW;
+            }
+
+            // HTML da View
+            $this->setContentType("text/html");
             $this->setFileOutput($view_path);
 
             // Verifica se algum callback foi passado para executar
             if ($view_callback !== null) {
                 if (gettype($view_callback) === "string" && method_exists($this, $view_callback)) $this->$view_callback();
                 else if (is_callable($view_callback)) call_user_func($view_callback);
-                else throw new ViewException("Metodo \"$view_callback\" não existe na classe \"" . get_class($this) . "\".");
-
-                if ($view_callback !== "render") $this->render();
+                else throw new ViewException("Callback inválido.");
             }
 
-            return self::PAGE_VIEW;
+            if ($render == self::PAGE_RENDER_VIEW || $render == self::PAGE_RENDER_ALL) {
+                $this->render();
+                exit;
+            }
         }
+
+        return $this;
     }
 
     /**
-     * @param string $data_type
+     * Exibir os dados preparados
+     *
+     * Este método pode ser chamado apenas uma vez em cada instancia.
+     *
+     * @return bool Retorna false caso o render já tenha sido executado na instancia
+     */
+    public function render(): bool {
+        // Evita que o render de uma mesma instancia seja chamado mais de uma vez
+        if ($this->render_run) return false;
+        $this->render_run = true;
+
+        try {
+            if ($this->content_type == "text/html") {
+                // Saida de dados em um arquivo com HTML
+                $this->renderFileContent();
+            } else if ($this->file_output == null) {
+                // Saida de dados do tipo array e texto sem passar por um arquivo
+                $this->renderData();
+            } else {
+                // Saida de dados para qualquer tipo de arquivo de texto
+                $this->renderFileContent();
+            }
+
+        } catch (ViewException $e) {
+            Log::e($e, null, false, "view");
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Seta variáveis
+     *
+     * @param string $name
+     * @param mixed $value
      *
      * @return View
      */
-    public function setDataType(?string $data_type) {
-        $this->data_type = $data_type;
+    public function set(string $name, $value) {
+        if (!is_array($this->data)) $this->data = ["root" => $this->data];
+
+        $this->data[$name] = $value;
+        return $this;
+    }
+
+    /**
+     * Pega variável
+     *
+     * @param string|null $name O nome da variável desejada ou null para retornar todas
+     *
+     * @return mixed|array|null Retorna null se a variável não existir
+     */
+    public function get(?string $name) {
+        if ($name === null) return $this->data;
+        else if (isset($this->data[$name])) return $this->data[$name];
+        else return null;
+    }
+
+    /**
+     * Substitui todos os valores do atributo $data
+     *
+     * Se o valor adicionado não for um array o valor adicionado será movido para o indice "root" ao utilizar o
+     * método "set" ou qualquer outra de inserção de dados.
+     *
+     * @param mixed $data
+     *
+     * @return View
+     */
+    public function reset($data) {
+        $this->data = $data;
+        return $this;
+    }
+
+    /**
+     * Mescla um array com os dados já setados
+     *
+     * @param array $dados
+     *
+     * @return View
+     */
+    public function merge(array $dados) {
+        if (!is_array($this->data)) $this->data = ["root" => $this->data];
+
+        $this->data = array_merge($this->data, $dados);
+
+        return $this;
+    }
+
+    /**
+     * Faz um push em uma variável do tipo array
+     *
+     * Se a variável não existir, uma nova do tipo array é setada.<br>
+     * Caso a variável já exista e não seja do tipo array ela será convertida e valor atual passará a ser o indice 0.
+     *
+     * @param string $name Nome da variável
+     * @param mixed $value
+     *
+     * @return View
+     */
+    public function push(string $name, $value) {
+        if (!is_array($this->data)) $this->data = ["root" => $this->data];
+
+        if (!isset($this->data[$name]))
+            $this->data[$name] = [$value];
+        else if (is_array($this->data[$name]))
+            $this->data[$name][] = $value;
+        else {
+            $this->data[$name] = [$this->data[$name], $value];
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param string $charset
+     *
+     * Se mais de uma View for renderizada, apenas o charset da primeira será enviado
+     *
+     * @return View
+     */
+    public function setCharset(string $charset) {
+        $this->charset = trim($charset);
+        return $this;
+    }
+
+    /**
+     * @param string $content_type
+     *
+     * Se mais de uma View for renderizada, apenas o content-type da primeira será enviado
+     *
+     * @return View
+     */
+    public function setContentType(?string $content_type) {
+        $this->content_type = trim($content_type);
         return $this;
     }
 
@@ -264,123 +264,124 @@ class View {
      *
      * @return View
      */
-    public function setFileOutput(string $file_output) {
+    public function setFileOutput(?string $file_output) {
         $this->file_output = $file_output;
         return $this;
     }
 
     /**
-     * Exibir os dados preparados
+     * Renderizar como um templete do mustache
      *
-     * @return bool Retorna false caso o render já tenha sido executado na instancia
+     * @param bool $mustache
+     *
+     * @return View
      */
-    public function render() {
-        if ($this->render_run) return false;
-        $this->render_run = true;
+    public function mustache(bool $mustache) {
+        $this->mustache = $mustache;
+        return $this;
+    }
 
-        $nf_me = new Mustache_Engine();
+    /**
+     * Torna o mustache a forma de renderização padrão
+     *
+     * @param bool $mustache
+     */
+    public static function mustacheDefault(bool $mustache) {
+        self::$mustache_default = $mustache;
+    }
 
-        try {
-            if (headers_sent($filename, $linenum)) {
-                throw new ViewException("Os cabeçalhos já foram enviados em $filename na linha $linenum.");
-            }
+    /**
+     * Renderização de arquivos
+     *
+     * @throws ViewException
+     */
+    private function renderFileContent() {
+        if (file_exists($this->file_output)) {
+            $ext = pathinfo($this->file_output, PATHINFO_EXTENSION);
 
-            $saida = ob_get_clean();
-            if ($saida != "") {
-                throw new ViewException("Alguns dados foram enviados antes da view ser gerada.\r\n\r\n$saida");
-            }
+            $content_type = $this->content_type;
 
-            // Força o download do path informado
-            if ($this->force_download) {
-                if (is_string($this->file_output) && file_exists($this->file_output)) {
-                    $ext = pathinfo($this->file_output, PATHINFO_EXTENSION);
-
+            if (!headers_sent()) {
+                if ($content_type == null && in_array($ext, ["php", "mustache", "handlebars", "hbs"])) {
+                    // Força algumas extensões a sair com o tipo text/html
+                    $content_type = "text/html";
+                } else if ($content_type == null) {
+                    // Se o tipo de saida não tiver sido definido tenta descobrir
                     $mimes = new MimeTypes();
-                    $mime = $mimes->getTypesForExtension($ext)[0];
-
-                    $file_path = explode("/", $this->file_output);
-                    $file_path = end($file_path);
-
-                    header('Content-type: ' . $mime);
-                    header('Content-disposition: attachment; filename="' . $file_path . '"');
-                    header("Content-Length: " . filesize($this->file_output));
-                    readfile($this->file_output);
-
-                    if ($this->remove_file) {
-                        unlink($this->file_output);
-                    }
-
-                    exit();
-                } else {
-                    exit("Arquivo não encontrado.");
-                }
-            } // Saida de dados em um arquivo com HTML
-            else if ($this->data_type == "text/html") {
-                header('Content-Type: ' . $this->data_type . '; charset=' . $this->codification);
-
-                if (!$this->mustache) extract($this->data);
-
-                // Adiciona arquivo
-                if (file_exists($this->file_output)) {
-                    ob_start();
-                    /** @noinspection PhpIncludeInspection */
-                    require_once $this->file_output;
-                    $content = ob_get_clean();
-
-                    if ($this->mustache) echo $nf_me->render($content, $this->data);
-                    else echo $content;
-                } else {
-                    throw new ViewException("Path incorreto.");
-                }
-            } // Saida de dados do tipo array e texto sem passar por um arquivo
-            else if ($this->file_output == null || $this->file_output == "") {
-                // Define o tipo de dados como JSON
-                if ($this->data_type == null && is_array($this->data)) {
-                    $dados = json_encode($this->data);
-                    $data_type = "text/json";
-                } // Define como texto
-                else if ($this->data_type == null && is_string($this->data)) {
-                    $dados = $this->data;
-                    $data_type = "text/plain";
-                } // Retorna o JSON com o tipo de dado informado
-                else if (is_array($this->data)) {
-                    $dados = json_encode($this->data);
-                    $data_type = $this->data_type;
-                } // Retorna o texto com o tipo de dado informado
-                else {
-                    $dados = $this->data;
-                    $data_type = $this->data_type;
+                    $content_type = $mimes->getTypesForExtension($ext)[0];
                 }
 
-                header('Content-Type: ' . $data_type . '; charset=' . $this->codification);
+                $content_type = ($content_type != null) ? 'Content-Type: ' . $content_type . '; ' : "";
+                header($content_type . 'charset=' . $this->charset);
+            }
 
-                echo $dados;
-            } // Saida de dados em qualquer tipo de arquivo de texto
-            else {
-                $content_type = ($this->data_type != null) ? 'Content-Type: ' . $this->data_type . '; ' : "";
-                header($content_type . 'charset=' . $this->codification);
+            // Evita erros caso a variavel tenha sido redefinida
+            $data = is_array($this->data) ? $this->data : [];
 
-                if (!$this->mustache) extract($this->data);
+            // Se nenhum variavel tiver sido passada e o template não retornar um html então exibe os dados direto
+            if (count($data) == 0 && $ext != "php" && $content_type != "text/html") {
+                header("Content-Length: " . filesize($this->file_output));
+                readfile($this->file_output);
+            } else {
+                if ($this->checkMustache()) {
+                    // Carregar template com mustache
+                    $content = file_get_contents($this->file_output);
 
-                // Adiciona arquivo
-                if (file_exists($this->file_output)) {
-                    ob_start();
-                    /** @noinspection PhpIncludeInspection */
-                    //$content = file_get_contents($this->file_output);
-                    require $this->file_output;
-                    $content = ob_get_clean();
-
-                    if ($this->mustache) echo $nf_me->render($content, $this->data);
-                    else echo $content;
+                    $m = new Mustache_Engine();
+                    echo $m->render($content, $data);
                 } else {
-                    throw new ViewException("Path incorreto.");
+                    // Desabilita os erros para não exibir problemas com variaveis indefinidas
+                    global $log_ignore_errors;
+                    $log_ignore_errors = true;
+
+                    (function ($data) {
+                        // Carregar de um arquivo PHP
+                        extract($data);
+
+                        /** @noinspection PhpIncludeInspection */
+                        require $this->file_output;
+                    })($data);
+
+                    $log_ignore_errors = false;
                 }
             }
-        } catch (ViewException $e) {
-            Log::e("View", $e, "view");
-            echo "<br><br>Ocorreu um erro.<br>Favor entrar em contato com o Administrador.";
+        } else {
+            throw new ViewException("Arquivo de saida \"{$this->file_output}\" não existe.");
+        }
+    }
+
+    /**
+     * Renderização para dados sem um arquivos
+     *
+     * Exemplo um JSON ou um texto
+     */
+    private function renderData() {
+        $content_type = $this->content_type;
+
+        if (is_array($this->data) || is_object($this->data)) {
+            // Define o tipo de dados como JSON
+            $dados = json_encode($this->data);
+            $content_type = $content_type ?? "text/json";
+        } else {
+            // Define como texto
+            $dados = $this->data;
+            $content_type = $content_type ?? "text/plain";
         }
 
-        return true;
+        if (!headers_sent()) {
+            $content_type = ($content_type != null) ? 'Content-Type: ' . $content_type . '; ' : "";
+            header($content_type . 'charset=' . $this->charset);
+        }
+
+        echo $dados;
+    }
+
+    /**
+     * Verifica se deve usar o mustache
+     * @return bool
+     */
+    private function checkMustache(): bool {
+        if ($this->mustache !== null) return $this->mustache;
+        else return self::$mustache_default;
     }
 }

@@ -17,8 +17,8 @@ class Home extends View {
      */
     public function __construct() {
         $this->map_info = ClassMap::current();
-        $type_load = $this->preparePage($this->view_path);
-        $this->setMustache(true);
+        $type_load = $this->preparePage($this->view_path)->render();
+        $this->mustache(true);
 
         if ($type_load == "view") {
             try {

@@ -66,7 +66,9 @@ class Manifest extends Application {
 
                 // Configurações
                 if (isset($dados_manifest['configs'])) {
+                    // TODO Fazer o for utilizando self::$config para ignorar os dados passados que não pertencem as configurações
                     foreach ($dados_manifest['configs'] as $index => $value) {
+                        // TODO validar se os tipos informados estão corretos
                         // Se o indice logs estiver como true altera para o padrão
                         if ($index == "logs" && $value === true) $value = self::$config[$index];
 
@@ -105,6 +107,14 @@ class Manifest extends Application {
             Log::e($e);
             exit("Erro ao iniciar o sistema.");
         }
+    }
+
+    /**
+     * @param string|null $route Ex: config/max_img_width
+     * @param bool $ignore_sub Ignorar o indice sub nos map
+     */
+    public static function get(string $route = null, bool $ignore_sub = false) {
+        // TODO Fazer algo similar ao metodo map
     }
 
     /**
@@ -381,10 +391,11 @@ class Manifest extends Application {
      * Se for informado irá percorrer o array ate completar a rota informada.<br>
      * Ex: nivel1/nivel2/nivel3
      * </p>
+     * @param string|null $index Pega um indice no final da rota encontrada
      *
      * @return array|null Retorna null caso uma rota tenha sido informada e não exista no manifest.
      */
-    public static function map(string $route = null): ?array {
+    public static function map(string $route = null, string $index = null): ?array {
         // Percorre a rota informada
         if ($route !== null) {
             $arvore = explode("/", $route);
@@ -401,6 +412,7 @@ class Manifest extends Application {
                 $final = $final["sub"][$atual];
             }
 
+            if ($index !== null) return $final[$index] ?? null;
             return $final;
         } else {
             // Retorna todos os parâmetros

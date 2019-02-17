@@ -87,15 +87,15 @@ abstract class Api {
 
             // Prepara o retorno
             if (isset($dados['multi_request'])) {
-                $this->view->replaceAllData($this->retornos);
+                $this->view->reset($this->retornos);
             } else if (isset($dados['long_polling'])) {
-                $this->view->replaceAllData($this->retornos);
+                $this->view->reset($this->retornos);
             } else {
-                $this->view->replaceAllData($this->retornos);
+                $this->view->reset($this->retornos);
             }
         } catch (Exception $e) {
             Log::e("Erro no gerenciador de APIs", $e);
-            $this->view->replaceAllData("Não foi possível carregar a API");
+            $this->view->reset("Não foi possível carregar a API");
         }
 
         $this->view->render();
