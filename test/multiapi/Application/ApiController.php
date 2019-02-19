@@ -31,7 +31,7 @@ class ApiController extends Api {
      * @return bool
      */
     private function autoLogin() {
-        $dados = Request::get(false);
+        $dados = $this->requestType(false);
 
         // Faz login para acessos de apps externos
         if (isset($dados["auto_login"]['login']) &&

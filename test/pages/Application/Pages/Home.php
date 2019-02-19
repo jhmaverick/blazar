@@ -24,6 +24,8 @@ class Home extends View {
         try {
             $this->map_info = ClassMap::current();
 
+            Log::e("sssss");
+
             $this->preparePage($this->view_path, $this->page_res, "showView")->render();
         } catch (ViewException $e) {
             Log::e($e);

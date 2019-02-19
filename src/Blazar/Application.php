@@ -11,8 +11,6 @@
 namespace Blazar;
 
 use Blazar\System\Log;
-use Error;
-use Exception;
 use Throwable;
 
 /**
@@ -55,7 +53,7 @@ class Application {
             } else {
                 throw new ApplicationException("Nenhuma aplicação para iniciar.");
             }
-        } catch (Throwable|Exception|Error $e) {
+        } catch (Throwable $e) {
             Log::e("Alguma exceção não foi tratada e chegou ao root", $e);
             exit("Não foi possível concluir a operação. Por favor tente mais tarde.");
         }

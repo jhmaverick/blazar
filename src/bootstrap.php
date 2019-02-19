@@ -56,7 +56,7 @@ new class() {
 
             // Aplica configurações do framework
             new \Blazar\Manifest();
-        } catch (Throwable|Error|Exception $e) {
+        } catch (Throwable $e) {
             \Blazar\System\Log::e($e, null, true, "blazar-bootstrap");
             exit("Error 1 - " . self::FATAL_ERROR_MSG);
         }
@@ -177,7 +177,7 @@ new class() {
                 /** @noinspection PhpIncludeInspection */
                 require_once $class_path . '.php';
             }
-        } catch (Throwable|Error|Exception $e) {
+        } catch (Throwable $e) {
             \Blazar\System\Log::e($e, null, false, "spl_autoload");
             exit("Error 2 - " . self::FATAL_ERROR_MSG);
         }
@@ -233,7 +233,7 @@ new class() {
             if ($fatal) exit("Error 3.1 - " . self::FATAL_ERROR_MSG);
 
             return true;
-        } catch (Throwable|Error|Exception $e) {
+        } catch (Throwable $e) {
             \Blazar\System\Log::e($e, null, false, "spl_autoload");
             exit("Error 3.2 - " . self::FATAL_ERROR_MSG);
         }

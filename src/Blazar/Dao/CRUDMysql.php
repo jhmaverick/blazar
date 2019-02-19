@@ -17,35 +17,25 @@ use PDO;
  * Operações CRUD para mysql
  */
 abstract class CRUDMysql extends Dao {
-    /**
-     * Tipo de insert normal
+    /**#@+
+     * Tipo de ação para o insert normal
+     * @var int
      */
     const TP_INSERT_NORMAL = 1;
-    /**
-     * Tipo de insert aplicando um replace
+    const TP_INSERT_REPLACE = 2; // Tipo de insert aplicando um replace
+    const TP_INSERT_OR_UPDATE = 3; // Tipo de insert aplicando um on duplicate key
+    const TP_INSERT_IGNORE = 4; // Tipo de insert aplicando um ignore
+    /**#@-*/
+
+    /**#@+
+     * Complementos para o valor aplicado
+     * @var string
      */
-    const TP_INSERT_REPLACE = 2;
-    /**
-     * Tipo de insert aplicando um on duplicate key
-     */
-    const TP_INSERT_OR_UPDATE = 3;
-    /**
-     * Tipo de insert aplicando um ignore
-     */
-    const TP_INSERT_IGNORE = 4;
-    /**
-     * Valor a ser inserido
-     * É obrigatorio caso o valor do dados seja passado em um array
-     */
-    const FIELD_VALUE = "value";
-    /**
-     * Se deve adicionar o campo com "?"
-     */
-    const FIELD_AUTO_MARK = "auto_mark";
-    /**
-     * Se o campo deve ser inserido no update quando ocorrer um "ON DUPLICATE KEY"
-     */
-    const FIELD_UPDATE = "update";
+    const FIELD_VALUE = "value"; // É obrigatorio caso o valor do dados seja passado em um array
+    const FIELD_AUTO_MARK = "auto_mark"; // Se deve adicionar o campo com "?"
+    const FIELD_UPDATE = "update"; // Se o campo deve ser inserido no update quando ocorrer um "ON DUPLICATE KEY"
+    /**#@-*/
+
     /**
      * Ultimo sql gerado
      *

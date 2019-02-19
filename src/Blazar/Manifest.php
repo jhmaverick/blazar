@@ -14,7 +14,6 @@ use Blazar\Helpers\Files;
 use Blazar\Helpers\StrRes;
 use Blazar\System\Log;
 use Error;
-use Exception;
 
 /**
  * Classe de gerenciamento do manifest.json
@@ -100,7 +99,7 @@ class Manifest extends Application {
                     self::$max_index_map = self::preencherParametro(0, $dados_manifest['map']);
                 }
             }
-        } catch (Exception $e) {
+        } catch (ManifestException $e) {
             Log::e($e);
             exit("Erro ao iniciar o sistema.");
         } catch (Error $e) {

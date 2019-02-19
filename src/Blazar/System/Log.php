@@ -11,10 +11,9 @@
 namespace Blazar\System;
 
 use Blazar\Helpers\Files;
-use Blazar\Helpers\Request;
 use Blazar\Manifest;
-use Error;
 use Exception;
+use Requests;
 use Throwable;
 
 /**
@@ -23,11 +22,11 @@ use Throwable;
  */
 class Log {
 
-    private const MAX_FILE_SIZE = (1024 * 1024);
-
     /* Essa classe é responsavel por receber todos os Logs do sistema, incluindo os de erro, por isto ela
      * não deve ter muitas dependencias de outras classes para evitar o inicio de um loop infinito.
      */
+
+    private const MAX_FILE_SIZE = (1024 * 1024);
 
     /**
      * Error Log
@@ -174,7 +173,7 @@ class Log {
             if (Manifest::config("logs") !== false) self::saveJSON($log_info);
 
             return $log_info;
-        } catch (Throwable|Error|Exception $e) {
+        } catch (Throwable $e) {
             // Se catch tenta capturar todas as possíveis exceções
             if (CURRENT_ENV == ENV_DEVELOPMENT) {
                 echo "<pre>\n== Erro ao adicionar Log =====================\n\n";
@@ -286,12 +285,8 @@ class Log {
         $result = 0;
 
         try {
-            $result = Request::send([
-                "url" => Manifest::config("console_url"),
-                "method" => Request::GET,
-                "data" => $log,
-                "timeout" => 2000
-            ]);
+            $url = Manifest::config("console_url") . "?" . http_build_query($log);
+            Requests::get($url, [], ["timeout" => 2000]);
         } catch (Exception $e) {
         }
 

@@ -11,7 +11,6 @@
 namespace Blazar\System;
 
 use Blazar\ClassMap;
-use Blazar\Helpers\Request;
 use Blazar\Helpers\StrRes;
 use Blazar\Manifest;
 use Exception;
@@ -72,8 +71,8 @@ abstract class Api {
         $this->api_map = Manifest::map($this->api_map["route"]);
         $this->view = new View();
 
-        $request = Request::get(true);
-        $dados = $request["dados"];
+        $request = $this->requestType(true);
+        $dados = $request->data;
 
         try {
             // Verifica qual tipo de requisição vai acontecer
@@ -264,12 +263,12 @@ abstract class Api {
     /**
      * Metodo de requisição comum
      *
-     * @param string $acao
-     * @param array $dados
+     * @param string $action
+     * @param array $data
      *
      * @throws Exception
      */
-    private function requestCommon(string $acao, array $dados) {
+    private function requestCommon(string $action, array $data) {
         try {
             // Verifica se deve executar apenas os metodos da classe
             if ($this->class_api) {
@@ -288,13 +287,13 @@ abstract class Api {
             $ct = new $ControllerClass(false, true);
 
             // Transforma a ação no padrão do metodo
-            $metodo = $this->action2method($acao);
+            $method = $this->action2method($action);
 
             // Se o metodo da ação existir então ele é chamado
-            if (method_exists($ct, $metodo)) {
+            if (method_exists($ct, $method)) {
                 // Verifica se o metodo é publico
-                $reflection = new ReflectionMethod($ct, $metodo);
-                if ($reflection->isPublic()) $this->retornos = call_user_func_array([$ct, $metodo], [$dados]);
+                $reflection = new ReflectionMethod($ct, $method);
+                if ($reflection->isPublic()) $this->retornos = call_user_func_array([$ct, $method], [$data]);
                 else $this->retornos = "Ação não encontrada";
             } else $this->retornos = "Ação não encontrada";
         } catch (Exception $e) {
@@ -316,4 +315,44 @@ abstract class Api {
     public static function setAutostart(bool $status) {
         self::$autostart = $status;
     }
+
+    /**
+     * Obtem post e get em uma unica requisição
+     *
+     * Se existir o mesmo index no get e no post, o valor do get sobressai
+     *
+     * @param bool $action - Separar a ação da requisição
+     *
+     * @return object
+     */
+    public function requestType($action = false) {
+        $req = new \stdClass();
+        $req->action = null;
+        $req->data = [];
+
+        $method = null;
+        switch ($_SERVER['REQUEST_METHOD']) {
+            case "POST":
+                $method = $_POST;
+                break;
+            case "GET":
+                $method = $_GET;
+        }
+
+        // Pega os valores
+        foreach ($method as $index => $valor) {
+            // Define a ação
+            if ($action && $index == $this->action_name) {
+                $req->action = $valor;
+            } else {
+                $req->data[$index] = $valor;
+            }
+        }
+
+        // Passa o index dados para o array principal
+        if (!$action) $req = $req->data;
+
+        return $req;
+    }
+
 }

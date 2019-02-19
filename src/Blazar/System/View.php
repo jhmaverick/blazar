@@ -19,11 +19,15 @@ use Mustache_Engine;
  */
 class View {
 
-    // Ações para preparação da página
+    /**#@+
+     * Ações para preparação da página
+     * @var int
+     */
     const PAGE_RENDER_NONE = 1;
     const PAGE_RENDER_RESOURCE = 2;
     const PAGE_RENDER_VIEW = 3;
     const PAGE_RENDER_ALL = 4;
+    /**#@-*/
 
     // Renderizar com mustache
     private static $mustache_default = false;
@@ -34,13 +38,13 @@ class View {
     // variáveis setadas para a saida
     private $data = [];
     // Caminho para o arquivo que será passado para a view
-    private $file_output = null;
+    private $template_file;
     // Tipo do dado de saida (text/html, text/json, text/plain...)
-    private $content_type = null;
+    private $content_type;
     // Codificação da página
     private $charset = "utf-8";
     // Utilizar Mustache para renderizar
-    private $mustache = null;
+    private $mustache;
 
     /**
      * Metodo de auxilio para gerar páginas
@@ -79,7 +83,7 @@ class View {
             }
 
             // Recursos da view
-            $this->setFileOutput($page_res[$param0]);
+            $this->setTemplateFile($page_res[$param0]);
 
             // Verifica se algum callback foi passado para executar
             if ($resource_callback !== null) {
@@ -100,7 +104,7 @@ class View {
 
             // HTML da View
             $this->setContentType("text/html");
-            $this->setFileOutput($view_path);
+            $this->setTemplateFile($view_path);
 
             // Verifica se algum callback foi passado para executar
             if ($view_callback !== null) {
@@ -131,10 +135,7 @@ class View {
         $this->render_run = true;
 
         try {
-            if ($this->content_type == "text/html") {
-                // Saida de dados em um arquivo com HTML
-                $this->renderFileContent();
-            } else if ($this->file_output == null) {
+            if ($this->template_file === null) {
                 // Saida de dados do tipo array e texto sem passar por um arquivo
                 $this->renderData();
             } else {
@@ -260,12 +261,12 @@ class View {
     /**
      * Define o arquivo que sera exibido na view
      *
-     * @param string $file_output Caminho para o arquivo de saida de dados
+     * @param string $template_file Caminho para o arquivo de saida de dados
      *
      * @return View
      */
-    public function setFileOutput(?string $file_output) {
-        $this->file_output = $file_output;
+    public function setTemplateFile(?string $template_file) {
+        $this->template_file = $template_file;
         return $this;
     }
 
@@ -296,8 +297,8 @@ class View {
      * @throws ViewException
      */
     private function renderFileContent() {
-        if (file_exists($this->file_output)) {
-            $ext = pathinfo($this->file_output, PATHINFO_EXTENSION);
+        if (file_exists($this->template_file)) {
+            $ext = pathinfo($this->template_file, PATHINFO_EXTENSION);
 
             $content_type = $this->content_type;
 
@@ -320,12 +321,12 @@ class View {
 
             // Se nenhum variavel tiver sido passada e o template não retornar um html então exibe os dados direto
             if (count($data) == 0 && $ext != "php" && $content_type != "text/html") {
-                header("Content-Length: " . filesize($this->file_output));
-                readfile($this->file_output);
+                header("Content-Length: " . filesize($this->template_file));
+                readfile($this->template_file);
             } else {
                 if ($this->checkMustache()) {
                     // Carregar template com mustache
-                    $content = file_get_contents($this->file_output);
+                    $content = file_get_contents($this->template_file);
 
                     $m = new Mustache_Engine();
                     echo $m->render($content, $data);
@@ -339,14 +340,14 @@ class View {
                         extract($data);
 
                         /** @noinspection PhpIncludeInspection */
-                        require $this->file_output;
+                        require $this->template_file;
                     })($data);
 
                     $log_ignore_errors = false;
                 }
             }
         } else {
-            throw new ViewException("Arquivo de saida \"{$this->file_output}\" não existe.");
+            throw new ViewException("Arquivo de saida \"{$this->template_file}\" não existe.");
         }
     }
 

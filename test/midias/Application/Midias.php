@@ -19,7 +19,7 @@ class Midias {
         if (isset($_GET["download"])) {
             $view = new View();
 
-            $view->setFileOutput($local_file)
+            $view->setTemplateFile($local_file)
                 ->forceDownload()
                 ->render();
         } else if ($ext == "jpg" || $ext == "png") {
