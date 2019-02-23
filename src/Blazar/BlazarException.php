@@ -8,10 +8,10 @@
  * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
  */
 
-namespace Blazar\Helpers;
+namespace Blazar;
 
 use Exception;
 
-class ImagesException extends Exception {
+class BlazarException extends Exception {
 
 }

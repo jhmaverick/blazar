@@ -10,7 +10,7 @@
 
 namespace Blazar\System;
 
-use Blazar\Helpers\Files;
+use Blazar\Helpers\File;
 use Blazar\Manifest;
 use Exception;
 use Requests;
@@ -305,7 +305,7 @@ class Log {
      */
     private static function saveHTML($type_log, $msg, $date_time, string $tag = null): bool {
         // Diretorio de saida dos logs
-        $log_dir = Files::pathJoin(ROOT, Manifest::config("logs"));
+        $log_dir = File::pathJoin(ROOT, Manifest::config("logs"));
         if (!file_exists($log_dir)) mkdir($log_dir, 0777, true);
 
         $arquivo = $log_dir . "/" . date("Y-m-d") . ".log.html";
@@ -335,7 +335,7 @@ class Log {
             $msg . "<br>" . URL .
             "<p style=\"font-size: 8px; color: #999999; border-bottom: 1px solid #CCCCCC\">" . date("d/m/Y à\s H:i:s", strtotime($date_time)) . "</p>\n";
 
-        Files::write($arquivo, $msg, Files::WRITE_APPEND);
+        File::write($arquivo, $msg, File::WRITE_APPEND);
 
         return true;
     }
@@ -349,7 +349,7 @@ class Log {
      */
     private static function saveJSON(array $log_info): bool {
         // Diretorio de saida dos logs
-        $log_dir = Files::pathJoin(ROOT, Manifest::config("logs"));
+        $log_dir = File::pathJoin(ROOT, Manifest::config("logs"));
         if (!file_exists($log_dir)) mkdir($log_dir, 0777, true);
 
         $arquivo = $log_dir . "/" . date("Y-m-d") . ".log.json";
@@ -357,12 +357,12 @@ class Log {
         if (file_exists($arquivo) && filesize($arquivo) > self::MAX_FILE_SIZE) return false;
 
         // Verifica se o arquivo já existe
-        $logs = json_decode(Files::read($arquivo), true) ?? [];
+        $logs = json_decode(File::read($arquivo), true) ?? [];
         $logs[] = $log_info;
 
         // Salva o log com o novo index
         $logs_str = json_encode($logs, JSON_PRETTY_PRINT);
-        Files::write($arquivo, $logs_str);
+        File::write($arquivo, $logs_str);
 
         return true;
     }

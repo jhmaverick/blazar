@@ -10,7 +10,8 @@
 
 namespace Blazar\System;
 
-use Blazar\Helpers\Files;
+use Blazar\BlazarException;
+use Blazar\Helpers\File;
 use Blazar\Helpers\StrRes;
 use Exception;
 use Mustache_Engine;
@@ -203,11 +204,11 @@ class Text {
             else return null;
 
             // Remove comentarios e transforma em array
-            $file_content = StrRes::removeComments(Files::read($name));
+            $file_content = StrRes::removeComments(File::read($name));
             if (json_decode($file_content, true)) {
                 $list = json_decode($file_content, true);
             } else {
-                throw new Exception("O conteúdo do arquivo \"" . $name . ".json\" não é um JSON.", 2);
+                throw new BlazarException("O conteúdo do arquivo \"" . $name . ".json\" não é um JSON.", 2);
             }
 
             // Verifica se existe um texto em outro idioma para mesclar

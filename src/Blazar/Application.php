@@ -39,11 +39,11 @@ class Application {
     /**
      * Iniciar a partir do map de classes do Manifest
      *
-     * @throws ApplicationException
+     * @throws BlazarException
      */
     public static function init() {
         // Impede que a função seja iniciada mais de uma vez
-        if (self::$started) throw new ApplicationException("Metodo \Blazar\Application::init foi chamado novamente.");
+        if (self::$started) throw new BlazarException("Metodo \Blazar\Application::init foi chamado novamente.");
         self::$started = true;
 
         try {
@@ -51,7 +51,7 @@ class Application {
                 $MapClass = ClassMap::next('class');
                 new $MapClass();
             } else {
-                throw new ApplicationException("Nenhuma aplicação para iniciar.");
+                throw new BlazarException("Nenhuma aplicação para iniciar.");
             }
         } catch (Throwable $e) {
             Log::e("Alguma exceção não foi tratada e chegou ao root", $e);

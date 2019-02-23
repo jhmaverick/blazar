@@ -1,8 +1,7 @@
 {
   "map": {
     "single_api": {
-      "class": "SingleAPI",
-      "main": true
+      "class": "SingleAPI"
     }
   }
 }

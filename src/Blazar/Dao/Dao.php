@@ -26,6 +26,7 @@ abstract class Dao {
     const PREPARE_SELECT = 1;
     const PREPARE_INSERT = 2;
     const PREPARE_DEFAULT = 3;
+
     /**
      * Conexão
      *

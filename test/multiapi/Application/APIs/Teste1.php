@@ -2,7 +2,8 @@
 
 namespace Application\APIs;
 
-class Teste1 {
+class Teste1 extends Teste2 {
+
     public function acao1($dados) {
         return "aaa";
     }
@@ -10,4 +11,5 @@ class Teste1 {
     public function acao2($dados) {
         return $dados['buscar'] ?? 0;
     }
+
 }

@@ -10,8 +10,8 @@
 
 namespace Blazar\Dao;
 
-use Exception;
+use Blazar\BlazarException;
 
-class DaoException extends Exception {
+class DaoException extends BlazarException {
 
 }

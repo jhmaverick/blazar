@@ -19,18 +19,45 @@ use RecursiveIteratorIterator;
 class ArrayRes {
 
     /**
-     * Realiza busca em array multidimensional
+     * Pega o dado de um array multidimensional seguindo uma rota informada
      *
-     * @param $haystack
-     * @param $needle
-     * @param null $index
+     * @param array $array Array que receberá a busca.
+     * @param string $route Ex: "nivel1/nivel2/indice".
      *
-     * @return int|mixed
+     * @return array|mixed|null Retorna um caso a rota não exista.
      */
-    public static function search($haystack, $needle, $index = null) {
-        if (is_null($haystack)) return -1;
+    public static function route(array $array, string $route) {
+        $route = preg_replace('/\/+/', '/', $route);
+        $route = trim($route, "/ ");
+        if ($route == "") return $array;
 
-        $arrayIterator = new RecursiveArrayIterator($haystack);
+        // Percorre a rota informada
+        $arvore = explode("/", $route);
+
+        for ($i = 0; $i < count($arvore); $i++) {
+            $atual = $arvore[$i];
+
+            if (!isset($array[$atual])) return null;
+
+            $array = $array[$atual];
+        }
+
+        return $array;
+    }
+
+    /**
+     * Verifica se um valor existe em um array multidimensional
+     *
+     * @param array $array Array que receberá a busca.
+     * @param mixed $needle Valor a ser buscado.
+     * @param string|null $index O valor só será valido se estiver em um indice com este nome.
+     *
+     * @return bool
+     */
+    public static function search(array $array, $needle, ?string $index = null): bool {
+        if (is_null($array)) return false;
+
+        $arrayIterator = new RecursiveArrayIterator($array);
         $iterator = new RecursiveIteratorIterator($arrayIterator);
 
         while ($iterator->valid()) {
@@ -38,12 +65,14 @@ class ArrayRes {
                 ((isset($index) && ($iterator->key() == $index)) || (!isset($index))) &&
                 ($iterator->current() == $needle)
             ) {
-                return $arrayIterator->key();
+                //return $arrayIterator->key();
+                return true;
             }
 
             $iterator->next();
         }
 
-        return -1;
+        return false;
     }
+
 }

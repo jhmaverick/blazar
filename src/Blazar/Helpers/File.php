@@ -13,14 +13,15 @@ namespace Blazar\Helpers;
 /**
  * Classe de recursos para auxiliar com arquivos e Diretórios
  */
-class Files {
+class File {
 
-    /*
-     * Locais para a escrita no arquivo
+    /**#@+
+     * Local para a escrita no arquivo
      */
     const WRITE_OVERWRITE = "overwrite";
     const WRITE_APPEND = "append";
     const WRITE_PREPEND = "prepend";
+    /**#@-*/
 
     private static $unidades_medida = ['KB', 'MB', 'GB', 'TB'];
 
@@ -33,6 +34,7 @@ class Files {
      * As extensões devem estar em minusculo.
      *
      * @return string|null Retorna o nome do arquivo ou null caso ocorra uma falha
+     * @throws FileException
      */
     public static function upload(array $file, string $dir_out, array $extensions = []): ?string {
         $tempFile = $file['tmp_name'];
@@ -44,12 +46,18 @@ class Files {
         $targetFile = $dir_out . $new_name;
 
         if (count($extensions) == 0 || in_array(strtolower($fileParts['extension']), $extensions)) {
+            // Cria o diretório caso ele não exista
+            if (!file_exists($dir_out)) @mkdir($dir_out, 0777, true);
+            if (!is_dir($dir_out)) throw new FileException("Não foi possível criar o diretório \"$dir_out\".");
+
             // Move o arquivo para o diretório definitivo
             if (move_uploaded_file($tempFile, $targetFile)) {
                 return $new_name;
-            } else return null;
+            } else {
+                throw new FileException("Problemas ao mover arquivo para o diretório desejado.");
+            }
         } else {
-            return null;
+            throw new FileException("Formato de arquivo inválido.");
         }
     }
 
@@ -146,7 +154,7 @@ class Files {
      * @param bool $separar_medida Se true retorna o tamanho e a unidade de medida separados em um array.
      *
      * @return array|string
-     * @throws FilesException
+     * @throws FileException
      */
     public static function fileSizeReal($base_medida, bool $separar_medida = false) {
         if (is_int($base_medida)) {
@@ -154,7 +162,7 @@ class Files {
         } else if (file_exists($base_medida)) {
             $tamanho = filesize($base_medida);
         } else {
-            throw new FilesException("A base para medida deve ser um inteiro ou a string com o caminho para um arquivo.");
+            throw new FileException("A base para medida deve ser um inteiro ou a string com o caminho para um arquivo.");
         }
 
         /* Se for menor que 1KB arredonda para 1KB */
@@ -183,7 +191,7 @@ class Files {
      *  Pode ser um inteiro com o tamanho em BYTE ou uma string com o caminho para um arquivo.
      *
      * @return bool
-     * @throws FilesException
+     * @throws FileException
      */
     public static function validFileSize($max_filesize, $base_checar): bool {
         // Remove espaços
@@ -197,7 +205,7 @@ class Files {
         } else if (file_exists($base_checar)) {
             $tamanho = filesize($base_checar);
         } else {
-            throw new FilesException("A base para medida deve ser um inteiro ou a string com o caminho para um arquivo.");
+            throw new FileException("A base para medida deve ser um inteiro ou a string com o caminho para um arquivo.");
         }
 
         $i = 0;
@@ -215,7 +223,7 @@ class Files {
 
         // Verifica se o padrão do tamanho é valido
         if (!is_numeric($max_filesize)) {
-            throw new FilesException("Formato do \"max_filesize\" inválido.");
+            throw new FileException("Formato do \"max_filesize\" inválido.");
         }
 
         // Se encontrar a unidade transforma em byte, se não mantem.

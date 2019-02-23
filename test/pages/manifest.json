@@ -21,11 +21,9 @@
   "map": {
     "pages": {
       "class": "Application\\PageController",
-      "main": true,
       "sub": {
         "home": {
-          "class": "Application\\Pages\\Home",
-          "main": true
+          "class": "Application\\Pages\\Home"
         },
         "page2": {
           "class": "Application\\Pages\\Page2"

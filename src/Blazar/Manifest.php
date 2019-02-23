@@ -10,7 +10,7 @@
 
 namespace Blazar;
 
-use Blazar\Helpers\Files;
+use Blazar\Helpers\File;
 use Blazar\Helpers\StrRes;
 use Blazar\System\Log;
 use Error;
@@ -40,16 +40,18 @@ class Manifest extends Application {
      * Inicia a configuração do sistema com os dados do manifest
      * TODO Gerar um arquivo serialise dos dados carregados para não ser necessario esse processamento todas as vezes
      * O codigo do arquivo deve ser gerado com base no conteudo do json e só ser recriado caso o conteudo mude
-     * @throws ManifestException
+     * @throws BlazarException
      */
     public function __construct() {
         // Impede que a função seja iniciada mais de uma vez
-        if (self::$started) throw new ManifestException("Metodo \Blazar\Manifest::prepare foi chamado novamente.");
+        if (self::$started) throw new BlazarException("Metodo \Blazar\Manifest::prepare foi chamado novamente.");
         self::$started = true;
 
         try {
             // Gera os parâmetros da url
             self::gerarUrl();
+
+            // TODO Validar manifest por schema para garantir que apenas informações validas serão adicionadas
 
             if (file_exists(self::PATH)) {
                 $dados_manifest = self::readManifestFile(self::PATH);
@@ -65,9 +67,7 @@ class Manifest extends Application {
 
                 // Configurações
                 if (isset($dados_manifest['configs'])) {
-                    // TODO Fazer o for utilizando self::$config para ignorar os dados passados que não pertencem as configurações
                     foreach ($dados_manifest['configs'] as $index => $value) {
-                        // TODO validar se os tipos informados estão corretos
                         // Se o indice logs estiver como true altera para o padrão
                         if ($index == "logs" && $value === true) $value = self::$config[$index];
 
@@ -99,7 +99,7 @@ class Manifest extends Application {
                     self::$max_index_map = self::preencherParametro(0, $dados_manifest['map']);
                 }
             }
-        } catch (ManifestException $e) {
+        } catch (BlazarException $e) {
             Log::e($e);
             exit("Erro ao iniciar o sistema.");
         } catch (Error $e) {
@@ -109,16 +109,89 @@ class Manifest extends Application {
     }
 
     /**
-     * @param string|null $route Ex: config/max_img_width
-     * @param bool $ignore_sub Ignorar o indice sub nos map
+     * Pega configurações o indice configurações
+     *
+     * @param string|null $index Nome do indice desejado ou null para retornar um array com todos.
+     *
+     * @return mixed
      */
-    public static function get(string $route = null, bool $ignore_sub = false) {
-        // TODO Fazer algo similar ao metodo map
+    public static function config(string $index = null) {
+        if ($index !== null) {
+            return self::$config[$index] ?? null;
+        } else {
+            return self::$config;
+        }
+    }
+
+    /**
+     * Pega dados e informações da aplicação
+     *
+     * @param string|null $index Nome do indice desejado ou null para retornar um array com todos.
+     *
+     * @return mixed
+     */
+    public static function data(string $index = null) {
+        if ($index !== null) {
+            return self::$data[$index] ?? null;
+        } else {
+            return self::$data;
+        }
+    }
+
+    /**
+     * Pega os dados de um Banco
+     *
+     * @param string|null $connection_name Nome da conexão desejada ou null para retornar um array com todas.
+     *
+     * @return array
+     */
+    public static function db(string $connection_name = null): array {
+        if ($connection_name !== null) {
+            return self::$dbs[$connection_name] ?? null;
+        } else {
+            return self::$dbs;
+        }
+    }
+
+    /**
+     * Retorna o mapa de classes definido no manifest.
+     *
+     * @param string|null $route <p>
+     * Se for informado irá percorrer o array ate completar a rota informada.<br>
+     * Ex: nivel1/nivel2/nivel3
+     * </p>
+     * @param string|null $index Pega um indice no final da rota encontrada
+     *
+     * @return array|mixed|null Retorna null caso uma rota tenha sido informada e não exista no manifest.
+     */
+    public static function map(string $route = null, string $index = null) {
+        // Percorre a rota informada
+        if ($route !== null) {
+            $arvore = explode("/", $route);
+
+            $final = ["sub" => self::$map];
+
+            for ($i = 0; $i < count($arvore); $i++) {
+                $atual = $arvore[$i];
+
+                if (!isset($final["sub"]) || !isset($final["sub"][$atual])) {
+                    return null;
+                }
+
+                $final = $final["sub"][$atual];
+            }
+
+            if ($index !== null) return $final[$index] ?? null;
+            return $final;
+        } else {
+            // Retorna todos os parâmetros
+            return self::$map;
+        }
     }
 
     /**
      * Gera um array com parâmetros da url
-     * @throws ManifestException
+     * @throws BlazarException
      */
     private static function gerarUrl() {
         $url = [];
@@ -144,7 +217,7 @@ class Manifest extends Application {
                     $url[0] = $p_atual;
                 }
             } else {
-                throw new ManifestException("Problemas ao gerar url.");
+                throw new BlazarException("Problemas ao gerar url.");
             }
         }
 
@@ -157,16 +230,16 @@ class Manifest extends Application {
      * @param string $local
      *
      * @return array
-     * @throws ManifestException
+     * @throws BlazarException
      */
     private static function readManifestFile(string $local): array {
         $file_name = explode("/", $local);
         $file_name = end($file_name);
 
-        $dados_manifest = Files::read($local);
+        $dados_manifest = File::read($local);
 
         if ($dados_manifest === null) {
-            throw new ManifestException("Manifest: O arquivo \"$file_name\" não foi encontrado.");
+            throw new BlazarException("Manifest: O arquivo \"$file_name\" não foi encontrado.");
         }
 
         // Remove comentarios do JSON
@@ -183,12 +256,12 @@ class Manifest extends Application {
                 if (json_decode($conteudo_json, true) != null) {
                     $dados_manifest = StrRes::replaceFirst($dados_manifest, $retorno[0][$index], $conteudo_json);
                 } else {
-                    throw new ManifestException("O código encontrado não é um JSON.\n" .
+                    throw new BlazarException("O código encontrado não é um JSON.\n" .
                         "arquivo: " . htmlspecialchars($retorno[0][$index]) . "\n" .
                         "declaração: " . $retorno[1][$index]);
                 }
             } else {
-                throw new ManifestException("O arquivo não pode ser incluido no manifest.\n" .
+                throw new BlazarException("O arquivo não pode ser incluido no manifest.\n" .
                     "arquivo: " . htmlspecialchars($retorno[0][$index]) . "\n" .
                     "declaração: " . $retorno[1][$index]);
             }
@@ -197,7 +270,7 @@ class Manifest extends Application {
         if (json_decode($dados_manifest, true)) {
             $dados_manifest = json_decode($dados_manifest, true);
         } else {
-            throw new ManifestException("Manifest: O arquivo \"$file_name\" não é um JSON.");
+            throw new BlazarException("Manifest: O arquivo \"$file_name\" não é um JSON.");
         }
 
         return $dados_manifest;
@@ -254,45 +327,22 @@ class Manifest extends Application {
     }
 
     /**
-     * Pega configurações o indice configurações
-     *
-     * @param string|null $index Nome do indice desejado ou null para retornar um array com todos.
-     *
-     * @return mixed
-     */
-    public static function config(string $index = null) {
-        if ($index !== null) {
-            return self::$config[$index] ?? null;
-        } else {
-            return self::$config;
-        }
-    }
-
-    /**
      * Preenche os parâmetros vazios
      *
      * @param int $index indice do parâmetro
      * @param array $map_list Mapa de parâmetro do manifest
      *
      * @return mixed
-     * @throws ManifestException
+     * @throws BlazarException
      */
     private static function preencherParametro(int $index, array $map_list) {
-        $main = null;
-        // Pega o app principal do index
-        foreach ($map_list as $nome => $value) {
-            if (isset($value['main']) && $value['main'] === true) {
-                if ($main == null) {
-                    $main = $nome;
-                } else {
-                    throw new ManifestException("Existe mais de 1 parâmetro definido como principal.");
-                }
-            }
-        }
+        // O primeiro indice será o main
+        reset($map_list);
+        $main = key($map_list);
 
         // Verifica conflitos de apps principais
         if ($main == null) {
-            throw new ManifestException("Nenhum parâmetro foi definido como principal no index \"" . key($map_list) . "\".");
+            throw new BlazarException("Nenhum parâmetro foi definido como principal no index \"" . key($map_list) . "\".");
         }
 
         // Verifica se o index da url é um parâmetro do sistema
@@ -325,18 +375,16 @@ class Manifest extends Application {
      * @param array $param_info Dados do parâmetro
      *
      * @return array
-     * @throws ManifestException
+     * @throws BlazarException
      */
     private static function paramInfo(string $index, array $param_info): array {
-        if (!isset($param_info['main'])) $param_info['main'] = false;
-        //if (!isset($param_info['sub'])) $param_info['sub'] = [];
         if (isset($param_info['sub'])) unset($param_info['sub']);
 
         $param_info['name'] = Application::param($index);
         $param_info['index'] = $index;
 
         if (!class_exists($param_info['class']))
-            throw new ManifestException("A Classe \"" . $param_info['class'] . "\" informada no map não existe.");
+            throw new BlazarException("A Classe \"" . $param_info['class'] . "\" informada no map não existe.");
 
         $params_map = ClassMap::get();
         $params_full = Application::param(null, Application::PARAMS_ALL);
@@ -353,69 +401,4 @@ class Manifest extends Application {
         return $param_info;
     }
 
-    /**
-     * Pega dados e informações da aplicação
-     *
-     * @param string|null $index Nome do indice desejado ou null para retornar um array com todos.
-     *
-     * @return mixed
-     */
-    public static function data(string $index = null) {
-        if ($index !== null) {
-            return self::$data[$index] ?? null;
-        } else {
-            return self::$data;
-        }
-    }
-
-    /**
-     * Pega os dados de um Banco
-     *
-     * @param string|null $connection_name Nome da conexão desejada ou null para retornar um array com todas.
-     *
-     * @return array
-     */
-    public static function db(string $connection_name = null): array {
-        if ($connection_name !== null) {
-            return self::$dbs[$connection_name] ?? null;
-        } else {
-            return self::$dbs;
-        }
-    }
-
-    /**
-     * Retorna o mapa de classes definido no manifest.
-     *
-     * @param string|null $route <p>
-     * Se for informado irá percorrer o array ate completar a rota informada.<br>
-     * Ex: nivel1/nivel2/nivel3
-     * </p>
-     * @param string|null $index Pega um indice no final da rota encontrada
-     *
-     * @return array|null Retorna null caso uma rota tenha sido informada e não exista no manifest.
-     */
-    public static function map(string $route = null, string $index = null): ?array {
-        // Percorre a rota informada
-        if ($route !== null) {
-            $arvore = explode("/", $route);
-
-            $final = ["sub" => self::$map];
-
-            for ($i = 0; $i < count($arvore); $i++) {
-                $atual = $arvore[$i];
-
-                if (!isset($final["sub"]) || !isset($final["sub"][$atual])) {
-                    return null;
-                }
-
-                $final = $final["sub"][$atual];
-            }
-
-            if ($index !== null) return $final[$index] ?? null;
-            return $final;
-        } else {
-            // Retorna todos os parâmetros
-            return self::$map;
-        }
-    }
 }

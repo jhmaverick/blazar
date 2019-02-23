@@ -2,21 +2,17 @@
 
 namespace Application;
 
-use Blazar\Helpers\Request;
-use Blazar\System\Api;
+use Blazar\System\WebService;
 
 /**
  * Class API
  */
-class ApiController extends Api {
-
-    protected $action_name = "acao";
+class MultiAPI extends WebService {
 
     public function __construct() {
         $this->autoLogin();
-        Api::setAutostart(false);
 
-        parent::__construct(true, false);
+        parent::__construct(true, "acao", true);
     }
 
     /**
@@ -31,7 +27,7 @@ class ApiController extends Api {
      * @return bool
      */
     private function autoLogin() {
-        $dados = $this->requestType(false);
+        $dados = $this->getRequestData();
 
         // Faz login para acessos de apps externos
         if (isset($dados["auto_login"]['login']) &&

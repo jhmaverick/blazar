@@ -10,8 +10,8 @@
 
 namespace Blazar\System;
 
-use Exception;
+use Blazar\BlazarException;
 
-class ViewException extends Exception {
+class ViewException extends BlazarException {
 
 }

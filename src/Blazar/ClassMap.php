@@ -44,7 +44,6 @@ class ClassMap extends Application {
      * <br>
      * Indices do retorno:<br>
      * [class] => string(Classe para inicializar)<br>
-     * [main] => bool(Se é o modulo principal do seu nível)<br>
      * [name] => string(O nome do indice)<br>
      * [index] => int(Seu nível no map)<br>
      * [route] => string(A rota no map)
