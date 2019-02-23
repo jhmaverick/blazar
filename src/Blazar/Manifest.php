@@ -16,11 +16,11 @@ use Blazar\System\Log;
 use Error;
 
 /**
- * Classe de gerenciamento do manifest.json
+ * Classe de gerenciamento do blazar-manifest.json
  */
 class Manifest extends Application {
 
-    const PATH = ROOT . "/manifest.json";
+    const PATH = ROOT . "/blazar-manifest.json";
     private static $started = false;
     private static $config = [
         "force_https" => false,
