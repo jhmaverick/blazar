@@ -4,8 +4,8 @@ namespace Model;
 
 use Blazar\Dao\CRUDMysql;
 use Blazar\Dao\DaoException;
-use Blazar\Manifest;
 use Blazar\System\Log;
+use Blazar\System\Manifest;
 
 class Usuario extends CRUDMysql {
     const VERSAO = 1;

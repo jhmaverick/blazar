@@ -3,8 +3,8 @@
 namespace Application\Pages;
 
 use Application\Controller;
-use Blazar\ClassMap;
-use Blazar\System\View;
+use Blazar\Application\View;
+use Blazar\System\ClassMap;
 
 class Home extends View {
     private $map_info;

@@ -1,11 +1,12 @@
 <?php
 
-/*
+/**
  * This file is part of Blazar Framework.
  *
  * (c) João Henrique <joao_henriquee@outlook.com>
  *
- * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
+ * For the full copyright and license information, please view the LICENSE file that was distributed with this source
+ * code.
  */
 
 namespace Blazar\Dao;
@@ -19,9 +20,8 @@ use PDO;
 abstract class CRUDMysql extends Dao {
     /**#@+
      * Tipo de ação para o insert normal
-     * @var int
      */
-    const TP_INSERT_NORMAL = 1;
+    const TP_INSERT_NORMAL = 1; // Insert comum
     const TP_INSERT_REPLACE = 2; // Tipo de insert aplicando um replace
     const TP_INSERT_OR_UPDATE = 3; // Tipo de insert aplicando um on duplicate key
     const TP_INSERT_IGNORE = 4; // Tipo de insert aplicando um ignore
@@ -29,22 +29,17 @@ abstract class CRUDMysql extends Dao {
 
     /**#@+
      * Complementos para o valor aplicado
-     * @var string
      */
-    const FIELD_VALUE = "value"; // É obrigatorio caso o valor do dados seja passado em um array
+    const FIELD_VALUE = "value"; // É obrigatário caso o valor do dados seja passado em um array
     const FIELD_AUTO_MARK = "auto_mark"; // Se deve adicionar o campo com "?"
     const FIELD_UPDATE = "update"; // Se o campo deve ser inserido no update quando ocorrer um "ON DUPLICATE KEY"
     /**#@-*/
 
-    /**
-     * Ultimo sql gerado
-     *
-     * @var string
-     */
+    // Ultimo sql executado
     private $last_sql = "";
 
     /**
-     * Retorna o ultimo sql gerado
+     * Retorna o ultimo sql executado no CRUD
      *
      * @return string
      */
@@ -64,8 +59,8 @@ abstract class CRUDMysql extends Dao {
      * </code>
      * <br><br>
      * Mudar comportamento da inserção:<br>
-     * <b>Os indices estão disponiveis nas constantes iniciadas com "FIELD_...".</b><br>
-     * <b>value</b> mixed - (<i>Obrigatorio</i>): O valor que será inserido.<br>
+     * <b>Os indices estão disponíveis nas constantes iniciadas com "FIELD_...".</b><br>
+     * <b>value</b> mixed - (<i>Obrigatário</i>): O valor que será inserido.<br>
      * <b>auto_mark</b> bool - (<i>Opcional</i>): Se deve aplicar a marcação "?". O padrão é true.<br>
      * <b>update</b> bool - (<i>Opcional</i>): Se o tipo da inserção for "OR_UPDATE", informa se deve
      * atualizar esse campo. O padrão é true.<br>

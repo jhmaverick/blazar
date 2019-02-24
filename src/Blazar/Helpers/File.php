@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * This file is part of Blazar Framework.
  *
  * (c) João Henrique <joao_henriquee@outlook.com>
@@ -238,7 +238,7 @@ class File {
     /**
      * Combina varios caminhos
      *
-     * @param string ...$args Caminhos para unir
+     * @param string[] $args Caminhos para unir
      *
      * @return string
      */

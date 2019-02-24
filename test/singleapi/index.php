@@ -3,4 +3,4 @@
 require_once "../../vendor/autoload.php";
 
 // Aplicação
-\Blazar\Application::init();
+\Blazar\System\Application::init();

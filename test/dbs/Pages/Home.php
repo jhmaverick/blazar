@@ -2,9 +2,9 @@
 
 namespace Pages;
 
-use Blazar\ClassMap;
+use Blazar\Application\View;
+use Blazar\System\ClassMap;
 use Blazar\System\Log;
-use Blazar\System\View;
 use Model\Usuario;
 
 class Home extends View {

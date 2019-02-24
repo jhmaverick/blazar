@@ -2,7 +2,7 @@
 
 namespace Application;
 
-use Blazar\ClassMap;
+use Blazar\System\ClassMap;
 
 class PageController {
 

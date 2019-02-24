@@ -3,11 +3,11 @@
 namespace Application\Pages;
 
 use Application\PageController;
-use Blazar\ClassMap;
+use Blazar\Application\View;
+use Blazar\Application\ViewException;
+use Blazar\Helpers\Text;
+use Blazar\System\ClassMap;
 use Blazar\System\Log;
-use Blazar\System\Text;
-use Blazar\System\View;
-use Blazar\System\ViewException;
 
 class Home extends View {
     private $map_info;

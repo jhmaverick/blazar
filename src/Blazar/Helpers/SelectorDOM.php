@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * This file is part of Blazar Framework.
+ *
+ * (c) João Henrique <joao_henriquee@outlook.com>
+ *
+ * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
+ */
+
 namespace Blazar\Helpers;
 
 use DOMDocument;
@@ -10,16 +18,14 @@ use DOMXPath;
 /**
  * Persistent object for selecting elements.
  *
- * Selector.inc - (c) Copyright TJ Holowaychuk <tj@vision-media.ca> MIT Licensed
+ * Forked from Selector.inc @link https://github.com/tj/php-selector
+ * Selector.inc - Copyright (c) 2008-2009 TJ Holowaychuk <tj@vision-media.ca> MIT Licensed
  *
  * <code>
  *   $dom = new SelectorDOM($html);
  *   $links = $dom->select('a');
  *   $list_links = $dom->select('ul li a');
  * </code>
- *
- * @author TJ Holowaychuk <tj@vision-media.ca>
- * @link https://github.com/tj/php-selector
  */
 class SelectorDOM {
 

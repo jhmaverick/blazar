@@ -1,19 +1,20 @@
 <?php
 
-/*
+/**
  * This file is part of Blazar Framework.
  *
  * (c) João Henrique <joao_henriquee@outlook.com>
  *
- * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
+ * For the full copyright and license information, please view the LICENSE file that was distributed with this source
+ * code.
  */
 
-namespace Blazar;
+namespace Blazar\System;
 
 use Blazar\Helpers\File;
 use Blazar\Helpers\StrRes;
-use Blazar\System\Log;
 use Error;
+use Throwable;
 
 /**
  * Classe de gerenciamento do blazar-manifest.json
@@ -99,10 +100,7 @@ class Manifest extends Application {
                     self::$max_index_map = self::preencherParametro(0, $dados_manifest['map']);
                 }
             }
-        } catch (BlazarException $e) {
-            Log::e($e);
-            exit("Erro ao iniciar o sistema.");
-        } catch (Error $e) {
+        } catch (Error|Throwable $e) {
             Log::e($e);
             exit("Erro ao iniciar o sistema.");
         }

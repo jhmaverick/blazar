@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * This file is part of Blazar Framework.
  *
  * (c) João Henrique <joao_henriquee@outlook.com>
@@ -10,7 +10,7 @@
 
 namespace Blazar\Dao;
 
-use Blazar\BlazarException;
+use Blazar\System\BlazarException;
 
 class DaoException extends BlazarException {
 

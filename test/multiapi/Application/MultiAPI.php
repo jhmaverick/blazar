@@ -2,7 +2,7 @@
 
 namespace Application;
 
-use Blazar\System\WebService;
+use Blazar\Application\WebService;
 
 /**
  * Class API

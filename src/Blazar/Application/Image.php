@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * This file is part of Blazar Framework.
  *
  * (c) João Henrique <joao_henriquee@outlook.com>
@@ -8,9 +8,11 @@
  * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
  */
 
-namespace Blazar\Helpers;
+namespace Blazar\Application;
 
-use Blazar\Manifest;
+use Blazar\Helpers\File;
+use Blazar\Helpers\FileException;
+use Blazar\System\Manifest;
 
 /**
  * Recursos para manipulação de imagens

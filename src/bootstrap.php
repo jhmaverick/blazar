@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * This file is part of Blazar Framework.
  *
  * (c) João Henrique <joao_henriquee@outlook.com>
@@ -55,7 +55,7 @@ new class() {
             else ini_set('display_errors', 'On');
 
             // Aplica configurações do framework
-            new \Blazar\Manifest();
+            new \Blazar\System\Manifest();
         } catch (Throwable $e) {
             \Blazar\System\Log::e($e, null, true, "blazar-bootstrap");
             exit("Error 1 - " . self::FATAL_ERROR_MSG);

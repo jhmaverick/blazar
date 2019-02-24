@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * This file is part of Blazar Framework.
  *
  * (c) João Henrique <joao_henriquee@outlook.com>
@@ -8,9 +8,10 @@
  * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
  */
 
-namespace Blazar\System;
+namespace Blazar\Application;
 
-use Blazar\Application;
+use Blazar\System\Application;
+use Blazar\System\Log;
 use BrightNucleus\MimeTypes\MimeTypes;
 use Mustache_Engine;
 

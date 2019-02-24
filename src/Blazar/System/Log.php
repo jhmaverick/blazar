@@ -1,17 +1,18 @@
 <?php
 
-/*
+/**
  * This file is part of Blazar Framework.
  *
  * (c) João Henrique <joao_henriquee@outlook.com>
  *
- * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
+ * For the full copyright and license information, please view the LICENSE file that was distributed with this source
+ * code.
  */
 
 namespace Blazar\System;
 
 use Blazar\Helpers\File;
-use Blazar\Manifest;
+use Error;
 use Exception;
 use Requests;
 use Throwable;
@@ -22,8 +23,8 @@ use Throwable;
  */
 class Log {
 
-    /* Essa classe é responsavel por receber todos os Logs do sistema, incluindo os de erro, por isto ela
-     * não deve ter muitas dependencias de outras classes para evitar o inicio de um loop infinito.
+    /* Essa classe é responsável por receber todos os Logs do sistema, incluindo os de erro, por isto ela
+     * não deve ter muitas dependencies de outras classes para evitar o inicio de um loop infinito.
      */
 
     private const MAX_FILE_SIZE = (1024 * 1024);
@@ -173,7 +174,7 @@ class Log {
             if (Manifest::config("logs") !== false) self::saveJSON($log_info);
 
             return $log_info;
-        } catch (Throwable $e) {
+        } catch (Error|Throwable $e) {
             // Se catch tenta capturar todas as possíveis exceções
             if (CURRENT_ENV == ENV_DEVELOPMENT) {
                 echo "<pre>\n== Erro ao adicionar Log =====================\n\n";

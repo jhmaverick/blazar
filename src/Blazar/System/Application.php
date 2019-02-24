@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * This file is part of Blazar Framework.
  *
  * (c) João Henrique <joao_henriquee@outlook.com>
@@ -8,9 +8,9 @@
  * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
  */
 
-namespace Blazar;
+namespace Blazar\System;
 
-use Blazar\System\Log;
+use Error;
 use Throwable;
 
 /**
@@ -53,7 +53,7 @@ class Application {
             } else {
                 throw new BlazarException("Nenhuma aplicação para iniciar.");
             }
-        } catch (Throwable $e) {
+        } catch (Error|Throwable $e) {
             Log::e("Alguma exceção não foi tratada e chegou ao root", $e);
             exit("Não foi possível concluir a operação. Por favor tente mais tarde.");
         }

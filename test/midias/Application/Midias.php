@@ -2,8 +2,8 @@
 
 namespace Application;
 
+use Blazar\Application\View;
 use Blazar\System\OutputImg;
-use Blazar\System\View;
 use BrightNucleus\MimeTypes\MimeTypes;
 
 class Midias {
