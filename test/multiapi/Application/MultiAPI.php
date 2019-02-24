@@ -1,6 +1,6 @@
 <?php
 
-namespace Application;
+namespace InNetworking;
 
 use Blazar\Application\WebService;
 

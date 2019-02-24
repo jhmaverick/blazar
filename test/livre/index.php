@@ -4,7 +4,7 @@
 // Auto Load para dependencias do composer
 require_once "../../vendor/autoload.php";
 
-use Blazar\Helpers\StrRes;
+use Blazar\Util\StrRes;
 
 // Constantes e metodos do Framework
 echo "Constante ROOT: " . ROOT . "<br>";

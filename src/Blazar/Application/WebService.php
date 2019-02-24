@@ -10,7 +10,7 @@
 
 namespace Blazar\Application;
 
-use Blazar\Helpers\StrRes;
+use Blazar\Util\StrRes;
 use Blazar\System\ClassMap;
 use Blazar\System\Log;
 use Blazar\System\Manifest;

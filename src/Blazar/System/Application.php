@@ -5,7 +5,8 @@
  *
  * (c) João Henrique <joao_henriquee@outlook.com>
  *
- * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
+ * For the full copyright and license information, please view the LICENSE file that was distributed with this source
+ * code.
  */
 
 namespace Blazar\System;
@@ -51,7 +52,8 @@ class Application {
                 $MapClass = ClassMap::next('class');
                 new $MapClass();
             } else {
-                throw new BlazarException("Nenhuma aplicação para iniciar.");
+                throw new BlazarException("Nenhuma aplicação para iniciar.\n" .
+                    "Verifique se o arquivo \"blazar-manifest.json\" foi criado e se alguma classe foi adicionada ao index \"map\".");
             }
         } catch (Error|Throwable $e) {
             Log::e("Alguma exceção não foi tratada e chegou ao root", $e);

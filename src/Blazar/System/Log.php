@@ -11,7 +11,7 @@
 
 namespace Blazar\System;
 
-use Blazar\Helpers\File;
+use Blazar\Util\File;
 use Error;
 use Exception;
 use Requests;

@@ -11,8 +11,8 @@
 
 namespace Blazar\System;
 
-use Blazar\Helpers\File;
-use Blazar\Helpers\StrRes;
+use Blazar\Util\File;
+use Blazar\Util\StrRes;
 use Error;
 use Throwable;
 

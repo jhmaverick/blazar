@@ -10,8 +10,8 @@
 
 namespace Blazar\Application;
 
-use Blazar\Helpers\File;
-use Blazar\Helpers\FileException;
+use Blazar\Util\File;
+use Blazar\Util\FileException;
 use Blazar\System\Manifest;
 
 /**
@@ -380,7 +380,7 @@ class Image {
      *
      * @throws ImageException
      */
-    public function output(string $source,
+    public static function output(string $source,
                            int $width = null,
                            int $height = null,
                            int $pos_x = null,

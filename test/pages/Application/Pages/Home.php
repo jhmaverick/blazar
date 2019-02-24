@@ -5,7 +5,7 @@ namespace Application\Pages;
 use Application\PageController;
 use Blazar\Application\View;
 use Blazar\Application\ViewException;
-use Blazar\Helpers\Text;
+use Blazar\Util\Text;
 use Blazar\System\ClassMap;
 use Blazar\System\Log;
 
