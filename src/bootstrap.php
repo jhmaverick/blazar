@@ -5,7 +5,8 @@
  *
  * (c) João Henrique <joao_henriquee@outlook.com>
  *
- * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
+ * For the full copyright and license information, please view the LICENSE file that was distributed with this source
+ * code.
  */
 
 // Checa versão do PHP
@@ -170,7 +171,7 @@ new class() {
                 file_exists(ROOT . "/" . $class_path . '.php') &&
                 file_exists(BLAZAR_ROOT . "/" . $class_path . '.php')
             ) {
-                new Exception("Já existe uma classe com nome \"$class_path\" no framework.");
+                new \Blazar\System\BlazarException("Já existe uma classe com nome \"$class_path\" no framework.");
             }
 
             if (file_exists(ROOT . "/" . $class_path . '.php') || file_exists(BLAZAR_ROOT . "/" . $class_path . '.php')) {
@@ -194,6 +195,9 @@ new class() {
      * @return bool
      */
     private function errorHandler($errno, $errstr, $errfile, $errline) {
+        // @ suppression used, don't worry about it
+        if (error_reporting() == 0) return false;
+
         global $log_ignore_errors;
         if (isset($log_ignore_errors) && $log_ignore_errors == true) return false;
 

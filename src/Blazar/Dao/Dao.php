@@ -11,8 +11,8 @@
 
 namespace Blazar\Dao;
 
-use Blazar\Util\StrRes;
 use Blazar\System\Log;
+use Blazar\Util\StrRes;
 use Error;
 use PDO;
 use PDOException;

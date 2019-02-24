@@ -5,14 +5,15 @@
  *
  * (c) João Henrique <joao_henriquee@outlook.com>
  *
- * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
+ * For the full copyright and license information, please view the LICENSE file that was distributed with this source
+ * code.
  */
 
 namespace Blazar\Application;
 
+use Blazar\System\Manifest;
 use Blazar\Util\File;
 use Blazar\Util\FileException;
-use Blazar\System\Manifest;
 
 /**
  * Recursos para manipulação de imagens
@@ -109,12 +110,11 @@ class Image {
         if ($file_name === null && $type_result === self::TP_RESULT_SAVE_IMG)
             throw new ImageException('"file_name" deve ser informado.');
 
-        $img_info = self::getImageSize($source);
-        $imagetype = $img_info[2];
+        list("width" => $info_width, "height" => $info_height, "size" => $imagetype, "source" => $source) = self::getImageInfo($source);
 
         // Busca a largura ou a altura que não tiver sido informado
-        if ($height === null) $height = ($width * $img_info[1]) / $img_info[0];
-        if ($width === null) $width = ($height * $img_info[0]) / $img_info[1];
+        if ($height === null) $height = ($width * $info_height) / $info_width;
+        if ($width === null) $width = ($height * $info_width) / $info_height;
 
         //redimensiona a miniatura para o corte
         if (base64_decode($source, true) !== false) {
@@ -292,8 +292,8 @@ class Image {
         if ($file_name === null && $type_result === self::TP_RESULT_SAVE_IMG)
             throw new ImageException('"file_name" deve ser informado.');
 
-        $img_info = self::getImageSize($source);
-        $imagetype = $img_info[2];
+        list("size" => $imagetype, "source" => $source) = self::getImageInfo($source);
+
 
         if (base64_decode($source, true) != false) {
             $img = imagecreatefromstring(base64_decode($source));
@@ -381,22 +381,22 @@ class Image {
      * @throws ImageException
      */
     public static function output(string $source,
-                           int $width = null,
-                           int $height = null,
-                           int $pos_x = null,
-                           int $pos_y = null,
-                           int $crop_width = null,
-                           int $crop_height = null
+                                  int $width = null,
+                                  int $height = null,
+                                  int $pos_x = null,
+                                  int $pos_y = null,
+                                  int $crop_width = null,
+                                  int $crop_height = null
     ) {
         if ($width === null && $height === null)
             throw new ImageException('"width" ou "height" deve ser informado.');
 
-        $img_type = self::getImageSize($source)[2];
+        list("size" => $imagetype, "source" => $source) = self::getImageInfo($source);
 
         // Verifica o formato da imagem
-        if ($img_type === IMAGETYPE_GIF) header('Content-Type: image/gif');
-        else if ($img_type === IMAGETYPE_JPEG) header('Content-Type: image/jpg');
-        else if ($img_type === IMAGETYPE_PNG) header('Content-Type: image/png');
+        if ($imagetype === IMAGETYPE_GIF) header('Content-Type: image/gif');
+        else if ($imagetype === IMAGETYPE_JPEG) header('Content-Type: image/jpg');
+        else if ($imagetype === IMAGETYPE_PNG) header('Content-Type: image/png');
         else throw new ImageException("Mídia não encontrada.");
 
         if (($width !== null || $height !== null) && $pos_x === null && $pos_y === null) {
@@ -430,17 +430,36 @@ class Image {
     /**
      * Pega os dados de uma imagem dependendo da origem
      *
-     * @param $source
+     * @param string $source path ou base64
      *
      * @return array|bool
+     * @throws ImageException
      */
-    private static function getImageSize($source) {
-        if (base64_decode($source, true) === false) {
-            return getimagesize($source);
-        } else {
+    private static function getImageInfo(string $source): array {
+        $source = trim($source);
+        $base64 = (substr_count($source, "base64,")) ? explode("base64,", $source)[1] : $source;
+
+        if (base64_decode($base64, true) !== false) {
+            $source = $base64;
             $uri = 'data://application/octet-stream;base64,' . $source;
-            return getimagesize($uri);
+            $imagesize = @getimagesize($uri);
+
+            if ($imagesize == false)
+                throw new ImageException("Origem informada não é uma imagem.");
+        } else {
+            $imagesize = @getimagesize($source);
+
+            if (!file_exists($source) || $imagesize == false)
+                throw new ImageException("Imagem \"$source\" não existe.");
         }
+
+        return [
+            "width" => $imagesize[0],
+            "height" => $imagesize[1],
+            "size" => $imagesize[2],
+            "width_height" => $imagesize[3],
+            "source" => $source
+        ];
     }
 
     /**
