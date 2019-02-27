@@ -1,8 +1,8 @@
 <?php
 
-namespace InNetworking;
+namespace Application;
 
-use Blazar\System\ClassMap;
+use Blazar\Core\App;
 
 class PageController {
 
@@ -14,7 +14,7 @@ class PageController {
             "hora" => date("H:i")
         ];
 
-        $Page = ClassMap::next('class');
+        $Page = App::next('class');
         new $Page();
     }
 

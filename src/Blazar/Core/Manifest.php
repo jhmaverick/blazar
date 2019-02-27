@@ -9,19 +9,18 @@
  * code.
  */
 
-namespace Blazar\System;
+namespace Blazar\Core;
 
-use Blazar\Util\File;
-use Blazar\Util\StrRes;
+use Blazar\Component\FileSystem\FileSystem;
+use Blazar\Component\TypeRes\StrRes;
 use Error;
 use Throwable;
 
 /**
  * Classe de gerenciamento do blazar-manifest.json
  */
-class Manifest extends Application {
+class Manifest extends App {
 
-    const PATH = ROOT . "/blazar-manifest.json";
     private static $started = false;
     private static $config = [
         "force_https" => false,
@@ -40,7 +39,7 @@ class Manifest extends Application {
     /**
      * Inicia a configuração do sistema com os dados do manifest
      * TODO Gerar um arquivo serialise dos dados carregados para não ser necessario esse processamento todas as vezes
-     * O codigo do arquivo deve ser gerado com base no conteudo do json e só ser recriado caso o conteudo mude
+     * O codigo do arquivo deve ser gerado com base no conteúdo do json e só ser recriado caso o conteudo mude
      * @throws BlazarException
      */
     public function __construct() {
@@ -50,19 +49,18 @@ class Manifest extends Application {
 
         try {
             // Gera os parâmetros da url
-            self::gerarUrl();
+            self::extractUrlParams();
 
             // TODO Validar manifest por schema para garantir que apenas informações validas serão adicionadas
 
-            if (file_exists(self::PATH)) {
-                $dados_manifest = self::readManifestFile(self::PATH);
+            $manifest_path = (defined("MANIFEST_PATH")) ? MANIFEST_PATH : APP_ROOT . "/blazar-manifest.json";
 
-                // Verifica se existe um manifest alterado para o ambiente
-                if (CURRENT_ENV !== ENV_PRODUCTION &&
-                    getenv('CUSTOM_MANIFEST') !== false &&
-                    file_exists(getenv('CUSTOM_MANIFEST'))
-                ) {
-                    $custom = self::readManifestFile(ROOT . "/" . getenv('CUSTOM_MANIFEST'));
+            if (file_exists($manifest_path)) {
+                $dados_manifest = self::readManifestFile($manifest_path);
+
+                // Verifica se existe um manifest para mesclar com o principal
+                if (defined('CUSTOM_MANIFEST') && file_exists(CUSTOM_MANIFEST)) {
+                    $custom = self::readManifestFile(CUSTOM_MANIFEST);
                     $dados_manifest = array_replace_recursive($dados_manifest, $custom);
                 }
 
@@ -189,18 +187,19 @@ class Manifest extends Application {
 
     /**
      * Gera um array com parâmetros da url
+     *
      * @throws BlazarException
      */
-    private static function gerarUrl() {
+    private static function extractUrlParams() {
         $url = [];
 
         $un_get = explode("?", URL);
         $url_completa = $un_get[0];
 
         // Pega parâmetros da URL
-        if ($url_completa != BASE) {
+        if ($url_completa != URL_BASE) {
             // remove caminho raiz da página
-            $p_atual = explode(BASE, $url_completa);
+            $p_atual = explode(URL_BASE, $url_completa);
 
             if (isset($p_atual[1])) {
                 $p_atual = $p_atual[1];
@@ -215,7 +214,10 @@ class Manifest extends Application {
                     $url[0] = $p_atual;
                 }
             } else {
-                throw new BlazarException("Problemas ao gerar url.");
+                throw new BlazarException("Problemas ao extrair os parâmetros da url.\n" .
+                    "A constante BASE deve ser o inicio da constante URL.\n" .
+                    "URL: " . URL . "\n" .
+                    "BASE: " . URL_BASE);
             }
         }
 
@@ -234,7 +236,7 @@ class Manifest extends Application {
         $file_name = explode("/", $local);
         $file_name = end($file_name);
 
-        $dados_manifest = File::read($local);
+        $dados_manifest = FileSystem::read($local);
 
         if ($dados_manifest === null) {
             throw new BlazarException("Manifest: O arquivo \"$file_name\" não foi encontrado.");
@@ -248,10 +250,10 @@ class Manifest extends Application {
 
         // Aplica o que foi encontrado nos includes no json principal
         foreach ($retorno[0] as $index => $value) {
-            if (file_exists(ROOT . "/" . $retorno[1][$index])) {
-                $conteudo_json = file_get_contents(ROOT . "/" . $retorno[1][$index]);
+            if (file_exists(APP_ROOT . "/" . $retorno[1][$index])) {
+                $conteudo_json = file_get_contents(APP_ROOT . "/" . $retorno[1][$index]);
 
-                if (json_decode($conteudo_json, true) != null) {
+                if (json5_decode($conteudo_json, true) != null) {
                     $dados_manifest = StrRes::replaceFirst($dados_manifest, $retorno[0][$index], $conteudo_json);
                 } else {
                     throw new BlazarException("O código encontrado não é um JSON.\n" .
@@ -265,8 +267,8 @@ class Manifest extends Application {
             }
         }
 
-        if (json_decode($dados_manifest, true)) {
-            $dados_manifest = json_decode($dados_manifest, true);
+        if (json5_decode($dados_manifest, true)) {
+            $dados_manifest = json5_decode($dados_manifest, true);
         } else {
             throw new BlazarException("Manifest: O arquivo \"$file_name\" não é um JSON.");
         }
@@ -344,8 +346,8 @@ class Manifest extends Application {
         }
 
         // Verifica se o index da url é um parâmetro do sistema
-        if (!isset($map_list[Application::param($index)])) {
-            $url = Application::param();
+        if (!isset($map_list[App::param($index)])) {
+            $url = App::param();
 
             $new_url = [];
             $new_url[0] = array_slice($url, 0, $index);
@@ -356,11 +358,11 @@ class Manifest extends Application {
             self::$parameters = $url;
         }
 
-        self::$map_params[] = self::paramInfo($index, $map_list[Application::param($index)]);
+        self::$map_params[] = self::paramInfo($index, $map_list[App::param($index)]);
 
         // Verifica proximo index
-        if (isset($map_list[Application::param($index)]['sub'])) {
-            $index = self::preencherParametro($index + 1, $map_list[Application::param($index)]['sub']);
+        if (isset($map_list[App::param($index)]['sub'])) {
+            $index = self::preencherParametro($index + 1, $map_list[App::param($index)]['sub']);
         }
 
         return $index;
@@ -378,14 +380,14 @@ class Manifest extends Application {
     private static function paramInfo(string $index, array $param_info): array {
         if (isset($param_info['sub'])) unset($param_info['sub']);
 
-        $param_info['name'] = Application::param($index);
+        $param_info['name'] = App::param($index);
         $param_info['index'] = $index;
 
         if (!class_exists($param_info['class']))
             throw new BlazarException("A Classe \"" . $param_info['class'] . "\" informada no map não existe.");
 
-        $params_map = ClassMap::get();
-        $params_full = Application::param(null, Application::PARAMS_ALL);
+        $params_map = App::get();
+        $params_full = App::param(null, App::PARAMS_ALL);
 
         // Gera a rota do parâmetro na url
         $route = [];
@@ -394,7 +396,7 @@ class Manifest extends Application {
         }
 
         $param_info["route"] = implode("/", $route);
-        $param_info["url_path"] = BASE . $param_info["route"];
+        $param_info["url_path"] = URL_BASE . $param_info["route"];
 
         return $param_info;
     }

@@ -5,16 +5,16 @@
  *
  * (c) João Henrique <joao_henriquee@outlook.com>
  *
- * For the full copyright and license information, please view the LICENSE file that was distributed with this source
- * code.
+ * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
  */
 
-namespace Blazar\Application;
+namespace Blazar\Component\WebService;
 
-use Blazar\System\ClassMap;
-use Blazar\System\Log;
-use Blazar\System\Manifest;
-use Blazar\Util\StrRes;
+use Blazar\Component\TypeRes\StrRes;
+use Blazar\Component\View\View;
+use Blazar\Core\App;
+use Blazar\Core\Log;
+use Blazar\Core\Manifest;
 use Exception;
 use ReflectionMethod;
 
@@ -85,7 +85,7 @@ class WebService {
         $this->method_param = $method_param ?? self::$default_method_param;
         $this->inherited_enable = $inherited_enable;
 
-        $this->current_map = ClassMap::current();
+        $this->current_map = App::current();
         $this->api_map = Manifest::map($this->current_map["route"]);
         $this->view = new View();
 
@@ -178,7 +178,7 @@ class WebService {
                 $webservice = $this;
 
                 // Pega o parametro da URL para obter a classe
-                $api_class = ClassMap::next("class");
+                $api_class = App::next("class");
                 if ($api_class == null || !class_exists($api_class)) {
                     $this->result_list = "API não existe";
                     return;

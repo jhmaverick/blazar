@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
 
-    <base href="<?= BASE ?>"/>
+    <base href="<?= URL_BASE ?>"/>
 
     <link rel="stylesheet" type="text/css" href="<?= $home_css ?>"/>
 

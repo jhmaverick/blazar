@@ -5,14 +5,13 @@
  *
  * (c) João Henrique <joao_henriquee@outlook.com>
  *
- * For the full copyright and license information, please view the LICENSE file that was distributed with this source
- * code.
+ * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
  */
 
-namespace Blazar\Application;
+namespace Blazar\Component\View;
 
-use Blazar\System\Application;
-use Blazar\System\Log;
+use Blazar\Core\App;
+use Blazar\Core\Log;
 use BrightNucleus\MimeTypes\MimeTypes;
 use Mustache_Engine;
 
@@ -76,7 +75,7 @@ class View {
      * @throws ViewException
      */
     protected function preparePage(string $view_path, array $page_res = [], $view_callback = null, $resource_callback = null, int $render = self::PAGE_RENDER_RESOURCE) {
-        $param0 = Application::param(0, Application::PARAMS_APP);
+        $param0 = App::param(0, App::PARAMS_APP);
 
         if ($param0 !== null && isset($page_res[$param0])) {
             if ($resource_callback == "render") {

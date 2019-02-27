@@ -3,11 +3,11 @@
 namespace Application\Pages;
 
 use Application\PageController;
-use Blazar\Application\View;
-use Blazar\Application\ViewException;
-use Blazar\Util\Text;
-use Blazar\System\ClassMap;
-use Blazar\System\Log;
+use Blazar\Component\Text\Text;
+use Blazar\Component\View\View;
+use Blazar\Component\View\ViewException;
+use Blazar\Core\App;
+use Blazar\Core\Log;
 
 class Home extends View {
     private $map_info;
@@ -22,7 +22,7 @@ class Home extends View {
      */
     public function __construct() {
         try {
-            $this->map_info = ClassMap::current();
+            $this->map_info = App::current();
 
             $this->preparePage($this->view_path, $this->page_res, "showView")->render();
         } catch (ViewException $e) {

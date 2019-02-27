@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
 
-    <base href="<?= BASE ?>"/>
+    <base href="<?= URL_BASE ?>"/>
 
     <title></title>
 </head>

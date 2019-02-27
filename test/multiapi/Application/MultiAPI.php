@@ -1,8 +1,8 @@
 <?php
 
-namespace InNetworking;
+namespace Application;
 
-use Blazar\Application\WebService;
+use Blazar\Component\WebService\WebService;
 
 /**
  * Class API

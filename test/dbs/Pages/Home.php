@@ -2,9 +2,11 @@
 
 namespace Pages;
 
-use Blazar\Application\View;
-use Blazar\System\ClassMap;
-use Blazar\System\Log;
+use Blazar\Component\Dao\DaoException;
+use Blazar\Component\View\View;
+use Blazar\Component\View\ViewException;
+use Blazar\Core\App;
+use Blazar\Core\Log;
 use Model\Usuario;
 
 class Home extends View {
@@ -16,11 +18,12 @@ class Home extends View {
      * Home constructor.
      */
     public function __construct() {
-        $this->map_info = ClassMap::current();
-        $type_load = $this->preparePage($this->view_path)->render();
-        $this->mustache(true);
+        try {
+            $this->map_info = App::current();
+            $this->mustache(true);
 
-        if ($type_load == "view") {
+            $this->preparePage($this->view_path);
+
             try {
                 $u = new Usuario();
                 $u->adicionar([
@@ -30,11 +33,13 @@ class Home extends View {
                 ]);
 
                 $this->set("usuarios", $u->listar());
-            } catch (\Exception $e) {
+            } catch (DaoException $e) {
                 Log::e($e);
             }
-        }
 
-        $this->render();
+            $this->render();
+        } catch (ViewException $e) {
+            Log::e($e);
+        }
     }
 }

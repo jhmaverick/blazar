@@ -16,17 +16,21 @@ if (version_compare(PHP_VERSION, "7.1", '<')) {
         "Instale o PHP 7.1 ou superior.");
 }
 
-// Inicia configuração do Framework
-new class() {
+class Blazar {
 
+    private static $instance;
+    private static $started = false;
     /**
-     * Mensagem de saida em caso de um fatal error
+     * Mensagem de saída em caso de um fatal error
      * Códigos: 1 = construct, 2 = autoload, 3 = error_handler e 4 = exception_handler
      * set_exception_handler,
      */
     private const FATAL_ERROR_MSG = "Não foi possível concluir a operação. Por favor tente mais tarde.";
 
-    public function __construct() {
+    /**
+     * Blazar constructor.
+     */
+    private function __construct() {
         try {
             // Define codificação do Projeto
             mb_internal_encoding("UTF-8");
@@ -37,7 +41,7 @@ new class() {
 
             // Captura Exceções não tratadas
             set_exception_handler(function ($e) {
-                \Blazar\System\Log::e($e, null, false, "exception_handler");
+                \Blazar\Core\Log::e($e, null, false, "exception_handler");
                 exit("Error 4 - " . self::FATAL_ERROR_MSG);
             });
 
@@ -56,58 +60,92 @@ new class() {
             else ini_set('display_errors', 'On');
 
             // Aplica configurações do framework
-            new \Blazar\System\Manifest();
+            new \Blazar\Core\Manifest();
         } catch (Throwable $e) {
-            \Blazar\System\Log::e($e, null, true, "blazar-bootstrap");
+            \Blazar\Core\Log::e($e, null, true, "blazar-bootstrap");
             exit("Error 1 - " . self::FATAL_ERROR_MSG);
         }
+    }
+
+    /**
+     * Prepara o ambiente do framework sem iniciar o mapa de classes
+     *
+     * Esse método habilita o autoload de classes, inicia as constantes do sistema, Faz a leitura do manifest e inicia
+     * o tratamento de erros pelo framework
+     */
+    public static function prepare(): bool {
+        if (self::$instance === null) {
+            self::$instance = new Blazar();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Iniciar a aplicação a partir do map de classes do Manifest
+     *
+     * @throws \Blazar\Core\BlazarException
+     */
+    public static function init() {
+        if (self::$instance === null) self::$instance = new Blazar();
+
+        // Impede que a função seja iniciada mais de uma vez
+        if (self::$started) throw new \Blazar\Core\BlazarException("Método Blazar::init foi chamado novamente.");
+        self::$started = true;
+
+        try {
+            if (count(\Blazar\Core\Manifest::map()) > 0) {
+                $MapClass = \Blazar\Core\App::next('class');
+                new $MapClass();
+            } else {
+                throw new \Blazar\Core\BlazarException("Nenhuma aplicação para iniciar.\n" .
+                    "Verifique se o arquivo \"blazar-manifest.json\" foi criado e se alguma classe foi adicionada ao índice \"map\".\n" .
+                    "Para utilizar as classes do framework sem iniciar as aplicações do \"map\" utilize o método Blazar::prepare.");
+            }
+        } catch (Error|Throwable $e) {
+            \Blazar\Core\Log::e("Alguma exceção não foi tratada e chegou ao root", $e);
+            exit("Não foi possível concluir a operação. Por favor tente mais tarde.");
+        }
+    }
+
+    /**
+     * Pega o ROOT da aplicação com base no arquivo que recebeu a requisição
+     *
+     * @return string
+     */
+    public static function getAutoAppRoot() {
+        // Pega o diretório do arquivo que iniciou a execução
+        $app_dir = $_SERVER['DOCUMENT_ROOT'] . $_SERVER['SCRIPT_NAME'];
+        $app_dir = implode("/", explode("/", $app_dir, -1));
+
+        return $app_dir;
+    }
+
+    /**
+     * Pega a BASE da aplicação com base no arquivo que recebeu a requisição
+     *
+     * @return string
+     */
+    public static function getAutoBase() {
+        $app_dir = self::getAutoAppRoot();
+
+        // Porta usada
+        $port = ($_SERVER['SERVER_PORT'] != 80 && $_SERVER['SERVER_PORT'] != 443) ? ":" . $_SERVER['SERVER_PORT'] : "";
+
+        // Trata a base da URL onde o sistema foi iniciado
+        $dir = explode(str_replace("\\", "/", $_SERVER['DOCUMENT_ROOT']), str_replace("\\", "/", $app_dir));
+        $base = '//' . str_replace("//", "/", $_SERVER['HTTP_HOST'] . $port . '/' . end($dir) . "/");
+
+        return $base;
     }
 
     /**
      * Constantes do Framework
      */
     private function constants() {
-        // Verifica se a constante ROOT foi definida manualmente
-        if (!defined("ROOT")) {
-            // Pega o diretorio do arquivo que iniciou a execução
-            $real_dir = $_SERVER['DOCUMENT_ROOT'] . $_SERVER['SCRIPT_NAME'];
-            $real_dir = implode("/", explode("/", $real_dir, -1));
-
-            /**
-             * O diretório raiz do projeto
-             *
-             * Esta constante pode ser definida manualmente antes da inclusão do autoload do composer
-             */
-            define("ROOT", str_replace("\\", "/", $real_dir));
-        }
-
-        // Verifica se a constante BASE foi definida manualmente
-        if (!defined("BASE")) {
-            // Porta usada
-            $port = ($_SERVER['SERVER_PORT'] != 80 && $_SERVER['SERVER_PORT'] != 443) ? ":" . $_SERVER['SERVER_PORT'] : "";
-
-            // Trata a base da URL onde o sistema foi iniciado
-            $dir = explode(str_replace("\\", "/", $_SERVER['DOCUMENT_ROOT']), str_replace("\\", "/", ROOT));
-            $base = '//' . str_replace("//", "/", $_SERVER['HTTP_HOST'] . $port . '/' . end($dir) . "/");
-
-            /**
-             * URL seguida do caminho ate o diretorio onde o index foi iniciado
-             *
-             * Esta constante pode ser definida manualmente antes da inclusão do autoload do composer
-             */
-            define("BASE", $base);
-        } else if (substr(BASE, -1) !== "/") {
-            exit("A constante \"BASE\" deve terminar com \"/\".");
-        }
-
-        /** O diretório raiz onde esta localizado o framework no vendor */
-        define("BLAZAR_ROOT", str_replace("\\", "/", __DIR__));
-
-        /** Protocolo de acesso: http ou https */
-        define("HTTP", (isset($_SERVER['HTTPS']) ? "https" : "http"));
-
-        /** URL real atual completa */
-        define("URL", "//" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
+        // Porta usada
+        $port = ($_SERVER['SERVER_PORT'] != 80 && $_SERVER['SERVER_PORT'] != 443) ? ":" . $_SERVER['SERVER_PORT'] : "";
 
         /** Ambiente de Produção */
         define("ENV_PRODUCTION", 1);
@@ -118,40 +156,43 @@ new class() {
         /** Ambiente de desenvolvimento */
         define("ENV_DEVELOPMENT", 3);
 
-        /**
-         * Ambiente onde o sistema esta rodando.
-         *
-         * ENV_DEVELOPMENT, ENV_TESTING ou ENV_PRODUCTION.
-         */
-        define("CURRENT_ENV", $this->getCurrentEnv());
-    }
+        /** O diretório raiz onde esta localizado o framework no vendor */
+        define("BLAZAR_ROOT", str_replace("\\", "/", __DIR__));
 
-    /**
-     * Pega o ambiente atual
-     *
-     * @return int ENV_PRODUCTION, ENV_TESTING ou ENV_DEVELOPMENT
-     */
-    private function getCurrentEnv() {
-        $environment = ENV_PRODUCTION;
-
-        // Configurações de variaveis de ambiente
-        $env_path = null;
-        if (file_exists(ROOT . "/.env")) $env_path = ROOT;
-        else if (file_exists(ROOT . "/../.env")) $env_path = ROOT . "/../";
-
-        // Verifica se existe um arquivo .env
-        if ($env_path !== null) {
-            $dotenv = new Dotenv\Dotenv($env_path);
-            $dotenv->load();
+        if (!defined("APP_ROOT")) {
+            /**
+             * O diretório raiz do projeto
+             *
+             * Esta constante pode ser definida manualmente antes da inclusão do autoload do composer
+             */
+            define("APP_ROOT", str_replace("\\", "/", self::getAutoAppRoot()));
         }
 
-        // Verifica se o tipo de ambiente foi setado em uma variavel de ambiente
-        $custom_env = getenv('ENVIRONMENT_TYPE');
-        if ($custom_env == ENV_DEVELOPMENT || $custom_env == ENV_TESTING || $custom_env == ENV_PRODUCTION) {
-            $environment = (int)$custom_env;
+        if (!defined("URL_BASE")) {
+            /**
+             * URL seguida do caminho ate o diretório onde o index foi iniciado
+             *
+             * Esta constante pode ser definida manualmente antes da inclusão do autoload do composer
+             */
+            define("URL_BASE", self::getAutoBase());
+        } else if (substr(URL_BASE, -1) !== "/") {
+            exit("A constante \"URL_BASE\" deve terminar com \"/\".");
         }
 
-        return $environment;
+        if (!defined("URL")) {
+            /** URL real atual completa */
+            define("URL", "//" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . $port);
+        }
+
+        //define("CURRENT_ENV", $this->getCurrentEnv());
+        if (!defined("CURRENT_ENV")) {
+            /**
+             * Ambiente onde o sistema esta rodando.
+             *
+             * ENV_DEVELOPMENT, ENV_TESTING ou ENV_PRODUCTION.
+             */
+            define("CURRENT_ENV", ENV_PRODUCTION);
+        }
     }
 
     /**
@@ -168,18 +209,21 @@ new class() {
 
             // Retorna uma Exceção caso exista um arquivo com mesmo nome no projeto e no framework
             if (
-                file_exists(ROOT . "/" . $class_path . '.php') &&
+                file_exists(APP_ROOT . "/" . $class_path . '.php') &&
                 file_exists(BLAZAR_ROOT . "/" . $class_path . '.php')
             ) {
-                new \Blazar\System\BlazarException("Já existe uma classe com nome \"$class_path\" no framework.");
+                new \Blazar\Core\BlazarException("Já existe uma classe com nome \"$class_path\" no framework.");
             }
 
-            if (file_exists(ROOT . "/" . $class_path . '.php') || file_exists(BLAZAR_ROOT . "/" . $class_path . '.php')) {
+            if (file_exists(BLAZAR_ROOT . "/" . $class_path . '.php')) {
                 /** @noinspection PhpIncludeInspection */
-                require_once $class_path . '.php';
+                require_once BLAZAR_ROOT . "/" . $class_path . '.php';
+            } else if (file_exists(APP_ROOT . "/" . $class_path . '.php')) {
+                /** @noinspection PhpIncludeInspection */
+                require_once APP_ROOT . "/" . $class_path . '.php';
             }
         } catch (Throwable $e) {
-            \Blazar\System\Log::e($e, null, false, "spl_autoload");
+            \Blazar\Core\Log::e($e, null, false, "spl_autoload");
             exit("Error 2 - " . self::FATAL_ERROR_MSG);
         }
     }
@@ -231,15 +275,15 @@ new class() {
                 $fatal = true;
             }
 
-            if ($err_type == "e") \Blazar\System\Log::e($error_str, null, true, "error_handler");
-            else \Blazar\System\Log::w($error_str, null, true, "error_handler");
+            if ($err_type == "e") \Blazar\Core\Log::e($error_str, null, true, "error_handler");
+            else \Blazar\Core\Log::w($error_str, null, true, "error_handler");
 
             if ($fatal) exit("Error 3.1 - " . self::FATAL_ERROR_MSG);
 
             return true;
         } catch (Throwable $e) {
-            \Blazar\System\Log::e($e, null, false, "spl_autoload");
+            \Blazar\Core\Log::e($e, null, false, "spl_autoload");
             exit("Error 3.2 - " . self::FATAL_ERROR_MSG);
         }
     }
-};
+}

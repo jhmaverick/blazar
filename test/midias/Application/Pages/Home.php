@@ -2,9 +2,8 @@
 
 namespace Application\Pages;
 
-use Application\Controller;
-use Blazar\Application\View;
-use Blazar\System\ClassMap;
+use Blazar\Component\View\View;
+use Blazar\Core\App;
 
 class Home extends View {
     private $map_info;
@@ -15,7 +14,7 @@ class Home extends View {
      * Home constructor.
      */
     public function __construct() {
-        $this->map_info = ClassMap::current();
+        $this->map_info = App::current();
         $this->preparePage($this->view_path);
 
         $this->render();

@@ -9,9 +9,9 @@
  * code.
  */
 
-namespace Blazar\System;
+namespace Blazar\Core;
 
-use Blazar\Util\File;
+use Blazar\Component\FileSystem\FileSystem;
 use Error;
 use Exception;
 use Requests;
@@ -32,7 +32,7 @@ class Log {
     /**
      * Error Log
      *
-     * @see \Blazar\System\Log::add()
+     * @see \Blazar\Core\Log::add()
      *
      * @param string|array|Throwable|object $log
      * @param string|array|Throwable|object|null $auxiliar
@@ -48,7 +48,7 @@ class Log {
     /**
      * Warning Log
      *
-     * @see \Blazar\System\Log::add()
+     * @see \Blazar\Core\Log::add()
      *
      * @param string|array|Throwable|object $log
      * @param string|array|Throwable|object|null $auxiliar
@@ -64,7 +64,7 @@ class Log {
     /**
      * Info Log
      *
-     * @see \Blazar\System\Log::add()
+     * @see \Blazar\Core\Log::add()
      *
      * @param string|array|Throwable|object $log
      * @param string|array|Throwable|object|null $auxiliar
@@ -83,7 +83,7 @@ class Log {
      * Esse log deve ser utilizado apenas para debug em desenvolvimento e removido.<br>
      * Logs de debug em produção irão gerar um log warning
      *
-     * @see \Blazar\System\Log::add()
+     * @see \Blazar\Core\Log::add()
      *
      * @param string|array|Throwable|object $log
      * @param string|array|Throwable|object|null $auxiliar
@@ -306,7 +306,7 @@ class Log {
      */
     private static function saveHTML($type_log, $msg, $date_time, string $tag = null): bool {
         // Diretorio de saida dos logs
-        $log_dir = File::pathJoin(ROOT, Manifest::config("logs"));
+        $log_dir = FileSystem::pathJoin(APP_ROOT, Manifest::config("logs"));
         if (!file_exists($log_dir)) mkdir($log_dir, 0777, true);
 
         $arquivo = $log_dir . "/" . date("Y-m-d") . ".log.html";
@@ -336,7 +336,7 @@ class Log {
             $msg . "<br>" . URL .
             "<p style=\"font-size: 8px; color: #999999; border-bottom: 1px solid #CCCCCC\">" . date("d/m/Y à\s H:i:s", strtotime($date_time)) . "</p>\n";
 
-        File::write($arquivo, $msg, File::WRITE_APPEND);
+        FileSystem::write($arquivo, $msg, FileSystem::WRITE_APPEND);
 
         return true;
     }
@@ -350,7 +350,7 @@ class Log {
      */
     private static function saveJSON(array $log_info): bool {
         // Diretorio de saida dos logs
-        $log_dir = File::pathJoin(ROOT, Manifest::config("logs"));
+        $log_dir = FileSystem::pathJoin(APP_ROOT, Manifest::config("logs"));
         if (!file_exists($log_dir)) mkdir($log_dir, 0777, true);
 
         $arquivo = $log_dir . "/" . date("Y-m-d") . ".log.json";
@@ -358,12 +358,12 @@ class Log {
         if (file_exists($arquivo) && filesize($arquivo) > self::MAX_FILE_SIZE) return false;
 
         // Verifica se o arquivo já existe
-        $logs = json_decode(File::read($arquivo), true) ?? [];
+        $logs = json_decode(FileSystem::read($arquivo), true) ?? [];
         $logs[] = $log_info;
 
         // Salva o log com o novo index
         $logs_str = json_encode($logs, JSON_PRETTY_PRINT);
-        File::write($arquivo, $logs_str);
+        FileSystem::write($arquivo, $logs_str);
 
         return true;
     }

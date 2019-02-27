@@ -2,10 +2,10 @@
 
 namespace Model;
 
-use Blazar\Dao\CRUDMysql;
-use Blazar\Dao\DaoException;
-use Blazar\System\Log;
-use Blazar\System\Manifest;
+use Blazar\Component\Dao\CRUDMysql;
+use Blazar\Component\Dao\DaoException;
+use Blazar\Core\Log;
+use Blazar\Core\Manifest;
 
 class Usuario extends CRUDMysql {
     const VERSAO = 1;

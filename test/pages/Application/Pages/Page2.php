@@ -3,10 +3,10 @@
 namespace Application\Pages;
 
 use Application\PageController;
-use Blazar\Application\View;
-use Blazar\Application\ViewException;
-use Blazar\System\ClassMap;
-use Blazar\System\Log;
+use Blazar\Component\View\View;
+use Blazar\Component\View\ViewException;
+use Blazar\Core\App;
+use Blazar\Core\Log;
 
 class Page2 extends View {
     private $map_info;
@@ -18,7 +18,7 @@ class Page2 extends View {
      */
     public function __construct() {
         try {
-            $this->map_info = ClassMap::current();
+            $this->map_info = App::current();
 
             $this->mustache(true);
             $this->preparePage($this->view_path, [], "showView")->render();

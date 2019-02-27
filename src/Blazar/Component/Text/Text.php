@@ -5,14 +5,15 @@
  *
  * (c) João Henrique <joao_henriquee@outlook.com>
  *
- * For the full copyright and license information, please view the LICENSE file that was distributed with this source
- * code.
+ * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
  */
 
-namespace Blazar\Util;
+namespace Blazar\Component\Text;
 
-use Blazar\System\BlazarException;
-use Blazar\System\Log;
+use Blazar\Component\FileSystem\FileSystem;
+use Blazar\Component\TypeRes\StrRes;
+use Blazar\Core\BlazarException;
+use Blazar\Core\Log;
 use Exception;
 use Mustache_Engine;
 
@@ -29,7 +30,7 @@ class Text {
     private const DEFAULT_LANG = "default";
 
     // Diretório padrão dos textos
-    private static $default_dir = ROOT . "/texts/";
+    private static $default_dir = APP_ROOT . "/texts/";
     private static $blazar_dir = BLAZAR_ROOT . "/texts/";
     private static $default_lang = self::DEFAULT_LANG;
 
@@ -204,9 +205,9 @@ class Text {
             else return null;
 
             // Remove comentarios e transforma em array
-            $file_content = StrRes::removeComments(File::read($name));
-            if (json_decode($file_content, true)) {
-                $list = json_decode($file_content, true);
+            $file_content = StrRes::removeComments(FileSystem::read($name));
+            if (json5_decode($file_content, true)) {
+                $list = json5_decode($file_content, true);
             } else {
                 throw new BlazarException("O conteúdo do arquivo \"" . $name . ".json\" não é um JSON.", 2);
             }

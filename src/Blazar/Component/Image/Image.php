@@ -5,20 +5,20 @@
  *
  * (c) João Henrique <joao_henriquee@outlook.com>
  *
- * For the full copyright and license information, please view the LICENSE file that was distributed with this source
- * code.
+ * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
  */
 
-namespace Blazar\Application;
+namespace Blazar\Component\Image;
 
-use Blazar\System\Manifest;
-use Blazar\Util\File;
-use Blazar\Util\FileException;
+use Blazar\Component\FileSystem\FileException;
+use Blazar\Component\FileSystem\FileSystem;
+use Blazar\Core\Manifest;
 
 /**
  * Recursos para manipulação de imagens
  */
 class Image {
+
     /**#@+
      * Tipos de resultado para imagens
      */
@@ -49,8 +49,8 @@ class Image {
         else throw new ImageException("Formato inválido.");
 
         try {
-            $name = File::upload($file, $output_dir, ["jpg", "jpeg", "png", "gif"]);
-            $file_name = File::pathJoin($output_dir, $name);
+            $name = FileSystem::upload($file, $output_dir, ["jpg", "jpeg", "png", "gif"]);
+            $file_name = FileSystem::pathJoin($output_dir, $name);
 
             // Caso manter menor seja verdadeiro e tamanho tambem seja menor ou
             // se largura e altura seja menor aplica tamanhos padrões da imagem

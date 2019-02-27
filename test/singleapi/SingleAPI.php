@@ -1,6 +1,6 @@
 <?php
 
-use Blazar\Application\WebService;
+use Blazar\Component\WebService\WebService;
 
 /**
  * API de gerenciamento de Login e Sessão

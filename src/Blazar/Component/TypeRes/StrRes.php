@@ -9,7 +9,7 @@
  * code.
  */
 
-namespace Blazar\Util;
+namespace Blazar\Component\TypeRes;
 
 /**
  * Recursos para tratamento de strings
