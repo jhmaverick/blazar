@@ -1,10 +1,9 @@
 <?php
-if (file_exists("../env.php")) require_once "../env.php";
-
 // Utilização sem manifesto e mapa de classes
-
 // Auto Load para dependencias do composer
 require_once "../../vendor/autoload.php";
+
+Blazar::prepare();
 
 use Blazar\Component\TypeRes\StrRes;
 

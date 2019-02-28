@@ -55,12 +55,12 @@ class Blazar {
                 $this->autoloader($class_path);
             });
 
+            // Aplica configurações do framework
+            new \Blazar\Core\Manifest();
+
             // Desabilita exibição de erros na produção
             if (CURRENT_ENV == ENV_PRODUCTION) ini_set('display_errors', 'Off');
             else ini_set('display_errors', 'On');
-
-            // Aplica configurações do framework
-            new \Blazar\Core\Manifest();
         } catch (Throwable $e) {
             \Blazar\Core\Log::e($e, null, true, "blazar-bootstrap");
             exit("Error 1 - " . self::FATAL_ERROR_MSG);
@@ -182,16 +182,6 @@ class Blazar {
         if (!defined("URL")) {
             /** URL real atual completa */
             define("URL", "//" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . $port);
-        }
-
-        //define("CURRENT_ENV", $this->getCurrentEnv());
-        if (!defined("CURRENT_ENV")) {
-            /**
-             * Ambiente onde o sistema esta rodando.
-             *
-             * ENV_DEVELOPMENT, ENV_TESTING ou ENV_PRODUCTION.
-             */
-            define("CURRENT_ENV", ENV_PRODUCTION);
         }
     }
 

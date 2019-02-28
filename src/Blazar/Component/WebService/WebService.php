@@ -5,7 +5,8 @@
  *
  * (c) João Henrique <joao_henriquee@outlook.com>
  *
- * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
+ * For the full copyright and license information, please view the LICENSE file that was distributed with this source
+ * code.
  */
 
 namespace Blazar\Component\WebService;
@@ -38,7 +39,7 @@ use ReflectionMethod;
  * requisições anteriores
  * #2 object|null [instance] (Apenas para webservice) A instancia da classe webservice.<br>
  */
-class WebService {
+abstract class WebService {
 
     private static $default_method_param = "method";
     private static $started = false;
@@ -50,7 +51,7 @@ class WebService {
     private $view;
     private $inherited_enable = false;
 
-    // Retornos dos metodos de multiplas requisições
+    // Retornos dos métodos de múltiplas requisições
     private $result_list = [];
 
     /**

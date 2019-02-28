@@ -30,6 +30,7 @@ class Manifest extends App {
         "max_upload_filesize" => "10MB",
         "logs" => "logs",
         "cors" => null,
+        "env" => ENV_PRODUCTION,
         "console_url" => "http://localhost:4000"
     ];
     private static $data = [];
@@ -59,21 +60,17 @@ class Manifest extends App {
                 $dados_manifest = self::readManifestFile($manifest_path);
 
                 // Verifica se existe um manifest para mesclar com o principal
-                if (defined('CUSTOM_MANIFEST') && file_exists(CUSTOM_MANIFEST)) {
-                    $custom = self::readManifestFile(CUSTOM_MANIFEST);
+                $custom_manifest = (defined("CUSTOM_MANIFEST")) ? CUSTOM_MANIFEST : APP_ROOT . "/custom-manifest.json";
+
+                if (file_exists($custom_manifest)) {
+                    $custom = self::readManifestFile($custom_manifest);
                     $dados_manifest = array_replace_recursive($dados_manifest, $custom);
                 }
 
-                // Configurações
-                if (isset($dados_manifest['configs'])) {
-                    foreach ($dados_manifest['configs'] as $index => $value) {
-                        // Se o indice logs estiver como true altera para o padrão
-                        if ($index == "logs" && $value === true) $value = self::$config[$index];
+                // Mescla Configurações do manifest com as padrões
+                if (isset($dados_manifest['configs'])) self::$config = array_merge(self::$config, $dados_manifest['configs']);
 
-                        self::$config[$index] = $value;
-                    }
-                }
-
+                // Aplica configurações
                 self::applyConfigs();
 
                 // Bancos de dados
@@ -280,6 +277,19 @@ class Manifest extends App {
      * Aplica algumas configurações setadas.
      */
     private static function applyConfigs() {
+        // Define ambiente
+        if (!defined("CURRENT_ENV")) {
+            /**
+             * Ambiente onde o sistema esta rodando.
+             *
+             * ENV_DEVELOPMENT, ENV_TESTING ou ENV_PRODUCTION.
+             */
+            define("CURRENT_ENV", Manifest::config("env"));
+        }
+
+        // Se o índice logs estiver como true altera para o padrão
+        if (self::$config["logs"] == true) self::$config["logs"] = "logs";
+
         // Redirecionar para https
         if (CURRENT_ENV == ENV_PRODUCTION && self::config("force_https") && !isset($_SERVER['HTTPS'])) {
             header("location: https://" . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"]);
