@@ -1,4 +1,5 @@
 {
+  "$schema": "../../src/schema/blazar-schema.json",
   "configs": {
     "force_https": false,
     "force_www": 0,

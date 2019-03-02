@@ -1,4 +1,5 @@
 {
+  "$schema": "../../src/schema/blazar-schema.json",
   "map": {
     "multi_api": {
       "class": "Application\\MultiAPI",

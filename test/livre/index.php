@@ -1,6 +1,6 @@
 <?php
 // Utilização sem manifesto e mapa de classes
-// Auto Load para dependencias do composer
+// Auto Load para dependências do composer
 require_once "../../vendor/autoload.php";
 
 Blazar::prepare();
@@ -10,4 +10,4 @@ use Blazar\Component\TypeRes\StrRes;
 // Constantes e metodos do Framework
 echo "Constante ROOT: " . APP_ROOT . "<br>";
 echo "Constante BASE: " . URL_BASE . "<br>";
-echo "Metodo StrRes::startsWith: " . (StrRes::startsWith("abcd", "ab") ? 1 : 0);
+echo "Método StrRes::startsWith: " . (StrRes::startsWith("abcd", "ab") ? 1 : 0);

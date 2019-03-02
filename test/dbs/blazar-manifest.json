@@ -1,4 +1,5 @@
 {
+  "$schema": "../../src/schema/blazar-schema.json",
   "dbs": {
     "main_db": {
       "drive": "mysql",

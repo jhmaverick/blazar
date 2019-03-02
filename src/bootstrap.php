@@ -83,7 +83,7 @@ class Blazar {
     }
 
     /**
-     * Iniciar a aplicação a partir do map de classes do Manifest
+     * Iniciar a aplicação a partir do mapa de classes do Manifest
      *
      * @throws \Blazar\Core\BlazarException
      */

@@ -53,7 +53,7 @@ class View {
      * Prepara a saida de dados da página verificando se deve exibir um recurso ou a view
      * É necessario chamar o metodo render para exibir os dados
      *
-     * @param string $view_path O caminho para a view da página
+     * @param string|null $view_path O caminho para a view da página
      * @param array $page_res <p>
      * Recursos para a página<br>
      * Exemplo: <code>
@@ -74,7 +74,7 @@ class View {
      * @return View
      * @throws ViewException
      */
-    protected function preparePage(string $view_path, array $page_res = [], $view_callback = null, $resource_callback = null, int $render = self::PAGE_RENDER_RESOURCE) {
+    protected function preparePage(?string $view_path, array $page_res = [], $view_callback = null, $resource_callback = null, int $render = self::PAGE_RENDER_RESOURCE) {
         $param0 = App::param(0, App::PARAMS_APP);
 
         if ($param0 !== null && isset($page_res[$param0])) {
@@ -97,7 +97,7 @@ class View {
                 $this->render();
                 exit;
             }
-        } else {
+        } else if ($view_path != null) {
             if ($view_callback == "render") {
                 $view_callback = null;
                 $render = self::PAGE_RENDER_VIEW;
@@ -118,6 +118,9 @@ class View {
                 $this->render();
                 exit;
             }
+        } else {
+            $this->setContentType("text/html");
+            $this->reset("");
         }
 
         return $this;

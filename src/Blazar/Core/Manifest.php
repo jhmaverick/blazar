@@ -56,6 +56,7 @@ class Manifest extends App {
 
             $manifest_path = (defined("MANIFEST_PATH")) ? MANIFEST_PATH : APP_ROOT . "/blazar-manifest.json";
 
+            $dados_manifest = [];
             if (file_exists($manifest_path)) {
                 $dados_manifest = self::readManifestFile($manifest_path);
 
@@ -66,34 +67,34 @@ class Manifest extends App {
                     $custom = self::readManifestFile($custom_manifest);
                     $dados_manifest = array_replace_recursive($dados_manifest, $custom);
                 }
+            }
 
-                // Mescla Configurações do manifest com as padrões
-                if (isset($dados_manifest['configs'])) self::$config = array_merge(self::$config, $dados_manifest['configs']);
+            // Mescla Configurações do manifest com as padrões
+            if (isset($dados_manifest['configs'])) self::$config = array_merge(self::$config, $dados_manifest['configs']);
 
-                // Aplica configurações
-                self::applyConfigs();
+            // Aplica configurações
+            self::applyConfigs();
 
-                // Bancos de dados
-                if (isset($dados_manifest['dbs'])) {
-                    foreach ($dados_manifest['dbs'] as $index => $value) {
-                        self::$dbs[$index] = $value;
-                    }
+            // Bancos de dados
+            if (isset($dados_manifest['dbs'])) {
+                foreach ($dados_manifest['dbs'] as $index => $value) {
+                    self::$dbs[$index] = $value;
                 }
+            }
 
-                // Pega dados do aplicativo
-                if (isset($dados_manifest['data'])) {
-                    foreach ($dados_manifest['data'] as $index => $value) {
-                        self::$data[$index] = $value;
-                    }
+            // Pega dados do aplicativo
+            if (isset($dados_manifest['data'])) {
+                foreach ($dados_manifest['data'] as $index => $value) {
+                    self::$data[$index] = $value;
                 }
+            }
 
-                // Verifica se existe uma aplicação para o sistema iniciar
-                if (isset($dados_manifest['map']) && is_array($dados_manifest['map']) && count($dados_manifest['map']) > 0) {
-                    self::$map = $dados_manifest['map'];
+            // Verifica se existe uma aplicação para o sistema iniciar
+            if (isset($dados_manifest['map']) && is_array($dados_manifest['map']) && count($dados_manifest['map']) > 0) {
+                self::$map = $dados_manifest['map'];
 
-                    // Reajusta os index da url com os padrões
-                    self::$max_index_map = self::preencherParametro(0, $dados_manifest['map']);
-                }
+                // Reajusta os index da url com os padrões
+                self::$max_index_map = self::preencherParametro(0, $dados_manifest['map']);
             }
         } catch (Error|Throwable $e) {
             Log::e($e);

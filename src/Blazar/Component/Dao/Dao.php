@@ -750,7 +750,7 @@ abstract class Dao {
     }
 
     /**
-     * Seta dados conexao
+     * Seta dados da conexão
      *
      * @param array $dados <p>
      *      [host => string, user => string, pass => string, db => string, [port] => int, [socket] => string]
@@ -763,7 +763,7 @@ abstract class Dao {
         if (isset($dados['host']) && isset($dados['user']) && isset($dados['pass']) && isset($dados['db'])) {
             $key_id_db = $dados['host'] . $dados['user'] . $dados['pass'] . $dados['db'];
 
-            $this->data_connection['drive'] = $dados['drive'];
+            $this->data_connection['drive'] = $dados['drive'] ?? "mysql";
             $this->data_connection['host'] = $dados['host'];
             $this->data_connection['user'] = $dados['user'];
             $this->data_connection['pass'] = $dados['pass'];
