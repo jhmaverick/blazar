@@ -1,23 +1,22 @@
 <?php
 
-/**
+/*
  * This file is part of Blazar Framework.
  *
  * (c) João Henrique <joao_henriquee@outlook.com>
  *
- * For the full copyright and license information, please view the LICENSE file that was distributed with this source
- * code.
+ * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
  */
 
 namespace Blazar\Component\TypeRes;
 
 /**
- * Recursos para tratamento de strings
+ * Recursos para tratamento de strings.
  */
 class StrRes {
 
     /**
-     * Verifica caracteres no inicio da string
+     * Verifica caracteres no inicio da string.
      *
      * @param string $str A string que receberá a busca
      * @param string $search O que será buscado na string
@@ -26,11 +25,11 @@ class StrRes {
      */
     public static function startsWith(string $str, string $search): bool {
         // search backwards starting from haystack length characters from the end
-        return $search === "" || strrpos($str, $search, -strlen($str)) !== false;
+        return $search === '' || strrpos($str, $search, -strlen($str)) !== false;
     }
 
     /**
-     * Verifica caracteres no fim da string
+     * Verifica caracteres no fim da string.
      *
      * @param string $str A string que receberá a busca
      * @param string $search O que será buscado na string
@@ -39,11 +38,11 @@ class StrRes {
      */
     public static function endsWith(string $str, string $search): bool {
         // search forward starting from end minus needle length characters
-        return $search === "" || (($temp = strlen($str) - strlen($search)) >= 0 && strpos($str, $search, $temp) !== false);
+        return $search === '' || (($temp = strlen($str) - strlen($search)) >= 0 && strpos($str, $search, $temp) !== false);
     }
 
     /**
-     * Aplica o str_replace apenas na primeira ocorrencia
+     * Aplica o str_replace apenas na primeira ocorrencia.
      *
      * @param string $str O texto original onde a busca irá ocorrer
      * @param string $search O texto que deve ser substituido
@@ -63,7 +62,7 @@ class StrRes {
     }
 
     /**
-     * Aplica o str_replace apenas na ultima ocorrencia
+     * Aplica o str_replace apenas na ultima ocorrencia.
      *
      * @param string $str O texto original onde a busca irá ocorrer
      * @param string $search O texto que deve ser substituido
@@ -83,18 +82,18 @@ class StrRes {
     }
 
     /**
-     * Gera string randomica
+     * Gera string randomica.
      *
      * @param int $length Quantidade de caracteres
      *
      * @return string
      */
     public static function randstr(int $length): string {
-        return substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, $length);
+        return substr(str_shuffle('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, $length);
     }
 
     /**
-     * Adiciona caracter em uma string
+     * Adiciona caracter em uma string.
      *
      * @param string $str
      * @param string $character Caracter que sera adicionado
@@ -111,7 +110,7 @@ class StrRes {
     }
 
     /**
-     * Função para limitar o texto
+     * Função para limitar o texto.
      *
      * @param string $str Texto para limitar
      * @param int $num Quantidade de caracteres
@@ -138,29 +137,33 @@ class StrRes {
             }
 
             $textoF = implode(' ', $arr);
-            if (strlen($textoF) < $tamString)
-                return $textoF . "...";
-            else return $textoF;
-        } else return $str;
+            if (strlen($textoF) < $tamString) {
+                return $textoF . '...';
+            } else {
+                return $textoF;
+            }
+        } else {
+            return $str;
+        }
     }
 
     /**
-     * Prepara um texto para ser usado na url
+     * Prepara um texto para ser usado na url.
      *
      * @param string $str
      * @param string $separator
      *
      * @return string
      */
-    public static function string2url(string $str, string $separator = "-"): string {
+    public static function string2url(string $str, string $separator = '-'): string {
         $str = strtolower(html_entity_decode($str));
 
-        $charComAcento = ["á", "à", "â", "ã", "ä", "é", "è", "ê", "ë", "í", "ì", "î", "ï", "ó", "ò", "ô", "õ", "ö", "ú", "ù", "û", "ü", "ç", "Á", "À", "Â", "Ã", "Ä", "É", "È", "Ê", "Ë", "Í", "Ì", "Î", "Ï", "Ó", "Ò", "Ô", "Õ", "Ö", "Ú", "Ù", "Û", "Ü", "Ç"];
-        $charSemAcento = ["a", "a", "a", "a", "a", "e", "e", "e", "e", "i", "i", "i", "i", "o", "o", "o", "o", "o", "u", "u", "u", "u", "c", "A", "A", "A", "A", "A", "E", "E", "E", "E", "I", "I", "I", "I", "O", "O", "O", "O", "O", "U", "U", "U", "U", "C"];
+        $charComAcento = ['á', 'à', 'â', 'ã', 'ä', 'é', 'è', 'ê', 'ë', 'í', 'ì', 'î', 'ï', 'ó', 'ò', 'ô', 'õ', 'ö', 'ú', 'ù', 'û', 'ü', 'ç', 'Á', 'À', 'Â', 'Ã', 'Ä', 'É', 'È', 'Ê', 'Ë', 'Í', 'Ì', 'Î', 'Ï', 'Ó', 'Ò', 'Ô', 'Õ', 'Ö', 'Ú', 'Ù', 'Û', 'Ü', 'Ç'];
+        $charSemAcento = ['a', 'a', 'a', 'a', 'a', 'e', 'e', 'e', 'e', 'i', 'i', 'i', 'i', 'o', 'o', 'o', 'o', 'o', 'u', 'u', 'u', 'u', 'c', 'A', 'A', 'A', 'A', 'A', 'E', 'E', 'E', 'E', 'I', 'I', 'I', 'I', 'O', 'O', 'O', 'O', 'O', 'U', 'U', 'U', 'U', 'C'];
         $str = str_replace($charComAcento, $charSemAcento, $str);
 
-        $str = str_replace(" ", $separator, $str);
-        $str = preg_replace("/[^a-z0-9-]/", "", $str);
+        $str = str_replace(' ', $separator, $str);
+        $str = preg_replace('/[^a-z0-9-]/', '', $str);
 
         return $str;
     }
@@ -175,11 +178,12 @@ class StrRes {
     public static function removeComments(string $str): string {
         // search and remove comments like /* */ and //
         $str = preg_replace("#(/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/)|([\s\t]//.*)|(^//.*)#", '', $str);
+
         return $str;
     }
 
     /**
-     * Extrai as variaveis mustache de uma string
+     * Extrai as variaveis mustache de uma string.
      *
      * @param string $str Texto para extrair as variaveis
      * @param bool $alternative Mustache utilizando "<%%>" invés de "{{}}"
@@ -187,14 +191,17 @@ class StrRes {
      * @return array
      */
     public static function extractMustacheVars(?string $str, bool $alternative = false) {
-        if ($alternative) preg_match_all('/\<\%([^\s\}]+?)\%\>/i', $str, $matches);
-        else preg_match_all('/\{\{([^\s\}]+?)\}\}/i', $str, $matches);
+        if ($alternative) {
+            preg_match_all('/\<\%([^\s\}]+?)\%\>/i', $str, $matches);
+        } else {
+            preg_match_all('/\{\{([^\s\}]+?)\}\}/i', $str, $matches);
+        }
 
         return $matches;
     }
 
     /**
-     * Verifica se é um md5
+     * Verifica se é um md5.
      *
      * @param string $md5
      *
@@ -203,5 +210,4 @@ class StrRes {
     public static function isValidMd5(string $md5): bool {
         return preg_match('/^[a-f0-9]{32}$/', $md5) === 1 ? true : false;
     }
-
 }

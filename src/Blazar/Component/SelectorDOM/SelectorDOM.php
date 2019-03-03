@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * This file is part of Blazar Framework.
  *
  * (c) João Henrique <joao_henriquee@outlook.com>
@@ -28,7 +28,6 @@ use DOMXPath;
  * </code>
  */
 class SelectorDOM {
-
     private $xpath;
 
     /**
@@ -54,7 +53,7 @@ class SelectorDOM {
     /**
      * Select elements from $html using the css $selector.
      * When $as_array is true elements and their children will
-     * be converted to array's containing the following keys (defaults to true):
+     * be converted to array's containing the following keys (defaults to true):.
      *
      *  - name : element name
      *  - text : element text
@@ -68,6 +67,7 @@ class SelectorDOM {
      */
     public function select(string $selector, bool $as_array = true) {
         $elements = $this->xpath->evaluate($this->selectorToXpath($selector));
+
         return $as_array ? $this->elementsToArray($elements) : $elements;
     }
 
@@ -194,7 +194,7 @@ class SelectorDOM {
             'name' => $element->nodeName,
             'attributes' => [],
             'text' => $element->textContent,
-            'children' => $this->elementsToArray($element->childNodes)
+            'children' => $this->elementsToArray($element->childNodes),
         ];
 
         if ($element->attributes->length) {
@@ -207,7 +207,7 @@ class SelectorDOM {
     }
 
     /**
-     * Convert $element to a string html
+     * Convert $element to a string html.
      *
      * @param DOMElement $element
      * @param bool $inner_html
@@ -223,15 +223,15 @@ class SelectorDOM {
                 $innerHTML[] = $child->ownerDocument->saveHTML($child);
             }
 
-            $html = implode("", $innerHTML);
+            $html = implode('', $innerHTML);
         } else {
             $html = $element->ownerDocument->saveHTML($element);
         }
 
-        $html = str_replace("&gt;", ">", $html);
+        $html = str_replace('&gt;', '>', $html);
         // TODO colocar para substituir apenas dentro do href
-        $html = str_replace("%7B", "{", $html);
-        $html = str_replace("%7D", "}", $html);
+        $html = str_replace('%7B', '{', $html);
+        $html = str_replace('%7D', '}', $html);
 
         return $html;
     }

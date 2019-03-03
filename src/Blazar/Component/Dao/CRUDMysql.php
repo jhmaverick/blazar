@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * This file is part of Blazar Framework.
  *
  * (c) João Henrique <joao_henriquee@outlook.com>
@@ -14,7 +14,7 @@ use Blazar\Component\TypeRes\StrRes;
 use PDO;
 
 /**
- * Operações CRUD para mysql
+ * Operações CRUD para mysql.
  */
 abstract class CRUDMysql extends Dao {
     /**#@+
@@ -29,16 +29,16 @@ abstract class CRUDMysql extends Dao {
     /**#@+
      * Complementos para o valor aplicado
      */
-    const FIELD_VALUE = "value"; // É obrigatário caso o valor do dados seja passado em um array
-    const FIELD_AUTO_MARK = "auto_mark"; // Se deve adicionar o campo com "?"
-    const FIELD_UPDATE = "update"; // Se o campo deve ser inserido no update quando ocorrer um "ON DUPLICATE KEY"
+    const FIELD_VALUE = 'value'; // É obrigatário caso o valor do dados seja passado em um array
+    const FIELD_AUTO_MARK = 'auto_mark'; // Se deve adicionar o campo com "?"
+    const FIELD_UPDATE = 'update'; // Se o campo deve ser inserido no update quando ocorrer um "ON DUPLICATE KEY"
     /**#@-*/
 
     // Ultimo sql executado
-    private $last_sql = "";
+    private $last_sql = '';
 
     /**
-     * Retorna o ultimo sql executado no CRUD
+     * Retorna o ultimo sql executado no CRUD.
      *
      * @return string
      */
@@ -47,7 +47,7 @@ abstract class CRUDMysql extends Dao {
     }
 
     /**
-     * Insert
+     * Insert.
      *
      * @param string $tabela Nome da tabela para a inserção
      * @param array $data <p>Lista de dados para inserir<br><br>
@@ -96,7 +96,7 @@ abstract class CRUDMysql extends Dao {
      */
     protected function create(string $tabela, array $data, int $tipo_insert = self::TP_INSERT_NORMAL) {
         if (count($data) == 0) {
-            throw new DaoException("Nenhum valor para inserir.");
+            throw new DaoException('Nenhum valor para inserir.');
         }
 
         $this->autoOpenDB();
@@ -114,7 +114,7 @@ abstract class CRUDMysql extends Dao {
         // Verifica se os campos e os valores foram passados separados
         if (isset($data['fields']) && isset($data['values'])) {
             if (!is_array($data['fields'])) {
-                throw new DaoException("Parametro fields deve ser um array.");
+                throw new DaoException('Parametro fields deve ser um array.');
             }
 
             $campos = $data['fields'];
@@ -129,17 +129,18 @@ abstract class CRUDMysql extends Dao {
                 $campos[] = $key;
 
                 // Aplica na lista dos que não irão receber o UPDATE
-                if (isset($value[self::FIELD_UPDATE]) && $value[self::FIELD_UPDATE] === false && !in_array($key, $no_update))
+                if (isset($value[self::FIELD_UPDATE]) && $value[self::FIELD_UPDATE] === false && !in_array($key, $no_update)) {
                     $no_update[] = $key;
+                }
 
                 // Não adiciona na lista de entradas marcadas "?"
                 if (isset($value[self::FIELD_AUTO_MARK]) && $value[self::FIELD_AUTO_MARK] === false) {
                     $params[] = $value[self::FIELD_VALUE];
                 } else {
-                    $params[] = "?";
+                    $params[] = '?';
                     $valores[] = $value[self::FIELD_VALUE];
                 }
-            } else if (gettype($value) == "array") {
+            } elseif (gettype($value) == 'array') {
                 $temp_params = [];
                 $temp_campos = [];
 
@@ -161,18 +162,19 @@ abstract class CRUDMysql extends Dao {
                     // Verifica se o tipo de campo foi definido manualmente
                     if (is_array($value2) && isset($value2[self::FIELD_VALUE])) {
                         // Aplica na lista dos que não irão receber o UPDATE
-                        if (isset($value2[self::FIELD_UPDATE]) && $value2[self::FIELD_UPDATE] === false && !in_array($key2, $no_update))
+                        if (isset($value2[self::FIELD_UPDATE]) && $value2[self::FIELD_UPDATE] === false && !in_array($key2, $no_update)) {
                             $no_update[] = $key2;
+                        }
 
                         // Não adiciona na lista de entradas marcadas "?"
                         if (isset($value2[self::FIELD_AUTO_MARK]) && $value2[self::FIELD_AUTO_MARK] === false) {
                             $temp_params[] = $value2[self::FIELD_VALUE];
                         } else {
-                            $temp_params[] = "?";
+                            $temp_params[] = '?';
                             $valores[] = $value2[self::FIELD_VALUE];
                         }
                     } else {
-                        $temp_params[] = "?";
+                        $temp_params[] = '?';
                         $valores[] = $value2;
                     }
                 }
@@ -180,39 +182,42 @@ abstract class CRUDMysql extends Dao {
                 // Faz uma validação para checar se os dados estão certos para inserir
                 if (count($campos) == 0) {
                     $campos = $temp_campos;
-                } else if (implode(", ", $temp_campos) != implode(", ", $campos)) {
-                    throw new DaoException("A posição dos indexes na lista de inserção não esta seguindo a mesma ordem.\n\n" . implode(", ", $campos) . "\n" . implode(", ", $temp_campos) . "\n\n" . "Ex: [[\"id\" => 1, \"nome\" => \"Exemplo 1\"], [\"nome\" => \"Exemplo 2\", \"id\" => 2]...]\n" . "Forma Correta: [[\"id\" => 1, \"nome\" => \"Exemplo 1\"], [\"id\" => 2, \"nome\" => \"Exemplo 2\"]...]");
+                } elseif (implode(', ', $temp_campos) != implode(', ', $campos)) {
+                    throw new DaoException("A posição dos indexes na lista de inserção não esta seguindo a mesma ordem.\n\n" . implode(', ', $campos) . "\n" . implode(', ', $temp_campos) . "\n\n" . "Ex: [[\"id\" => 1, \"nome\" => \"Exemplo 1\"], [\"nome\" => \"Exemplo 2\", \"id\" => 2]...]\n" . 'Forma Correta: [["id" => 1, "nome" => "Exemplo 1"], ["id" => 2, "nome" => "Exemplo 2"]...]');
                 }
 
-                $params[] = "(" . implode(", ", $temp_params) . ")";
+                $params[] = '(' . implode(', ', $temp_params) . ')';
             } else {
-                if (!isset($data['fields']))
+                if (!isset($data['fields'])) {
                     $campos[] = $key;
-                $params[] = "?";
+                }
+                $params[] = '?';
                 $valores[] = $value;
             }
         }
 
         // Junta todos os parametros em um array
-        $params = implode(", ", $params);
+        $params = implode(', ', $params);
         // Verifica se ja existe os parenteses no caso dos de multiplas linhas
-        $params = StrRes::startsWith($params, "(") ? $params : "(" . $params . ")";
+        $params = StrRes::startsWith($params, '(') ? $params : '(' . $params . ')';
 
         // Tipo de ação do INSERT
         switch ($tipo_insert) {
             case self::TP_INSERT_REPLACE:
-                $acao_insert = "REPLACE";
+                $acao_insert = 'REPLACE';
+
                 break;
 
             case self::TP_INSERT_IGNORE:
-                $acao_insert = "INSERT IGNORE";
+                $acao_insert = 'INSERT IGNORE';
+
                 break;
 
             default:
-                $acao_insert = "INSERT";
+                $acao_insert = 'INSERT';
         }
 
-        $sql = $acao_insert . " INTO " . $tabela . " (" . implode(", ", $campos) . ") VALUES " . $params;
+        $sql = $acao_insert . ' INTO ' . $tabela . ' (' . implode(', ', $campos) . ') VALUES ' . $params;
 
         // Aplica o "ON DUPLICATE KEY" na query
         if ($tipo_insert === self::TP_INSERT_OR_UPDATE) {
@@ -225,7 +230,7 @@ abstract class CRUDMysql extends Dao {
             }
 
             if (count($dados_update) > 0) {
-                $sql .= " ON DUPLICATE KEY UPDATE " . implode(", ", $dados_update);
+                $sql .= ' ON DUPLICATE KEY UPDATE ' . implode(', ', $dados_update);
             }
         }
 
@@ -242,7 +247,7 @@ abstract class CRUDMysql extends Dao {
 
             $result = $this->stmt->execute();
         } else {
-            throw new DaoException("Erro de conexão " . $this->con->errorInfo()[2]);
+            throw new DaoException('Erro de conexão ' . $this->con->errorInfo()[2]);
         }
 
         // Verifica se a query teve sucesso
@@ -267,7 +272,7 @@ abstract class CRUDMysql extends Dao {
     }
 
     /**
-     * Read
+     * Read.
      *
      * Isto é apenas uma consulta generica, caso seja necessario algo mais complexo utilize o metodo
      * prepare ou faça uma conexão direta atraves da instancia do PDO
@@ -287,35 +292,35 @@ abstract class CRUDMysql extends Dao {
      * @return array
      * @throws DaoException
      */
-    protected function read(string $locais, string $campos = "*", string $where_con = null, array $where_val = [], string $group_by = null, string $having = null, $order = null, $limit = null): array {
-        $campos = ($campos == null) ? "*" : $campos;
+    protected function read(string $locais, string $campos = '*', string $where_con = null, array $where_val = [], string $group_by = null, string $having = null, $order = null, $limit = null): array {
+        $campos = ($campos == null) ? '*' : $campos;
 
         // Valida para evitar problemas com sql injection
         if (!$this->checkLimit($limit)) {
-            throw new DaoException("Parâmetro limit inválido.");
+            throw new DaoException('Parâmetro limit inválido.');
         }
 
         $this->autoOpenDB();
 
         // Adiciona condição
-        $str_params = ($where_con != null) ? "WHERE " . $where_con . " " : "";
+        $str_params = ($where_con != null) ? 'WHERE ' . $where_con . ' ' : '';
 
-        if (is_array($order))
+        if (is_array($order)) {
             $order = $this->stringOrderBy($order);
+        }
 
         // Gera sql
-        $sql = "SELECT " . $campos . " FROM " . $locais . " " . $str_params;
-        $sql .= ($group_by != null) ? "GROUP BY " . $group_by . " " : "";
-        $sql .= ($having != null) ? "HAVING " . $having . " " : "";
-        $sql .= ($order != null) ? "ORDER BY " . $order . " " : "";
-        $sql .= ($limit != null) ? "LIMIT " . $limit : "";
+        $sql = 'SELECT ' . $campos . ' FROM ' . $locais . ' ' . $str_params;
+        $sql .= ($group_by != null) ? 'GROUP BY ' . $group_by . ' ' : '';
+        $sql .= ($having != null) ? 'HAVING ' . $having . ' ' : '';
+        $sql .= ($order != null) ? 'ORDER BY ' . $order . ' ' : '';
+        $sql .= ($limit != null) ? 'LIMIT ' . $limit : '';
 
         // Guarda sql para depuração
         $this->last_sql = $sql;
 
         // Prepara a consulta
         if ($this->stmt = $this->con->prepare($sql)) {
-
             $i = 1;
             while ($i <= count($where_val)) {
                 $this->stmt->bindValue($i, $where_val[$i - 1]);
@@ -325,7 +330,7 @@ abstract class CRUDMysql extends Dao {
             // Executa query
             $this->stmt->execute();
         } else {
-            throw new DaoException("Erro de conexão " . $this->con->errorInfo()[2]);
+            throw new DaoException('Erro de conexão ' . $this->con->errorInfo()[2]);
         }
 
         $result = $this->stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -346,7 +351,7 @@ abstract class CRUDMysql extends Dao {
     }
 
     /**
-     * Update
+     * Update.
      *
      * @param string $tabela Nome da tabela para a atualizar
      * @param array $data <p>Lista de campos que serão atualizados<br><br>
@@ -368,9 +373,9 @@ abstract class CRUDMysql extends Dao {
      * @return bool
      * @throws DaoException
      */
-    protected function update(string $tabela, array $data, string $where_con = "", array $where_val = []) {
+    protected function update(string $tabela, array $data, string $where_con = '', array $where_val = []) {
         if (count($data) == 0) {
-            throw new DaoException("Nenhum valor para atualizar.");
+            throw new DaoException('Nenhum valor para atualizar.');
         }
 
         $this->autoOpenDB();
@@ -382,27 +387,27 @@ abstract class CRUDMysql extends Dao {
             if (is_array($value) && isset($value[self::FIELD_VALUE])) {
                 // Não adiciona na lista de entradas marcadas "?"
                 if (isset($value[self::FIELD_AUTO_MARK]) && $value[self::FIELD_AUTO_MARK] === false) {
-                    $temp_params[] = $indice . " = " . $value[self::FIELD_VALUE];
+                    $temp_params[] = $indice . ' = ' . $value[self::FIELD_VALUE];
                 } else {
-                    $temp_params[] = $indice . " = ?";
+                    $temp_params[] = $indice . ' = ?';
                     $valores[] = $value[self::FIELD_VALUE];
                 }
-            } else if (!is_array($value)) {
-                $temp_params[] = $indice . " = ?";
+            } elseif (!is_array($value)) {
+                $temp_params[] = $indice . ' = ?';
                 $valores[] = $value;
             } else {
-                throw new DaoException("Os valores para o update devem ser em string ou um array com um indicie chamado \"value\" com valor string.");
+                throw new DaoException('Os valores para o update devem ser em string ou um array com um indicie chamado "value" com valor string.');
             }
         }
 
-        $campos = implode(", ", $temp_params);
+        $campos = implode(', ', $temp_params);
 
-        if ($where_con != "") {
-            $where_con = "WHERE " . $where_con;
+        if ($where_con != '') {
+            $where_con = 'WHERE ' . $where_con;
         }
 
         // Prepara query
-        $sql = "UPDATE " . $tabela . " SET " . $campos . " " . $where_con;
+        $sql = 'UPDATE ' . $tabela . ' SET ' . $campos . ' ' . $where_con;
 
         // Guarda sql para depuração
         $this->last_sql = $sql;
@@ -427,7 +432,7 @@ abstract class CRUDMysql extends Dao {
 
             $result = $this->stmt->execute();
         } else {
-            throw new DaoException("Erro de conexão " . $this->con->errorInfo()[2]);
+            throw new DaoException('Erro de conexão ' . $this->con->errorInfo()[2]);
         }
 
         $this->autoCloseDB();
@@ -436,7 +441,7 @@ abstract class CRUDMysql extends Dao {
     }
 
     /**
-     * Delete
+     * Delete.
      *
      * @param string $tabela Nome da tabela para aplicar o delete
      * @param string $where_con As condições para seleção
@@ -451,13 +456,13 @@ abstract class CRUDMysql extends Dao {
 
         // Valida para evitar problemas com sql injection
         if (!$this->checkLimit($limit)) {
-            throw new DaoException("Parâmetro limit inválido.");
+            throw new DaoException('Parâmetro limit inválido.');
         }
 
         // Prepara query
-        $sql = "DELETE FROM " . $tabela;
-        $sql .= ($where_con != null) ? " WHERE " . $where_con : "";
-        $sql .= ($limit != null) ? " LIMIT " . $limit : "";
+        $sql = 'DELETE FROM ' . $tabela;
+        $sql .= ($where_con != null) ? ' WHERE ' . $where_con : '';
+        $sql .= ($limit != null) ? ' LIMIT ' . $limit : '';
 
         // Guarda sql para depuração
         $this->last_sql = $sql;
@@ -472,7 +477,7 @@ abstract class CRUDMysql extends Dao {
 
             $result = $this->stmt->execute();
         } else {
-            throw new DaoException("Erro de conexão " . $this->con->errorInfo()[2]);
+            throw new DaoException('Erro de conexão ' . $this->con->errorInfo()[2]);
         }
 
         $this->autoCloseDB();

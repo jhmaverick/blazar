@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * This file is part of Blazar Framework.
  *
  * (c) João Henrique <joao_henriquee@outlook.com>
@@ -15,7 +15,7 @@ use Blazar\Component\FileSystem\FileSystem;
 use Blazar\Core\Manifest;
 
 /**
- * Recursos para manipulação de imagens
+ * Recursos para manipulação de imagens.
  */
 class Image {
 
@@ -28,7 +28,7 @@ class Image {
     /**#@-*/
 
     /**
-     * Upload de imagens
+     * Upload de imagens.
      *
      * @param array $file
      * @param string|null $output_dir - O diretório de saida(se null exibe diretamente no navegador)
@@ -43,13 +43,18 @@ class Image {
         $fileParts = pathinfo($file['name']);
         $formato = strtolower($fileParts['extension']);
 
-        if ($formato == 'jpg' || $formato == 'jpeg') $img = imagecreatefromjpeg($file['tmp_name']);
-        else if ($formato == 'png') $img = imagecreatefrompng($file['tmp_name']);
-        else if ($formato == 'gif') $img = imagecreatefromgif($file['tmp_name']);
-        else throw new ImageException("Formato inválido.");
+        if ($formato == 'jpg' || $formato == 'jpeg') {
+            $img = imagecreatefromjpeg($file['tmp_name']);
+        } elseif ($formato == 'png') {
+            $img = imagecreatefrompng($file['tmp_name']);
+        } elseif ($formato == 'gif') {
+            $img = imagecreatefromgif($file['tmp_name']);
+        } else {
+            throw new ImageException('Formato inválido.');
+        }
 
         try {
-            $name = FileSystem::upload($file, $output_dir, ["jpg", "jpeg", "png", "gif"]);
+            $name = FileSystem::upload($file, $output_dir, ['jpg', 'jpeg', 'png', 'gif']);
             $file_name = FileSystem::pathJoin($output_dir, $name);
 
             // Caso manter menor seja verdadeiro e tamanho tambem seja menor ou
@@ -60,29 +65,35 @@ class Image {
             }
 
             // Evita que imagem seja maior que o permitido pelo sistema
-            if ($width != null && $width > Manifest::config("max_img_width"))
-                $width = Manifest::config("max_img_width");
-            if ($height != null && $height > Manifest::config("max_img_height"))
-                $height = Manifest::config("max_img_height");
+            if ($width != null && $width > Manifest::config('max_img_width')) {
+                $width = Manifest::config('max_img_width');
+            }
+            if ($height != null && $height > Manifest::config('max_img_height')) {
+                $height = Manifest::config('max_img_height');
+            }
 
             // Calcula dimensão que estiver faltando
-            if ($width != null && (imagesx($img) >= imagesy($img) || $height == null))
+            if ($width != null && (imagesx($img) >= imagesy($img) || $height == null)) {
                 $height = (imagesy($img) * $width) / imagesx($img);
-            else if ($height != null && (imagesy($img) > imagesx($img) || $width == null))
+            } elseif ($height != null && (imagesy($img) > imagesx($img) || $width == null)) {
                 $width = (imagesx($img) * $height) / imagesy($img);
+            }
 
             // Faz o redimensionamento
             self::resize($file_name, $width, $height, self::TP_RESULT_SAVE_IMG, $file_name);
 
             return $name;
         } catch (FileException $e) {
-            if (isset($file_name)) @unlink($file_name);
+            if (isset($file_name)) {
+                @unlink($file_name);
+            }
+
             throw new ImageException($e->getMessage());
         }
     }
 
     /**
-     * Redimensionar imagem
+     * Redimensionar imagem.
      *
      * @param string $source caminho completo da imagem ou um binario em base64
      * @param int $width Largura para a imagem.
@@ -105,16 +116,22 @@ class Image {
                                   int $type_result = self::TP_RESULT_SHOW_IMG,
                                   ?string $file_name = null
     ) {
-        if ($width === null && $height === null)
+        if ($width === null && $height === null) {
             throw new ImageException('"width" ou "height" deve ser informado.');
-        if ($file_name === null && $type_result === self::TP_RESULT_SAVE_IMG)
+        }
+        if ($file_name === null && $type_result === self::TP_RESULT_SAVE_IMG) {
             throw new ImageException('"file_name" deve ser informado.');
+        }
 
-        list("width" => $info_width, "height" => $info_height, "size" => $imagetype, "source" => $source) = self::getImageInfo($source);
+        list('width' => $info_width, 'height' => $info_height, 'size' => $imagetype, 'source' => $source) = self::getImageInfo($source);
 
         // Busca a largura ou a altura que não tiver sido informado
-        if ($height === null) $height = ($width * $info_height) / $info_width;
-        if ($width === null) $width = ($height * $info_width) / $info_height;
+        if ($height === null) {
+            $height = ($width * $info_height) / $info_width;
+        }
+        if ($width === null) {
+            $width = ($height * $info_width) / $info_height;
+        }
 
         //redimensiona a miniatura para o corte
         if (base64_decode($source, true) !== false) {
@@ -144,7 +161,7 @@ class Image {
             }
 
             imagecopyresampled($nova, $img, 0, 0, 0, 0, $largura, $altura, $x, $y);
-        } else if ($imagetype == IMAGETYPE_JPEG) {
+        } elseif ($imagetype == IMAGETYPE_JPEG) {
             $img = imagecreatefromjpeg($source);
             $x = imagesx($img);
             $y = imagesy($img);
@@ -155,7 +172,7 @@ class Image {
 
             $nova = imagecreatetruecolor($largura, $altura);
             imagecopyresampled($nova, $img, 0, 0, 0, 0, $largura, $altura, $x, $y);
-        } else if ($imagetype == IMAGETYPE_PNG) {
+        } elseif ($imagetype == IMAGETYPE_PNG) {
             $img = imagecreatefrompng($source);
             $x = imagesx($img);
             $y = imagesy($img);
@@ -182,7 +199,7 @@ class Image {
             }
 
             imagecopyresampled($nova, $img, 0, 0, 0, 0, $largura, $altura, $x, $y);
-        } else if ($imagetype == IMAGETYPE_GIF) {
+        } elseif ($imagetype == IMAGETYPE_GIF) {
             $img = imagecreatefromgif($source);
             $x = imagesx($img);
             $y = imagesy($img);
@@ -194,7 +211,7 @@ class Image {
             $nova = imagecreatetruecolor($largura, $altura);
             imagecopyresampled($nova, $img, 0, 0, 0, 0, $largura, $altura, $x, $y);
         } else {
-            throw new ImageException("Formato inválido.");
+            throw new ImageException('Formato inválido.');
         }
 
         $x = imagesx($nova);
@@ -231,9 +248,9 @@ class Image {
 
             if ($imagetype == IMAGETYPE_JPEG) {
                 imagejpeg($final);
-            } else if ($imagetype == IMAGETYPE_PNG) {
+            } elseif ($imagetype == IMAGETYPE_PNG) {
                 imagepng($final);
-            } else if ($imagetype == IMAGETYPE_GIF) {
+            } elseif ($imagetype == IMAGETYPE_GIF) {
                 imagegif($final);
             }
 
@@ -247,9 +264,9 @@ class Image {
 
             if ($imagetype == IMAGETYPE_JPEG) {
                 imagejpeg($final, $salvar);
-            } else if ($imagetype == IMAGETYPE_PNG) {
+            } elseif ($imagetype == IMAGETYPE_PNG) {
                 imagepng($final, $salvar);
-            } else if ($imagetype == IMAGETYPE_GIF) {
+            } elseif ($imagetype == IMAGETYPE_GIF) {
                 imagegif($final, $salvar);
             }
 
@@ -262,7 +279,7 @@ class Image {
     }
 
     /**
-     * Crop
+     * Crop.
      *
      * @param string $source caminho completo da imagem ou um binario em base64
      * @param int $pos_x Posição x crop
@@ -289,22 +306,23 @@ class Image {
                                 int $type_result = self::TP_RESULT_SHOW_IMG,
                                 ?string $file_name = null
     ) {
-        if ($file_name === null && $type_result === self::TP_RESULT_SAVE_IMG)
+        if ($file_name === null && $type_result === self::TP_RESULT_SAVE_IMG) {
             throw new ImageException('"file_name" deve ser informado.');
+        }
 
-        list("size" => $imagetype, "source" => $source) = self::getImageInfo($source);
+        list('size' => $imagetype, 'source' => $source) = self::getImageInfo($source);
 
 
         if (base64_decode($source, true) != false) {
             $img = imagecreatefromstring(base64_decode($source));
-        } else if ($imagetype == IMAGETYPE_JPEG) {
+        } elseif ($imagetype == IMAGETYPE_JPEG) {
             $img = imagecreatefromjpeg($source);
-        } else if ($imagetype == IMAGETYPE_PNG) {
+        } elseif ($imagetype == IMAGETYPE_PNG) {
             $img = imagecreatefrompng($source);
-        } else if ($imagetype == IMAGETYPE_GIF) {
+        } elseif ($imagetype == IMAGETYPE_GIF) {
             $img = imagecreatefromgif($source);
         } else {
-            throw new ImageException("Formato inválido.");
+            throw new ImageException('Formato inválido.');
         }
 
         if ($imagetype == IMAGETYPE_PNG) {
@@ -336,9 +354,9 @@ class Image {
 
             if ($imagetype == IMAGETYPE_JPEG) {
                 imagejpeg($nova);
-            } else if ($imagetype == IMAGETYPE_PNG) {
+            } elseif ($imagetype == IMAGETYPE_PNG) {
                 imagepng($nova);
-            } else if ($imagetype == IMAGETYPE_GIF) {
+            } elseif ($imagetype == IMAGETYPE_GIF) {
                 imagegif($nova);
             }
 
@@ -352,9 +370,9 @@ class Image {
 
             if ($imagetype == IMAGETYPE_JPEG) {
                 imagejpeg($nova, $salvar);
-            } else if ($imagetype == IMAGETYPE_PNG) {
+            } elseif ($imagetype == IMAGETYPE_PNG) {
                 imagepng($nova, $salvar);
-            } else if ($imagetype == IMAGETYPE_GIF) {
+            } elseif ($imagetype == IMAGETYPE_GIF) {
                 imagegif($nova, $salvar);
             }
 
@@ -366,7 +384,7 @@ class Image {
     }
 
     /**
-     * Faz a saida de uma imagem
+     * Faz a saida de uma imagem.
      *
      * Se a altura ou largura informados não forem proporcionais as partes restantes serão cortadas
      *
@@ -388,16 +406,22 @@ class Image {
                                   int $crop_width = null,
                                   int $crop_height = null
     ) {
-        if ($width === null && $height === null)
+        if ($width === null && $height === null) {
             throw new ImageException('"width" ou "height" deve ser informado.');
+        }
 
-        list("size" => $imagetype, "source" => $source) = self::getImageInfo($source);
+        list('size' => $imagetype, 'source' => $source) = self::getImageInfo($source);
 
         // Verifica o formato da imagem
-        if ($imagetype === IMAGETYPE_GIF) header('Content-Type: image/gif');
-        else if ($imagetype === IMAGETYPE_JPEG) header('Content-Type: image/jpg');
-        else if ($imagetype === IMAGETYPE_PNG) header('Content-Type: image/png');
-        else throw new ImageException("Mídia não encontrada.");
+        if ($imagetype === IMAGETYPE_GIF) {
+            header('Content-Type: image/gif');
+        } elseif ($imagetype === IMAGETYPE_JPEG) {
+            header('Content-Type: image/jpg');
+        } elseif ($imagetype === IMAGETYPE_PNG) {
+            header('Content-Type: image/png');
+        } else {
+            throw new ImageException('Mídia não encontrada.');
+        }
 
         if (($width !== null || $height !== null) && $pos_x === null && $pos_y === null) {
             // Redimensionar
@@ -405,7 +429,7 @@ class Image {
             $h = $height ?? null;
 
             self::resize($source, $w, $h);
-        } else if ($width !== null && $height !== null && $pos_x !== null && $pos_y !== null) {
+        } elseif ($width !== null && $height !== null && $pos_x !== null && $pos_y !== null) {
             // Crop
             if ($crop_width !== null || $crop_height !== null) {
                 // Faz o crop e gera a miniatura
@@ -428,7 +452,7 @@ class Image {
     }
 
     /**
-     * Pega os dados de uma imagem dependendo da origem
+     * Pega os dados de uma imagem dependendo da origem.
      *
      * @param string $source path ou base64
      *
@@ -437,33 +461,35 @@ class Image {
      */
     private static function getImageInfo(string $source): array {
         $source = trim($source);
-        $base64 = (substr_count($source, "base64,")) ? explode("base64,", $source)[1] : $source;
+        $base64 = (substr_count($source, 'base64,')) ? explode('base64,', $source)[1] : $source;
 
         if (base64_decode($base64, true) !== false) {
             $source = $base64;
             $uri = 'data://application/octet-stream;base64,' . $source;
             $imagesize = @getimagesize($uri);
 
-            if ($imagesize == false)
-                throw new ImageException("Origem informada não é uma imagem.");
+            if ($imagesize == false) {
+                throw new ImageException('Origem informada não é uma imagem.');
+            }
         } else {
             $imagesize = @getimagesize($source);
 
-            if (!file_exists($source) || $imagesize == false)
+            if (!file_exists($source) || $imagesize == false) {
                 throw new ImageException("Imagem \"$source\" não existe.");
+            }
         }
 
         return [
-            "width" => $imagesize[0],
-            "height" => $imagesize[1],
-            "size" => $imagesize[2],
-            "width_height" => $imagesize[3],
-            "source" => $source
+            'width' => $imagesize[0],
+            'height' => $imagesize[1],
+            'size' => $imagesize[2],
+            'width_height' => $imagesize[3],
+            'source' => $source,
         ];
     }
 
     /**
-     * Calculo Redimensionamento
+     * Calculo Redimensionamento.
      *
      * @param int $x
      * @param int $y

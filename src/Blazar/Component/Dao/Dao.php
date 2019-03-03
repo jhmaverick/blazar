@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * This file is part of Blazar Framework.
  *
  * (c) João Henrique <joao_henriquee@outlook.com>
@@ -20,7 +20,7 @@ use ReflectionClass;
 use ReflectionException;
 
 /**
- * Responsavel pelo controle de acesso ao Banco de dados
+ * Responsavel pelo controle de acesso ao Banco de dados.
  */
 abstract class Dao {
 
@@ -33,12 +33,12 @@ abstract class Dao {
     /**#@-*/
 
     /**
-     * Conexão em aberta no PDO
+     * Conexão em aberta no PDO.
      * @var PDO
      */
     protected $con = null;
     /**
-     * Statement
+     * Statement.
      * @var PDOStatement|false
      */
     protected $stmt = null;
@@ -50,16 +50,16 @@ abstract class Dao {
     // Lista de conexões abertas
     private static $opened_connection = [];
     // Isto possibilita classes compartilharem a mesma conexão em conjunto com atributo $opened_connection
-    private $key_connection = "";
+    private $key_connection = '';
     // Dados da conexão atual
     private $data_connection = [
-        "driver" => "mysql",
-        "host" => null,
-        "user" => null,
-        "pass" => null,
-        "db" => null,
-        "port" => null,
-        "socket" => null
+        'driver' => 'mysql',
+        'host' => null,
+        'user' => null,
+        'pass' => null,
+        'db' => null,
+        'port' => null,
+        'socket' => null,
     ];
 
     /**
@@ -80,7 +80,7 @@ abstract class Dao {
     }
 
     /**
-     * Verifica se a coluna existe na tabela
+     * Verifica se a coluna existe na tabela.
      *
      * @param string $column
      *
@@ -89,12 +89,15 @@ abstract class Dao {
     public function hasColumn($column) {
         $list = $this->columns;
 
-        if (in_array($column, $list)) return true;
-        else return false;
+        if (in_array($column, $list)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
-     * Lista de campos da tabela
+     * Lista de campos da tabela.
      *
      * @return array <p>
      * Retorna a lista com os nomes das constantes com o index e seu valor.<br>
@@ -106,7 +109,7 @@ abstract class Dao {
     }
 
     /**
-     * Retorna uma string com as colunas da tabela pronta para uso em um select
+     * Retorna uma string com as colunas da tabela pronta para uso em um select.
      *
      * @param array|string|null $columns <p>
      * Array com as constantes das colunas
@@ -121,13 +124,13 @@ abstract class Dao {
      * @throws DaoException
      */
     public function getStringColumns($columns = null, $tb_name = null, $as_array = false) {
-        if ($tb_name !== null && preg_match("/^([a-zA-Z0-9_])+$/", $tb_name) == 0) {
-            throw new DaoException("tb_name invalido. o padrão aceito é [a-zA-Z0-9_].");
+        if ($tb_name !== null && preg_match('/^([a-zA-Z0-9_])+$/', $tb_name) == 0) {
+            throw new DaoException('tb_name invalido. o padrão aceito é [a-zA-Z0-9_].');
         }
 
         $list = $this->columns;
 
-        if ($columns == null || (is_array($columns) && count($columns) == 0) || $columns === "*") {
+        if ($columns == null || (is_array($columns) && count($columns) == 0) || $columns === '*') {
             $columns = [];
 
             foreach ($list as $i => $v) {
@@ -142,23 +145,26 @@ abstract class Dao {
             $as = is_numeric($i) ? null : $v;
 
             if (in_array($valor, $list)) {
-                $temp = ($tb_name != null ? $tb_name . "." : "") .
+                $temp = ($tb_name != null ? $tb_name . '.' : '') .
                     $valor .
-                    ($as != null ? " AS " . $as : "");
+                    ($as != null ? ' AS ' . $as : '');
 
                 $list_columns[] = $temp;
             } else {
-                throw new DaoException("A coluna \"" . $valor .
-                    "\" não existe na classe de representação da tabela \"" . $this->getConst("TABLE") . "\"");
+                throw new DaoException('A coluna "' . $valor .
+                    '" não existe na classe de representação da tabela "' . $this->getConst('TABLE') . '"');
             }
         }
 
-        if ($as_array) return $list_columns;
-        else return implode(", ", $list_columns);
+        if ($as_array) {
+            return $list_columns;
+        } else {
+            return implode(', ', $list_columns);
+        }
     }
 
     /**
-     * Retorna uma string com as colunas da tabela que não estão na lista passada pronta para uso em um select
+     * Retorna uma string com as colunas da tabela que não estão na lista passada pronta para uso em um select.
      *
      * @param array $columns Array com as constantes das colunas que não serão retornadas
      * @param string|null $tb_name O nome que a tabela esta usando na query para ser adicionado em cada coluna, padrão
@@ -169,16 +175,16 @@ abstract class Dao {
      * @throws DaoException
      */
     public function getStringColumnsExcept(array $columns, $tb_name = null, $as_array = false) {
-        if ($tb_name !== null && preg_match("/^([a-zA-Z0-9_])+$/", $tb_name) == 0) {
-            throw new DaoException("tb_name invalido. o padrão aceito é [a-zA-Z0-9_].");
+        if ($tb_name !== null && preg_match('/^([a-zA-Z0-9_])+$/', $tb_name) == 0) {
+            throw new DaoException('tb_name invalido. o padrão aceito é [a-zA-Z0-9_].');
         }
 
         $list = $this->columns;
 
         foreach ($columns as $i => $v) {
             if (!in_array($v, $list)) {
-                throw new DaoException("A coluna \"" . $v .
-                    "\" não existe na classe de representação da tabela \"" . $this->getConst("TABLE") . "\"");
+                throw new DaoException('A coluna "' . $v .
+                    '" não existe na classe de representação da tabela "' . $this->getConst('TABLE') . '"');
             }
         }
 
@@ -186,18 +192,21 @@ abstract class Dao {
 
         foreach ($list as $i => $valor) {
             if (!in_array($valor, $columns)) {
-                $temp = ($tb_name != null ? $tb_name . "." : "") . $valor;
+                $temp = ($tb_name != null ? $tb_name . '.' : '') . $valor;
 
                 $list_columns[] = $temp;
             }
         }
 
-        if ($as_array) return $list_columns;
-        else return implode(", ", $list_columns);
+        if ($as_array) {
+            return $list_columns;
+        } else {
+            return implode(', ', $list_columns);
+        }
     }
 
     /**
-     * Verifica se a estrutura segue o padrão da tabela
+     * Verifica se a estrutura segue o padrão da tabela.
      *
      * @param array $dados [index => valor, index => valor...]
      * @param bool $completa Verifica se não esta faltando indexes
@@ -213,14 +222,15 @@ abstract class Dao {
             }
         }
 
-        if ($completa && count($dados) != count($list))
+        if ($completa && count($dados) != count($list)) {
             return false;
+        }
 
         return true;
     }
 
     /**
-     * Retorna o array com a estrutura da tabela
+     * Retorna o array com a estrutura da tabela.
      *
      * As colunas viram indexes e recebem null
      *
@@ -232,11 +242,11 @@ abstract class Dao {
      */
     public function tableStruct(array $dados = [], array $add_data = []) {
         if (count($dados) > 0 && !$this->checkStruct($dados, true)) {
-            throw new DaoException("A estrutura de dados não segue o padrão da tabela \"" . $this->getConst("TABLE") . "\".");
+            throw new DaoException('A estrutura de dados não segue o padrão da tabela "' . $this->getConst('TABLE') . '".');
         }
 
         if (count($add_data) > 0 && !$this->checkStruct($add_data)) {
-            throw new DaoException("Os dados para adicionar não seguem o padrão da tabela \"" . $this->getConst("TABLE") . "\".");
+            throw new DaoException('Os dados para adicionar não seguem o padrão da tabela "' . $this->getConst('TABLE') . '".');
         }
 
         $list = $this->columns;
@@ -255,7 +265,7 @@ abstract class Dao {
     }
 
     /**
-     * Remove os indices que não pertencem a tabela
+     * Remove os indices que não pertencem a tabela.
      *
      * @param array $dados [index => valor, index => valor...]
      *
@@ -274,7 +284,7 @@ abstract class Dao {
     }
 
     /**
-     * Aplica o pré-fixo da tabela em indices que ainda não possuem
+     * Aplica o pré-fixo da tabela em indices que ainda não possuem.
      *
      * @example <code>
      * const TABLE = "usuario";<br>
@@ -303,23 +313,28 @@ abstract class Dao {
      * @throws DaoException
      */
     public function addPrefix($dados, bool $replace_indices = false): array {
-        $pre = $this->getConst("COLS_PREFIX");
+        $pre = $this->getConst('COLS_PREFIX');
 
-        if ($pre === null) return $dados;
-        $pre = $pre . "_";
+        if ($pre === null) {
+            return $dados;
+        }
+        $pre = $pre . '_';
 
         // Verifica se é apenas uma string
-        if (gettype($dados) === "string") {
-            if (in_array($pre . $dados, $this->columns))
+        if (gettype($dados) === 'string') {
+            if (in_array($pre . $dados, $this->columns)) {
                 return $pre . $dados;
-            else
+            } else {
                 return $dados;
-        } else if (!is_array($dados)) {
-            throw new DaoException("Valor informado deve ser um array ou string");
+            }
+        } elseif (!is_array($dados)) {
+            throw new DaoException('Valor informado deve ser um array ou string');
         }
 
         // Verifica se o array esta vazio
-        if (count($dados) == 0) return $dados;
+        if (count($dados) == 0) {
+            return $dados;
+        }
 
         // Verifica se os indices são sequenciais
         // Aplicado em casos onde é necessario apenas tratar indices
@@ -335,7 +350,7 @@ abstract class Dao {
                     (!in_array($novo_valor, $dados) || $replace_indices)
                 ) {
                     $dados[$nome] = $novo_valor;
-                } else if (!in_array($valor, $dados)) {
+                } elseif (!in_array($valor, $dados)) {
                     $dados[$nome] = $valor;
                 }
             }
@@ -354,7 +369,7 @@ abstract class Dao {
                     (!isset($novo[$novo_nome]) || $replace_indices)
                 ) {
                     $novo[$novo_nome] = $valor;
-                } else if (!isset($novo[$nome])) {
+                } elseif (!isset($novo[$nome])) {
                     $novo[$nome] = $valor;
                 }
             }
@@ -364,7 +379,7 @@ abstract class Dao {
     }
 
     /**
-     * Remove os pré-fixos da tabela em indices
+     * Remove os pré-fixos da tabela em indices.
      *
      * @example <code>
      * const TABLE = "usuario";<br>
@@ -400,26 +415,31 @@ abstract class Dao {
      * @throws DaoException
      */
     public function removePrefix($dados, bool $replace_indices = false) {
-        $pre = $this->getConst("COLS_PREFIX");
+        $pre = $this->getConst('COLS_PREFIX');
 
         // Se a tabela na tiver a constante PREFIX retorna o array como esta
-        if ($pre === null) return $dados;
-        $pre = $pre . "_";
+        if ($pre === null) {
+            return $dados;
+        }
+        $pre = $pre . '_';
 
         // Verifica se é apenas uma string
-        if (gettype($dados) === "string") {
-            $novo_valor = StrRes::replaceFirst($dados, $pre, "");
+        if (gettype($dados) === 'string') {
+            $novo_valor = StrRes::replaceFirst($dados, $pre, '');
 
-            if (in_array($novo_valor, $this->columns))
+            if (in_array($novo_valor, $this->columns)) {
                 return $novo_valor;
-            else
+            } else {
                 return $dados;
-        } else if (!is_array($dados)) {
-            throw new DaoException("Valor informado deve ser um array ou string");
+            }
+        } elseif (!is_array($dados)) {
+            throw new DaoException('Valor informado deve ser um array ou string');
         }
 
         // Verifica se o array esta vazio
-        if (count($dados) == 0) return $dados;
+        if (count($dados) == 0) {
+            return $dados;
+        }
 
         // Verifica se é um arrau multidimensional
         $multidimensional = count(array_filter($dados, 'is_array')) > 0;
@@ -428,7 +448,7 @@ abstract class Dao {
         // Aplicado em casos onde é necessario apenas tratar indices
         if (!$multidimensional && array_values($dados) === $dados) {
             foreach ($dados as $nome => $valor) {
-                $novo_valor = StrRes::replaceFirst($valor, $pre, "");
+                $novo_valor = StrRes::replaceFirst($valor, $pre, '');
 
                 // Verifica se o indice é uma coluna da tabela
                 // Verifica se no array já não existe um indice com o novo nome ou se deve substituir
@@ -437,7 +457,7 @@ abstract class Dao {
                     (!in_array($novo_valor, $dados) || $replace_indices)
                 ) {
                     $dados[$nome] = $novo_valor;
-                } else if (!in_array($valor, $dados)) {
+                } elseif (!in_array($valor, $dados)) {
                     $dados[$nome] = $valor;
                 }
             }
@@ -454,7 +474,7 @@ abstract class Dao {
 
                 foreach ($ln as $nome => $valor) {
                     // Novo nome sem o prefixo
-                    $novo_nome = StrRes::replaceFirst($nome, $pre, "");
+                    $novo_nome = StrRes::replaceFirst($nome, $pre, '');
 
                     // Verifica se o indice é uma coluna da tabela
                     // Verifica se no array já não existe um indice com o novo nome ou se deve substituir
@@ -462,7 +482,7 @@ abstract class Dao {
                         (!isset($novo[$index][$novo_nome]) || $replace_indices)
                     ) {
                         $novo[$index][$novo_nome] = $valor;
-                    } else if (!isset($novo[$index][$nome])) {
+                    } elseif (!isset($novo[$index][$nome])) {
                         $novo[$index][$nome] = $valor;
                     }
                 }
@@ -474,11 +494,11 @@ abstract class Dao {
     }
 
     /**
-     * Prepara a ordenação de uma tabela para buscas
+     * Prepara a ordenação de uma tabela para buscas.
      *
      * @param array $dados [coluna1, coluna2 => "desc", coluna3]
      *
-     * @return null|string
+     * @return string|null
      * @throws DaoException
      */
     public function stringOrderBy(array $dados) {
@@ -489,26 +509,27 @@ abstract class Dao {
 
             foreach ($dados as $i => $v) {
                 $column = is_numeric($i) ? $v : $i;
-                $order = strtolower(is_numeric($i) ? "asc" : $v);
+                $order = strtolower(is_numeric($i) ? 'asc' : $v);
 
-                if ($order != "asc" && $order != "desc")
-                    throw new DaoException("Ordem inválida " . $column);
+                if ($order != 'asc' && $order != 'desc') {
+                    throw new DaoException('Ordem inválida ' . $column);
+                }
 
-                if ($order == "desc") {
-                    $list_ordenar[] = $column . " DESC";
+                if ($order == 'desc') {
+                    $list_ordenar[] = $column . ' DESC';
                 } else {
                     $list_ordenar[] = $column;
                 }
             }
 
-            $final_ordem = implode(", ", $list_ordenar);
+            $final_ordem = implode(', ', $list_ordenar);
         }
 
         return $final_ordem;
     }
 
     /**
-     * Trata valores do limit contra sql injection
+     * Trata valores do limit contra sql injection.
      *
      * @param string|int $limit
      *
@@ -520,16 +541,16 @@ abstract class Dao {
         }
 
         if (substr_count($limit, ',') == 1) {
-            $tlimit = explode(",", $limit);
+            $tlimit = explode(',', $limit);
             $tlimit[0] = trim($tlimit[0]);
             $tlimit[1] = trim($tlimit[1]);
 
             if (!is_numeric($tlimit[0])) {
                 $error_limit = true;
-            } else if (!is_numeric($tlimit[1])) {
+            } elseif (!is_numeric($tlimit[1])) {
                 $error_limit = true;
             }
-        } else if (substr_count($limit, ',') == 0) {
+        } elseif (substr_count($limit, ',') == 0) {
             if ($limit != null && !is_numeric(trim($limit))) {
                 $error_limit = true;
             }
@@ -543,7 +564,7 @@ abstract class Dao {
     }
 
     /**
-     * Forma generica de executar uma consulta com prepare
+     * Forma generica de executar uma consulta com prepare.
      *
      * @param string $sql
      * @param array $where_val
@@ -562,13 +583,13 @@ abstract class Dao {
 
             $result = $this->stmt->execute();
         } else {
-            throw new DaoException("Erro de conexão " . $this->con->errorInfo()[2]);
+            throw new DaoException('Erro de conexão ' . $this->con->errorInfo()[2]);
         }
 
         $final = null;
-        if ($force == self::PREPARE_SELECT || StrRes::startsWith(strtolower(trim($sql)), "select")) {
+        if ($force == self::PREPARE_SELECT || StrRes::startsWith(strtolower(trim($sql)), 'select')) {
             $final = $this->stmt->fetchAll(PDO::FETCH_ASSOC);
-        } else if ($force == self::PREPARE_INSERT || StrRes::startsWith(strtolower(trim($sql)), "insert")) {
+        } elseif ($force == self::PREPARE_INSERT || StrRes::startsWith(strtolower(trim($sql)), 'insert')) {
             if ($this->stmt->rowCount() > 0) {
                 $id = $this->con->lastInsertId();
 
@@ -591,20 +612,20 @@ abstract class Dao {
     }
 
     /**
-     * Inicia uma conexão apenas se ela não existir
+     * Inicia uma conexão apenas se ela não existir.
      * @throws DaoException
      */
     protected function autoOpenDB() {
         if ($this->con === null && self::openedConnection($this->key_connection) !== false) {
             $this->con = self::openedConnection($this->key_connection);
-        } else if ($this->con === null && self::openedConnection($this->key_connection) === false) {
+        } elseif ($this->con === null && self::openedConnection($this->key_connection) === false) {
             self::openDB();
             $this->auto_open_close = true;
         }
     }
 
     /**
-     * Caso a conexão tenha sido iniciada pelo metodo autoOpenDB ele a encerra
+     * Caso a conexão tenha sido iniciada pelo metodo autoOpenDB ele a encerra.
      * @throws DaoException
      */
     protected function autoCloseDB() {
@@ -615,42 +636,43 @@ abstract class Dao {
     }
 
     /**
-     * Abre Conexão
+     * Abre Conexão.
      *
      * @param bool $disable_autocommit Desabilitar auto commit
      *
      * @throws DaoException
      */
-    protected final function openDB(bool $disable_autocommit = false) {
-        if ($this->con)
-            throw new DaoException("Já existe uma conexão aberta.");
+    final protected function openDB(bool $disable_autocommit = false) {
+        if ($this->con) {
+            throw new DaoException('Já existe uma conexão aberta.');
+        }
 
         if (self::openedConnection($this->key_connection) !== false) {
             $this->con = self::openedConnection($this->key_connection);
         } else {
             try {
-                $dsn = $this->data_connection['drive'] . ":";
+                $dsn = $this->data_connection['drive'] . ':';
 
                 //Verifica se a conexão será por socket ou hostname/IP
                 if (isset($this->data_connection['socket'])) {
-                    $dsn .= "unix_socket=" . $this->data_connection['socket'] . ";";
+                    $dsn .= 'unix_socket=' . $this->data_connection['socket'] . ';';
                 } else {
-                    $dsn .= "host=" . $this->data_connection['host'] . ";";
+                    $dsn .= 'host=' . $this->data_connection['host'] . ';';
                 }
 
                 //Verifica se há porta para conexão
                 if (isset($this->data_connection['port'])) {
-                    $dsn .= "port=" . $this->data_connection['port'] . ";";
+                    $dsn .= 'port=' . $this->data_connection['port'] . ';';
                 }
 
                 //Escreve o nome do banco de dados
-                $dsn .= "dbname=" . $this->data_connection['db'] . ";";
-                $dsn .= "charset=utf8mb4;";
+                $dsn .= 'dbname=' . $this->data_connection['db'] . ';';
+                $dsn .= 'charset=utf8mb4;';
 
                 //Define utf8 como a formatação padrão de caracteres
                 $options = [
                     PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci',
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 ];
 
                 //Habilita o auto-commit
@@ -671,35 +693,37 @@ abstract class Dao {
 
                 self::openedConnection($this->key_connection, $this->con);
             } catch (Error $e) {
-                throw new DaoException("Não foi possível conectar-se ao banco de dados");
+                throw new DaoException('Não foi possível conectar-se ao banco de dados');
             } catch (PDOException $e) {
-                throw new DaoException($e->getMessage() . "=PDO: Não foi possível conectar-se ao banco de dados");
+                throw new DaoException($e->getMessage() . '=PDO: Não foi possível conectar-se ao banco de dados');
             }
         }
     }
 
     /**
-     * Fecha Conexão
+     * Fecha Conexão.
      *
      * @throws DaoException
      */
-    protected final function closeDB() {
+    final protected function closeDB() {
         if ($this->con === null) {
-            throw new DaoException("Nenhuma conexão aberta para fechar.");
+            throw new DaoException('Nenhuma conexão aberta para fechar.');
         }
 
         if ($this->stmt !== null) {
-            if ($this->stmt) $this->stmt->closeCursor();
+            if ($this->stmt) {
+                $this->stmt->closeCursor();
+            }
             $this->stmt = null;
         }
 
-        self::openedConnection($this->key_connection, "delete");
+        self::openedConnection($this->key_connection, 'delete');
 
         $this->con = null;
     }
 
     /**
-     * Retorna o valor de uma constant
+     * Retorna o valor de uma constant.
      *
      * @param string $name
      *
@@ -708,11 +732,11 @@ abstract class Dao {
     protected function getConst($name) {
         $class = get_class($this);
 
-        return defined($class . "::" . $name) ? constant($class . "::" . $name) : null;
+        return defined($class . '::' . $name) ? constant($class . '::' . $name) : null;
     }
 
     /**
-     * Adiciona ou pega uma conexão
+     * Adiciona ou pega uma conexão.
      *
      * Se $object for = null retorna uma conexão
      * Se $object for = "delete" remove o indice
@@ -731,9 +755,10 @@ abstract class Dao {
             } else {
                 return false;
             }
-        } else if ($object == "delete") {
+        } elseif ($object == 'delete') {
             if (isset(self::$opened_connection[$key])) {
                 unset(self::$opened_connection[$key]);
+
                 return true;
             } else {
                 return false;
@@ -744,13 +769,13 @@ abstract class Dao {
 
                 return true;
             } else {
-                throw new DaoException("Object deve ser uma instancia PDO");
+                throw new DaoException('Object deve ser uma instancia PDO');
             }
         }
     }
 
     /**
-     * Seta dados da conexão
+     * Seta dados da conexão.
      *
      * @param array $dados <p>
      *      [host => string, user => string, pass => string, db => string, [port] => int, [socket] => string]
@@ -759,11 +784,11 @@ abstract class Dao {
      *
      * @throws DaoException
      */
-    private final function setDataConnection(array $dados, bool $cc = true) {
+    final private function setDataConnection(array $dados, bool $cc = true) {
         if (isset($dados['host']) && isset($dados['user']) && isset($dados['pass']) && isset($dados['db'])) {
             $key_id_db = $dados['host'] . $dados['user'] . $dados['pass'] . $dados['db'];
 
-            $this->data_connection['drive'] = $dados['drive'] ?? "mysql";
+            $this->data_connection['drive'] = $dados['drive'] ?? 'mysql';
             $this->data_connection['host'] = $dados['host'];
             $this->data_connection['user'] = $dados['user'];
             $this->data_connection['pass'] = $dados['pass'];
@@ -779,16 +804,18 @@ abstract class Dao {
                 $key_id_db .= $dados['socket'];
             }
 
-            if (!$cc) $key_id_db .= microtime();
+            if (!$cc) {
+                $key_id_db .= microtime();
+            }
 
             $this->key_connection = md5($key_id_db);
         } else {
-            throw new DaoException("Dados de conexão inválidos.");
+            throw new DaoException('Dados de conexão inválidos.');
         }
     }
 
     /**
-     * Lista de campos da tabela
+     * Lista de campos da tabela.
      *
      * Salva a lista com os nomes das constantes com o index e seu valor no atributo "columns".<br>
      * Ex: [COL_ID => "id", COL_NOME => "nome", ...]
@@ -803,19 +830,19 @@ abstract class Dao {
             $constants = $reflect->getConstants();
 
             foreach ($constants as $i => $v) {
-                if (StrRes::startsWith($i, "COL_")) {
+                if (StrRes::startsWith($i, 'COL_')) {
                     $list_columns[$i] = $v;
                 }
             }
 
-            if (count($list_columns) == 0)
-                throw new DaoException("Nenhuma constante de coluna foi definida na classe de representação da " .
-                    "tabela " . $this->getConst("TABLE") . ".\nDefina as colunas com prefixo \"COL_\".");
+            if (count($list_columns) == 0) {
+                throw new DaoException('Nenhuma constante de coluna foi definida na classe de representação da ' .
+                    'tabela ' . $this->getConst('TABLE') . ".\nDefina as colunas com prefixo \"COL_\".");
+            }
         } catch (ReflectionException $re) {
-            Log::e("ReflectionClass", $re);
+            Log::e('ReflectionClass', $re);
         }
 
         $this->columns = $list_columns;
     }
-
 }

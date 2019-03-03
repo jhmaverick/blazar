@@ -1,12 +1,11 @@
 <?php
 
-/**
+/*
  * This file is part of Blazar Framework.
  *
  * (c) João Henrique <joao_henriquee@outlook.com>
  *
- * For the full copyright and license information, please view the LICENSE file that was distributed with this source
- * code.
+ * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
  */
 
 namespace Blazar\Component\FileSystem;
@@ -14,16 +13,15 @@ namespace Blazar\Component\FileSystem;
 use Blazar\Component\TypeRes\StrRes;
 
 /**
- * Classe de recursos para auxiliar com arquivos e Diretórios
+ * Classe de recursos para auxiliar com arquivos e Diretórios.
  */
 class FileSystem {
-
-    const WRITE_APPEND = "append";
+    const WRITE_APPEND = 'append';
 
     private static $unidades_medida = ['KB', 'MB', 'GB', 'TB'];
 
     /**
-     * Envio de arquivos
+     * Envio de arquivos.
      *
      * @param array $file Um array no padrão da global $_FILE['*'].
      * @param string $dir_out diretório de destino do arquivo.
@@ -39,27 +37,31 @@ class FileSystem {
         // Pega informações do arquivo
         $fileParts = pathinfo($file['name']);
 
-        $new_name = md5(uniqid(rand(), true)) . "." . $fileParts['extension'];
+        $new_name = md5(uniqid(rand(), true)) . '.' . $fileParts['extension'];
         $targetFile = $dir_out . $new_name;
 
         if (count($extensions) == 0 || in_array(strtolower($fileParts['extension']), $extensions)) {
             // Cria o diretório caso ele não exista
-            if (!file_exists($dir_out)) @mkdir($dir_out, 0777, true);
-            if (!is_dir($dir_out)) throw new FileException("Não foi possível criar o diretório \"$dir_out\".");
+            if (!file_exists($dir_out)) {
+                @mkdir($dir_out, 0777, true);
+            }
+            if (!is_dir($dir_out)) {
+                throw new FileException("Não foi possível criar o diretório \"$dir_out\".");
+            }
 
             // Move o arquivo para o diretório definitivo
             if (move_uploaded_file($tempFile, $targetFile)) {
                 return $new_name;
             } else {
-                throw new FileException("Problemas ao mover arquivo para o diretório desejado.");
+                throw new FileException('Problemas ao mover arquivo para o diretório desejado.');
             }
         } else {
-            throw new FileException("Formato de arquivo inválido.");
+            throw new FileException('Formato de arquivo inválido.');
         }
     }
 
     /**
-     * Escreve em arquivo
+     * Escreve em arquivo.
      *
      * @deprecated usar file_put_contents
      *
@@ -74,7 +76,7 @@ class FileSystem {
     }
 
     /**
-     * Ler conteúdo de um arquivo
+     * Ler conteúdo de um arquivo.
      *
      * @deprecated usar file_get_contents
      *
@@ -87,7 +89,7 @@ class FileSystem {
     }
 
     /**
-     * Calcula tamanho da pasta
+     * Calcula tamanho da pasta.
      *
      * @param string $dir_path Caminho do diretório.
      *
@@ -99,7 +101,7 @@ class FileSystem {
 
         foreach ($files as $t) {
             if (is_dir(rtrim($dir_path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $t)) {
-                if ($t !== "." && $t !== "..") {
+                if ($t !== '.' && $t !== '..') {
                     $size = self::folderSize(rtrim($dir_path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $t);
 
                     $total_size += $size;
@@ -114,7 +116,7 @@ class FileSystem {
     }
 
     /**
-     * Retorna o tamanho do arquivo com a unidade de medida
+     * Retorna o tamanho do arquivo com a unidade de medida.
      *
      * @param int|string $base_medida O tamanho que será checado.<br>
      *  Pode ser um inteiro com o tamanho ou a string com o caminho para um arquivo.
@@ -126,10 +128,10 @@ class FileSystem {
     public static function fileSizeReal($base_medida, bool $separar_medida = false) {
         if (is_int($base_medida)) {
             $tamanho = $base_medida;
-        } else if (file_exists($base_medida)) {
+        } elseif (file_exists($base_medida)) {
             $tamanho = filesize($base_medida);
         } else {
-            throw new FileException("A base para medida deve ser um inteiro ou a string com o caminho para um arquivo.");
+            throw new FileException('A base para medida deve ser um inteiro ou a string com o caminho para um arquivo.');
         }
 
         /* Se for menor que 1KB arredonda para 1KB */
@@ -143,12 +145,15 @@ class FileSystem {
 
         $dados = [round($tamanho), self::$unidades_medida[$i - 1]];
 
-        if ($separar_medida) return $dados;
-        else return $dados[0] . $dados[1];
+        if ($separar_medida) {
+            return $dados;
+        } else {
+            return $dados[0] . $dados[1];
+        }
     }
 
     /**
-     * Verifica se o tamanho do arquivo é valido
+     * Verifica se o tamanho do arquivo é valido.
      *
      * O tamanho minimo para verificar é 1KB
      *
@@ -162,17 +167,17 @@ class FileSystem {
      */
     public static function validFileSize($max_filesize, $base_checar): bool {
         // Remove espaços
-        $max_filesize = str_replace(" ", "", $max_filesize);
+        $max_filesize = str_replace(' ', '', $max_filesize);
         // Força a unidade de medida para maiuscula
         $max_filesize = strtoupper($max_filesize);
 
         // Verifica se vai usar um inteiro já informado ou se deve pegar direto no arquivo
         if (is_int($base_checar)) {
             $tamanho = $base_checar;
-        } else if (file_exists($base_checar)) {
+        } elseif (file_exists($base_checar)) {
             $tamanho = filesize($base_checar);
         } else {
-            throw new FileException("A base para medida deve ser um inteiro ou a string com o caminho para um arquivo.");
+            throw new FileException('A base para medida deve ser um inteiro ou a string com o caminho para um arquivo.');
         }
 
         $i = 0;
@@ -181,7 +186,8 @@ class FileSystem {
             $unidade = self::$unidades_medida[$i];
 
             if (substr_count($max_filesize, $unidade) > 0) {
-                $max_filesize = str_replace($unidade, "", $max_filesize);
+                $max_filesize = str_replace($unidade, '', $max_filesize);
+
                 break;
             }
 
@@ -190,7 +196,7 @@ class FileSystem {
 
         // Verifica se o padrão do tamanho é valido
         if (!is_numeric($max_filesize)) {
-            throw new FileException("Formato do \"max_filesize\" inválido.");
+            throw new FileException('Formato do "max_filesize" inválido.');
         }
 
         // Se encontrar a unidade transforma em byte, se não mantem.
@@ -203,7 +209,7 @@ class FileSystem {
     }
 
     /**
-     * Combina vários caminhos
+     * Combina vários caminhos.
      *
      * Este método não verifica se o caminho final existe.
      * Este método não verifica se o caminho final retornado existe.
@@ -222,8 +228,9 @@ class FileSystem {
         foreach ($paths as $arg) {
             $arg = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $arg);
 
-            if (count($list) == 0 && StrRes::startsWith($arg, DIRECTORY_SEPARATOR))
+            if (count($list) == 0 && StrRes::startsWith($arg, DIRECTORY_SEPARATOR)) {
                 $starts_with_bar = true;
+            }
 
             $subitems = array_filter(explode(DIRECTORY_SEPARATOR, $arg), 'strlen');
             $list = array_merge($list, $subitems);
@@ -232,13 +239,18 @@ class FileSystem {
         $final = [];
         // Monta o caminho final
         foreach ($list as $index) {
-            if ('.' == $index) continue;
+            if ('.' == $index) {
+                continue;
+            }
 
-            if ('..' == $index) array_pop($final);
-            else $final[] = $index;
+            if ('..' == $index) {
+                array_pop($final);
+            } else {
+                $final[] = $index;
+            }
         }
 
-        return ($starts_with_bar ? DIRECTORY_SEPARATOR : "") . implode(DIRECTORY_SEPARATOR, $final);
+        return ($starts_with_bar ? DIRECTORY_SEPARATOR : '') . implode(DIRECTORY_SEPARATOR, $final);
     }
 
     /**
@@ -256,16 +268,16 @@ class FileSystem {
     public static function pathResolve(string $path1, string ...$paths): string {
         // Adiciona o diretório do arquivo que chamou o método como o primeiro na fila de diretórios
         $trace = debug_backtrace();
-        $dir = dirname($trace[0]["file"]);
+        $dir = dirname($trace[0]['file']);
 
         array_unshift($paths, $dir, $path1);
 
         $final = [];
         for ($i = 0; $i < count($paths); $i++) {
             // Verifica se o índice inicia do root do sistema
-            if (StrRes::startsWith($paths[$i], "/") ||
-                substr($paths[$i], 1, 2) == ":\\" ||
-                substr($paths[$i], 1, 2) == ":/"
+            if (StrRes::startsWith($paths[$i], '/') ||
+                substr($paths[$i], 1, 2) == ':\\' ||
+                substr($paths[$i], 1, 2) == ':/'
             ) {
                 $final = [$paths[$i]];
             } else {
@@ -273,6 +285,6 @@ class FileSystem {
             }
         }
 
-        return call_user_func_array([__CLASS__, "pathJoin"], $final);
+        return call_user_func_array([__CLASS__, 'pathJoin'], $final);
     }
 }

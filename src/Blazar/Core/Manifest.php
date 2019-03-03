@@ -1,12 +1,11 @@
 <?php
 
-/**
+/*
  * This file is part of Blazar Framework.
  *
  * (c) João Henrique <joao_henriquee@outlook.com>
  *
- * For the full copyright and license information, please view the LICENSE file that was distributed with this source
- * code.
+ * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
  */
 
 namespace Blazar\Core;
@@ -23,10 +22,9 @@ use stdClass;
 use Throwable;
 
 /**
- * Classe de gerenciamento do blazar-manifest.json
+ * Classe de gerenciamento do blazar-manifest.json.
  */
 class Manifest extends App {
-
     const SCHEMA_PATH = BLAZAR_DIR . '/schema/blazar-schema.json';
     const RECORDS_DIR = SOURCE_DIR . '/.records';
 
@@ -37,11 +35,13 @@ class Manifest extends App {
     private static $map = [];
 
     /**
-     * Inicia a configuração do sistema com os dados do manifest
+     * Inicia a configuração do sistema com os dados do manifest.
      */
     public function __construct() {
         // Impede que a função seja iniciada mais de uma vez
-        if (self::$started) return;
+        if (self::$started) {
+            return;
+        }
         self::$started = true;
 
         try {
@@ -52,15 +52,19 @@ class Manifest extends App {
             $files = self::filesInfo();
 
             // Nome padrão para ser usado caso não exista um arquivo manifeste
-            $serialize_name = "default";
+            $serialize_name = 'default';
 
-            if ($files->main->exists) $serialize_name = $files->main->change_time;
-            if ($files->custom->exists) $serialize_name = ($files->main->exists ? $serialize_name . "_" : "") . $files->custom->change_time;
+            if ($files->main->exists) {
+                $serialize_name = $files->main->change_time;
+            }
+            if ($files->custom->exists) {
+                $serialize_name = ($files->main->exists ? $serialize_name . '_' : '') . $files->custom->change_time;
+            }
 
-            $serialize_name = "mf_" . md5($serialize_name);
+            $serialize_name = 'mf_' . md5($serialize_name);
 
             // Se os dados do manifest não tiverem sido alterados utiliza eles para evitar validações e processamento
-            $serialize_file = self::RECORDS_DIR . "/" . $serialize_name;
+            $serialize_file = self::RECORDS_DIR . '/' . $serialize_name;
 
             if (file_exists($serialize_file)) {
                 $dados_manifest = unserialize(file_get_contents($serialize_file));
@@ -69,12 +73,16 @@ class Manifest extends App {
                 $dados_manifest = [];
 
                 // Manifesto principal
-                if ($files->main->exists) $dados_manifest = self::readManifestFile($files->main->path);
+                if ($files->main->exists) {
+                    $dados_manifest = self::readManifestFile($files->main->path);
+                }
 
                 // Manifesto customizado
                 if ($files->custom->exists) {
                     $custom = self::readManifestFile($files->custom->path);
-                    if ($files->main->exists) $dados_manifest = array_replace_recursive($dados_manifest, $custom);
+                    if ($files->main->exists) {
+                        $dados_manifest = array_replace_recursive($dados_manifest, $custom);
+                    }
                 }
 
                 // Tratar os dados de acordo com schema
@@ -85,7 +93,9 @@ class Manifest extends App {
                 // Remove arquivos de versões antigas
                 $files = glob(self::RECORDS_DIR . '/mf_*');
                 foreach ($files as $file) {
-                    if (is_file($file)) unlink($file);
+                    if (is_file($file)) {
+                        unlink($file);
+                    }
                 }
 
                 // Salva arquivo com serialize
@@ -120,14 +130,14 @@ class Manifest extends App {
                 // Reajusta os index da url com os padrões
                 self::$max_index_map = self::preencherParametro(0, $dados_manifest['map']);
             }
-        } catch (Error|Throwable $e) {
+        } catch (Error | Throwable $e) {
             Log::e($e);
-            exit("Manifest: Erro ao iniciar o sistema.");
+            exit('Manifest: Erro ao iniciar o sistema.');
         }
     }
 
     /**
-     * Pega configurações o índice configurações
+     * Pega configurações o índice configurações.
      *
      * @param string|null $index Nome do índice desejado ou null para retornar um array com todos.
      *
@@ -142,7 +152,7 @@ class Manifest extends App {
     }
 
     /**
-     * Pega dados e informações da aplicação
+     * Pega dados e informações da aplicação.
      *
      * @param string|null $index Nome do indice desejado ou null para retornar um array com todos.
      *
@@ -157,7 +167,7 @@ class Manifest extends App {
     }
 
     /**
-     * Pega os dados de um Banco
+     * Pega os dados de um Banco.
      *
      * @param string|null $connection_name Nome da conexão desejada ou null para retornar um array com todas.
      *
@@ -185,21 +195,24 @@ class Manifest extends App {
     public static function map(string $route = null, string $index = null) {
         // Percorre a rota informada
         if ($route !== null) {
-            $arvore = explode("/", $route);
+            $arvore = explode('/', $route);
 
-            $final = ["sub" => self::$map];
+            $final = ['sub' => self::$map];
 
             for ($i = 0; $i < count($arvore); $i++) {
                 $atual = $arvore[$i];
 
-                if (!isset($final["sub"]) || !isset($final["sub"][$atual])) {
+                if (!isset($final['sub']) || !isset($final['sub'][$atual])) {
                     return null;
                 }
 
-                $final = $final["sub"][$atual];
+                $final = $final['sub'][$atual];
             }
 
-            if ($index !== null) return $final[$index] ?? null;
+            if ($index !== null) {
+                return $final[$index] ?? null;
+            }
+
             return $final;
         } else {
             // Retorna todos os parâmetros
@@ -208,19 +221,19 @@ class Manifest extends App {
     }
 
     /**
-     * Pega informações dos arquivos do manifest
+     * Pega informações dos arquivos do manifest.
      *
      * @return stdClass
      */
     private static function filesInfo(): stdClass {
-        $manifest_path = (defined("MANIFEST_PATH"))
+        $manifest_path = (defined('MANIFEST_PATH'))
             ? FileSystem::pathResolve(SOURCE_DIR, MANIFEST_PATH)
-            : SOURCE_DIR . "/blazar-manifest.json";
+            : SOURCE_DIR . '/blazar-manifest.json';
 
-        $main = (object)[
-            "exists" => false,
-            "path" => $manifest_path,
-            "change_time" => null
+        $main = (object) [
+            'exists' => false,
+            'path' => $manifest_path,
+            'change_time' => null,
         ];
 
         if (file_exists($manifest_path)) {
@@ -229,14 +242,14 @@ class Manifest extends App {
         }
 
         // Verifica se existe um manifest para mesclar com o principal
-        $custom_manifest = (defined("CUSTOM_MANIFEST"))
+        $custom_manifest = (defined('CUSTOM_MANIFEST'))
             ? FileSystem::pathResolve(SOURCE_DIR, CUSTOM_MANIFEST)
-            : SOURCE_DIR . "/custom-manifest.json";
+            : SOURCE_DIR . '/custom-manifest.json';
 
-        $custom = (object)[
-            "exists" => false,
-            "path" => $custom_manifest,
-            "change_time" => null
+        $custom = (object) [
+            'exists' => false,
+            'path' => $custom_manifest,
+            'change_time' => null,
         ];
 
         if (file_exists($custom_manifest)) {
@@ -244,14 +257,14 @@ class Manifest extends App {
             $custom->change_time = filectime($custom_manifest);
         }
 
-        return (object)[
-            "main" => $main,
-            "custom" => $custom
+        return (object) [
+            'main' => $main,
+            'custom' => $custom,
         ];
     }
 
     /**
-     * Valida o schema e aplica os valores padrões
+     * Valida o schema e aplica os valores padrões.
      *
      * @param array $dados_manifest
      *
@@ -261,18 +274,30 @@ class Manifest extends App {
         $object = ArrayRes::array2object($dados_manifest);
 
         // Força a criação do índice para ele receber os defaults
-        if (!isset($object->configs)) $object->configs = new \stdClass();
+        if (!isset($object->configs)) {
+            $object->configs = new \stdClass();
+        }
         // Aplica o caminho real do diretório de logs
-        if (!isset($object->configs->logs_dir)) $object->configs->logs_dir = Log::DEFAULT_DIR;
-        if (!isset($object->configs->logs_dir)) $object->configs->texts_dir = Text::DEFAULT_DIR;
+        if (!isset($object->configs->logs_dir)) {
+            $object->configs->logs_dir = Log::DEFAULT_DIR;
+        }
+        if (!isset($object->configs->logs_dir)) {
+            $object->configs->texts_dir = Text::DEFAULT_DIR;
+        }
 
         // Força o tipo "objeto" caso o índice exista
-        if (isset($object->data)) $object->data = (object)$object->data;
-        if (isset($object->dbs)) $object->dbs = (object)$object->dbs;
-        if (isset($object->map)) $object->map = (object)$object->map;
+        if (isset($object->data)) {
+            $object->data = (object) $object->data;
+        }
+        if (isset($object->dbs)) {
+            $object->dbs = (object) $object->dbs;
+        }
+        if (isset($object->map)) {
+            $object->map = (object) $object->map;
+        }
 
         $validator = new Validator();
-        $schema = (object)['$ref' => 'file://' . realpath(self::SCHEMA_PATH)];
+        $schema = (object) ['$ref' => 'file://' . realpath(self::SCHEMA_PATH)];
 
         // Aplica os valores padrões
         $validator->validate($object, $schema, Constraint::CHECK_MODE_APPLY_DEFAULTS);
@@ -293,14 +318,14 @@ class Manifest extends App {
     }
 
     /**
-     * Gera um array com parâmetros da url
+     * Gera um array com parâmetros da url.
      *
      * @throws BlazarException
      */
     private static function extractUrlParams() {
         $url = [];
 
-        $un_get = explode("?", URL);
+        $un_get = explode('?', URL);
         $url_completa = $un_get[0];
 
         // Pega parâmetros da URL
@@ -316,15 +341,17 @@ class Manifest extends App {
                     $url = explode('/', $p_atual);
 
                     // Evita que barras no final da url sejam interpretadas com um parâmetro
-                    if ($url[count($url) - 1] == "") unset($url[count($url) - 1]);
+                    if ($url[count($url) - 1] == '') {
+                        unset($url[count($url) - 1]);
+                    }
                 } else {
                     $url[0] = $p_atual;
                 }
             } else {
                 throw new BlazarException("Problemas ao extrair os parâmetros da url.\n" .
                     "A constante BASE deve ser o inicio da constante URL.\n" .
-                    "URL: " . URL . "\n" .
-                    "BASE: " . URL_BASE);
+                    'URL: ' . URL . "\n" .
+                    'BASE: ' . URL_BASE);
             }
         }
 
@@ -332,7 +359,7 @@ class Manifest extends App {
     }
 
     /**
-     * Faz a leitura do arquivo e retorna em array
+     * Faz a leitura do arquivo e retorna em array.
      *
      * @param string $local
      *
@@ -340,7 +367,7 @@ class Manifest extends App {
      * @throws BlazarException
      */
     private static function readManifestFile(string $local): array {
-        $file_name = explode("/", $local);
+        $file_name = explode('/', $local);
         $file_name = end($file_name);
 
         $dados_manifest = @file_get_contents($local);
@@ -354,20 +381,20 @@ class Manifest extends App {
 
         // Aplica o que foi encontrado nos includes no json principal
         foreach ($retorno[0] as $index => $value) {
-            if (file_exists(SOURCE_DIR . "/" . $retorno[1][$index])) {
-                $conteudo_json = file_get_contents(SOURCE_DIR . "/" . $retorno[1][$index]);
+            if (file_exists(SOURCE_DIR . '/' . $retorno[1][$index])) {
+                $conteudo_json = file_get_contents(SOURCE_DIR . '/' . $retorno[1][$index]);
 
                 if (json5_decode($conteudo_json, true) != null) {
                     $dados_manifest = StrRes::replaceFirst($dados_manifest, $retorno[0][$index], $conteudo_json);
                 } else {
                     throw new BlazarException("O código encontrado não é um JSON.\n" .
-                        "arquivo: " . htmlspecialchars($retorno[0][$index]) . "\n" .
-                        "declaração: " . $retorno[1][$index]);
+                        'arquivo: ' . htmlspecialchars($retorno[0][$index]) . "\n" .
+                        'declaração: ' . $retorno[1][$index]);
                 }
             } else {
                 throw new BlazarException("O arquivo não pode ser incluido no manifest.\n" .
-                    "arquivo: " . htmlspecialchars($retorno[0][$index]) . "\n" .
-                    "declaração: " . $retorno[1][$index]);
+                    'arquivo: ' . htmlspecialchars($retorno[0][$index]) . "\n" .
+                    'declaração: ' . $retorno[1][$index]);
             }
         }
 
@@ -385,45 +412,45 @@ class Manifest extends App {
      */
     private static function applyConfigs() {
         // Define ambiente
-        if (!defined("CURRENT_ENV")) {
-            /**
+        if (!defined('CURRENT_ENV')) {
+            /*
              * Ambiente onde o sistema esta rodando.
              *
              * ENV_DEVELOPMENT, ENV_TESTING ou ENV_PRODUCTION.
              */
-            define("CURRENT_ENV", (int)Manifest::config("env"));
+            define('CURRENT_ENV', (int) Manifest::config('env'));
         }
 
         // Aplica o padrão do mustache
-        View::mustacheDefault(Manifest::config("view_render_mustache"));
+        View::mustacheDefault(Manifest::config('view_render_mustache'));
 
         // Redirecionar para https
-        if (CURRENT_ENV == ENV_PRODUCTION && self::config("force_https") && !isset($_SERVER['HTTPS'])) {
-            header("location: https://" . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"]);
+        if (CURRENT_ENV == ENV_PRODUCTION && self::config('force_https') && !isset($_SERVER['HTTPS'])) {
+            header('location: https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
             exit();
         }
 
         // Força redirecionamento para url com "www."
         if (CURRENT_ENV == ENV_PRODUCTION &&
-            self::config("force_www") == 1 &&
+            self::config('force_www') == 1 &&
             substr_count($_SERVER['SERVER_NAME'], 'www.') == 0
         ) {
-            header("location: //www." . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
+            header('location: //www.' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
             exit();
         } // Força redirecionamento para url sem "www."
-        else if (CURRENT_ENV == ENV_PRODUCTION &&
-            self::config("force_www") == -1 &&
+        elseif (CURRENT_ENV == ENV_PRODUCTION &&
+            self::config('force_www') == -1 &&
             substr_count($_SERVER['SERVER_NAME'], 'www.') != 0
         ) {
-            header("location: //" . substr($_SERVER['HTTP_HOST'], 4) . $_SERVER['REQUEST_URI']);
+            header('location: //' . substr($_SERVER['HTTP_HOST'], 4) . $_SERVER['REQUEST_URI']);
             exit();
         }
 
         // Controle de Cross Origin
-        if (($cors = self::config("cors")) !== null) {
+        if (($cors = self::config('cors')) !== null) {
             // Verifica se é uma requisição cross origin e se ela esta liberada
             if (isset($_SERVER['HTTP_ORIGIN']) &&
-                ((is_string($cors) && (trim($cors) === "*" || trim($cors) === $_SERVER['HTTP_ORIGIN'])) ||
+                ((is_string($cors) && (trim($cors) === '*' || trim($cors) === $_SERVER['HTTP_ORIGIN'])) ||
                     (is_array($cors) && in_array($_SERVER['HTTP_ORIGIN'], $cors)))
             ) {
                 // should do a check here to match $_SERVER['HTTP_ORIGIN'] to a whitelist of safe domains
@@ -433,18 +460,20 @@ class Manifest extends App {
 
                 // Access-Control headers are received during OPTIONS requests
                 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-                    if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']))
-                        header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+                    if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'])) {
+                        header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+                    }
 
-                    if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']))
+                    if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])) {
                         header("Access-Control-Allow-Headers: {$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");
+                    }
                 }
             }
         }
     }
 
     /**
-     * Preenche os parâmetros vazios
+     * Preenche os parâmetros vazios.
      *
      * @param int $index indice do parâmetro
      * @param array $map_list Mapa de parâmetro do manifest
@@ -481,7 +510,7 @@ class Manifest extends App {
     }
 
     /**
-     * Completa as informações do parâmetro
+     * Completa as informações do parâmetro.
      *
      * @param string $index Indice do parâmetro
      * @param array $param_info Dados do parâmetro
@@ -490,13 +519,16 @@ class Manifest extends App {
      * @throws BlazarException
      */
     private static function paramInfo(string $index, array $param_info): array {
-        if (isset($param_info['sub'])) unset($param_info['sub']);
+        if (isset($param_info['sub'])) {
+            unset($param_info['sub']);
+        }
 
         $param_info['name'] = App::param($index);
         $param_info['index'] = $index;
 
-        if (!class_exists($param_info['class']))
-            throw new BlazarException("A Classe \"" . $param_info['class'] . "\" informada no map não existe.");
+        if (!class_exists($param_info['class'])) {
+            throw new BlazarException('A Classe "' . $param_info['class'] . '" informada no map não existe.');
+        }
 
         $params_map = App::get();
         $params_full = App::param(null, App::PARAMS_ALL);
@@ -507,10 +539,9 @@ class Manifest extends App {
             $route[] = $params_full[$i];
         }
 
-        $param_info["route"] = implode("/", $route);
-        $param_info["url_path"] = URL_BASE . $param_info["route"];
+        $param_info['route'] = implode('/', $route);
+        $param_info['url_path'] = URL_BASE . $param_info['route'];
 
         return $param_info;
     }
-
 }

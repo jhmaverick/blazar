@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * This file is part of Blazar Framework.
  *
  * (c) João Henrique <joao_henriquee@outlook.com>
@@ -13,5 +13,4 @@ namespace Blazar\Component\View;
 use Blazar\Core\BlazarException;
 
 class ViewException extends BlazarException {
-
 }

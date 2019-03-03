@@ -1,9 +1,17 @@
 <?php
 
+/*
+ * This file is part of Blazar Framework.
+ *
+ * (c) João Henrique <joao_henriquee@outlook.com>
+ *
+ * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
+ */
+
 use Blazar\Component\WebService\WebService;
 
 /**
- * API de gerenciamento de Login e Sessão
+ * API de gerenciamento de Login e Sessão.
  *
  * Responsavel por criar, verificar e excluir logins
  */
@@ -23,7 +31,10 @@ class SingleAPI extends WebService {
     public function login(array $dados) {
         $result = (isset($dados['email']) && isset($dados['senha']));
 
-        if ($result) return "dddd";
-        else return "ssss";
+        if ($result) {
+            return 'dddd';
+        } else {
+            return 'ssss';
+        }
     }
 }

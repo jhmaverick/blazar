@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * This file is part of Blazar Framework.
  *
  * (c) João Henrique <joao_henriquee@outlook.com>
@@ -18,16 +18,15 @@ use Exception;
 use Mustache_Engine;
 
 /**
- * Class de leitura de textos do sistema
+ * Class de leitura de textos do sistema.
  *
  * O diretório de textos padrão está definido em (SOURCE_DIR . "texts/"), utilize o metodo "setDefaultDir" para alterar.
  */
 class Text {
-
-    public const DEFAULT_DIR = SOURCE_DIR . "/texts";
-    private const BLAZAR_DIR = BLAZAR_DIR . "/texts";
-    private const MAIN_FILE = "main";
-    private const DEFAULT_LANG = "default";
+    public const DEFAULT_DIR = SOURCE_DIR . '/texts';
+    private const BLAZAR_DIR = BLAZAR_DIR . '/texts';
+    private const MAIN_FILE = 'main';
+    private const DEFAULT_LANG = 'default';
 
     // Diretório padrão dos textos
     private static $texts_dir = self::DEFAULT_DIR;
@@ -38,7 +37,7 @@ class Text {
     private static $ow_loaded_files = [];
 
     /**
-     * Definir diretório padrão de textos
+     * Definir diretório padrão de textos.
      *
      * @param string $default_dir Caminho para o diretório
      */
@@ -47,7 +46,7 @@ class Text {
     }
 
     /**
-     * Define um idioma para ser mesclado com o arquivo principal
+     * Define um idioma para ser mesclado com o arquivo principal.
      *
      * O arquivo de texto chamado irá procurar por uma versão com a extensão do idioma setado.<br>
      * Exemplo: main.json e main.pt.json
@@ -59,14 +58,14 @@ class Text {
      * </p>
      */
     public static function setDefaultLang(string $lang) {
-        $lang = trim($lang, ". ");
-        $lang = StrRes::replaceLast($lang, ".json", "");
+        $lang = trim($lang, '. ');
+        $lang = StrRes::replaceLast($lang, '.json', '');
 
         self::$default_lang = $lang;
     }
 
     /**
-     * Get text with overwriting
+     * Get text with overwriting.
      *
      * Procura primeiro no projeto e se não encontrar tenta no framework
      *
@@ -78,18 +77,20 @@ class Text {
      */
     public static function getOW(string $get_text, array $mustache_hash = [], string $lang = null): ?string {
         // Remove prefixo do framework
-        $get_text = StrRes::replaceFirst($get_text, "bzr-", "");
+        $get_text = StrRes::replaceFirst($get_text, 'bzr-', '');
 
         // Tenta pegar um texto do projeto
         $text = Text::get($get_text, $mustache_hash, $lang);
         // Se não encontrar tenta no framework
-        if ($text === null) $text = Text::get("bzr-" . $get_text, $mustache_hash, $lang);
+        if ($text === null) {
+            $text = Text::get('bzr-' . $get_text, $mustache_hash, $lang);
+        }
 
         return $text;
     }
 
     /**
-     * Pegar texto em arquivos JSON
+     * Pegar texto em arquivos JSON.
      *
      * Os textos do framework devem iniciar com "bzr-" ex: "bzr-title" para chamar do arquivo main ou
      * "bzr-example/title" para chamar o indice title no arquivo example.
@@ -112,15 +113,15 @@ class Text {
         $blazar_txt = false;
 
         // Verifica se o pedido é do framework
-        if (StrRes::startsWith($get_text, "bzr-")) {
+        if (StrRes::startsWith($get_text, 'bzr-')) {
             $blazar_txt = true;
-            $get_text = StrRes::replaceFirst($get_text, "bzr-", "");
+            $get_text = StrRes::replaceFirst($get_text, 'bzr-', '');
         }
 
         // Verifica se o arquivo foi passado junto a chave
-        if (substr_count($get_text, "/") > 0) {
-            $file_name = implode("/", explode("/", $get_text, -1));
-            $novo = explode("/", $get_text);
+        if (substr_count($get_text, '/') > 0) {
+            $file_name = implode('/', explode('/', $get_text, -1));
+            $novo = explode('/', $get_text);
             $key = end($novo);
         } else {
             // Utilizar main file
@@ -129,23 +130,29 @@ class Text {
         }
 
         // Verifica se esta tentando utilizar algum arquivo de texto com nome "bzr"
-        if ($file_name === "bzr") {
-            Log::e("\"bzr\" é reservado para o framework, arquivos de texto não podem ser criados com esse nome.",
-                "Texto chamado: \"" . $get_text . "\"",
+        if ($file_name === 'bzr') {
+            Log::e('"bzr" é reservado para o framework, arquivos de texto não podem ser criados com esse nome.',
+                'Texto chamado: "' . $get_text . '"',
                 true);
-            return "";
+
+            return '';
         }
 
         // Verifica se o texto era do framework
-        if ($blazar_txt) $file_name = "bzr-" . $file_name;
+        if ($blazar_txt) {
+            $file_name = 'bzr-' . $file_name;
+        }
 
         try {
             // Pega os dados do arquivo
             $list = self::prepare($file_name, $lang);
 
             // Verifica o indice existe no arquivo
-            if ($list != null && isset($list[$key])) $str = $list[$key];
-            else return null;
+            if ($list != null && isset($list[$key])) {
+                $str = $list[$key];
+            } else {
+                return null;
+            }
 
             if (count($mustache_hash) > 0) {
                 // Substitui parametros do mustache
@@ -156,13 +163,16 @@ class Text {
             return $str;
         } catch (Exception $e) {
             // Salva log apenas para json incorreto
-            if ($e->getCode() == 2) Log::e($e);
+            if ($e->getCode() == 2) {
+                Log::e($e);
+            }
+
             return null;
         }
     }
 
     /**
-     * Verifica se o arquivo de texto já foi carregado e se necessario carrega
+     * Verifica se o arquivo de texto já foi carregado e se necessario carrega.
      *
      * @param string|null $file_name <p>
      * O nome do arquivo onde esta localizado o texto desejado(Não é necessario informar ".json")<br>
@@ -179,69 +189,83 @@ class Text {
      * @throws Exception
      */
     private static function prepare(?string $file_name = self::MAIN_FILE, $lang = null): ?array {
-        if ($lang === null) $lang = self::$default_lang;
+        if ($lang === null) {
+            $lang = self::$default_lang;
+        }
 
         $file_name = self::prepareFileName($file_name);
 
         // Gera a chave pra salvar o nome do arquivo na lista de carregados
-        $file_key = str_replace("/", "-", $file_name);
-        if ($lang !== self::DEFAULT_LANG && $lang !== false) $file_key = $file_key . "." . trim($lang, ". ");
+        $file_key = str_replace('/', '-', $file_name);
+        if ($lang !== self::DEFAULT_LANG && $lang !== false) {
+            $file_key = $file_key . '.' . trim($lang, '. ');
+        }
 
         // Aplica o caminho completo para o texto
-        if (StrRes::startsWith($file_name, "bzr-")) {
+        if (StrRes::startsWith($file_name, 'bzr-')) {
             // Ajusta caminho para os textos do framework
-            $name = StrRes::replaceFirst($file_name, "bzr-", "");
+            $name = StrRes::replaceFirst($file_name, 'bzr-', '');
             $name = self::BLAZAR_DIR . $name;
         } else {
             // Caminho para textos do projeto
-            $name = self::$texts_dir . "/" . $file_name;
+            $name = self::$texts_dir . '/' . $file_name;
         }
 
         // Verifica se o arquivo já foi carregado
         if (!isset(self::$loaded_files[$file_key]) || $lang === false) {
-            if (file_exists($name . ".json")) $name = $name . ".json";
-            else return null;
+            if (file_exists($name . '.json')) {
+                $name = $name . '.json';
+            } else {
+                return null;
+            }
 
             $file_content = @file_get_contents($name);
             if (json5_decode($file_content, true)) {
                 $list = json5_decode($file_content, true);
             } else {
-                throw new BlazarException("O conteúdo do arquivo \"" . $name . ".json\" não é um JSON.", 2);
+                throw new BlazarException('O conteúdo do arquivo "' . $name . '.json" não é um JSON.', 2);
             }
 
             // Verifica se existe um texto em outro idioma para mesclar
             if ($lang !== self::DEFAULT_LANG && $lang !== false) {
-                $lang = trim($lang, ". ");
-                $other_lang = self::prepare($file_name . "." . $lang, false);
+                $lang = trim($lang, '. ');
+                $other_lang = self::prepare($file_name . '.' . $lang, false);
 
-                if ($other_lang !== null) $list = array_merge($list, $other_lang);
+                if ($other_lang !== null) {
+                    $list = array_merge($list, $other_lang);
+                }
             }
 
             // Se estiver buscando o idioma não salva nos arquivos carregados
-            if ($lang === false) return $list;
-            else return self::$loaded_files[$file_key] = $list;
+            if ($lang === false) {
+                return $list;
+            } else {
+                return self::$loaded_files[$file_key] = $list;
+            }
         } else {
             return self::$loaded_files[$file_key];
         }
     }
 
     /**
-     * Remove .json do nome e limpa a string
+     * Remove .json do nome e limpa a string.
      *
      * @param string|null $file_name
      *
      * @return string
      */
     private static function prepareFileName(?string $file_name = self::MAIN_FILE): string {
-        if ($file_name == null) $file_name = self::MAIN_FILE;
+        if ($file_name == null) {
+            $file_name = self::MAIN_FILE;
+        }
         $file_name = trim($file_name, " \t\n\r \v/");
-        $file_name = StrRes::replaceLast($file_name, ".json", "");
+        $file_name = StrRes::replaceLast($file_name, '.json', '');
 
         return $file_name;
     }
 
     /**
-     * Get all text from file with overwriting
+     * Get all text from file with overwriting.
      *
      * Procura primeiro no projeto e se não encontrar tenta no framework
      *
@@ -253,20 +277,27 @@ class Text {
      */
     public static function getOWAll(?string $file_name = self::MAIN_FILE, array $matriz_mustache_hash = [], string $lang = null): ?array {
         // Remove prefixo do framework
-        if (StrRes::startsWith($file_name, "bzr-")) $file_name = StrRes::replaceFirst($file_name, "bzr-", "");
-        else if (StrRes::startsWith($file_name, "bzr")) $file_name = StrRes::replaceFirst($file_name, "bzr", "");
+        if (StrRes::startsWith($file_name, 'bzr-')) {
+            $file_name = StrRes::replaceFirst($file_name, 'bzr-', '');
+        } elseif (StrRes::startsWith($file_name, 'bzr')) {
+            $file_name = StrRes::replaceFirst($file_name, 'bzr', '');
+        }
 
-        $file_key = str_replace("/", "-", self::prepareFileName($file_name));
+        $file_key = str_replace('/', '-', self::prepareFileName($file_name));
 
         if (!isset(self::$ow_loaded_files[$file_key])) {
             // Tenta pegar um texto do projeto
             $texts = Text::getAll($file_name, $matriz_mustache_hash, $lang);
             // Se não encontrar tenta no framework
-            $texts_fm = Text::getAll("bzr-" . $file_name, $matriz_mustache_hash, $lang);
+            $texts_fm = Text::getAll('bzr-' . $file_name, $matriz_mustache_hash, $lang);
 
-            if ($texts !== null && $texts_fm !== null) $final_text = array_merge($texts_fm, $texts);
-            else if ($texts !== null) $final_text = $texts;
-            else $final_text = $texts_fm;
+            if ($texts !== null && $texts_fm !== null) {
+                $final_text = array_merge($texts_fm, $texts);
+            } elseif ($texts !== null) {
+                $final_text = $texts;
+            } else {
+                $final_text = $texts_fm;
+            }
 
             return self::$ow_loaded_files[$file_key] = $final_text;
         } else {
@@ -275,7 +306,7 @@ class Text {
     }
 
     /**
-     * Pegar todos os textos de um arquivo
+     * Pegar todos os textos de um arquivo.
      *
      * Os textos do framework devem iniciar com "bzr-" ex: "bzr-example" ou apenas "bzr" para chamar o main.
      *
@@ -300,12 +331,16 @@ class Text {
      */
     public static function getAll(?string $file_name = self::MAIN_FILE, array $matriz_mustache_hash = [], ?string $lang = null): ?array {
         // Define o main do sistema caso bzr seja informado
-        if ($file_name === "bzr" || $file_name === "bzr-") $file_name = "bzr-" . self::MAIN_FILE;
+        if ($file_name === 'bzr' || $file_name === 'bzr-') {
+            $file_name = 'bzr-' . self::MAIN_FILE;
+        }
 
         try {
             // Pega os dados do arquivo
             $list = self::prepare($file_name, $lang);
-            if ($list == null) return null;
+            if ($list == null) {
+                return null;
+            }
 
             if (count($matriz_mustache_hash) > 0) {
                 $mustache = new Mustache_Engine();
@@ -322,7 +357,10 @@ class Text {
             return $list;
         } catch (Exception $e) {
             // Salva log apenas para json incorreto
-            if ($e->getCode() == 2) Log::e($e);
+            if ($e->getCode() == 2) {
+                Log::e($e);
+            }
+
             return null;
         }
     }

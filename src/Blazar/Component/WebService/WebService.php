@@ -1,12 +1,11 @@
 <?php
 
-/**
+/*
  * This file is part of Blazar Framework.
  *
  * (c) João Henrique <joao_henriquee@outlook.com>
  *
- * For the full copyright and license information, please view the LICENSE file that was distributed with this source
- * code.
+ * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
  */
 
 namespace Blazar\Component\WebService;
@@ -40,8 +39,7 @@ use ReflectionMethod;
  * #2 object|null [instance] (Apenas para webservice) A instancia da classe webservice.<br>
  */
 abstract class WebService {
-
-    private static $default_method_param = "method";
+    private static $default_method_param = 'method';
     private static $started = false;
 
     private $method_param;
@@ -55,7 +53,7 @@ abstract class WebService {
     private $result_list = [];
 
     /**
-     * WebService constructor
+     * WebService constructor.
      *
      * Define automaticamente qual é o tipo de requisição dependo dos parametros informados.<br>
      * <br>
@@ -79,7 +77,9 @@ abstract class WebService {
      */
     public function __construct(bool $webservice_controller = false, string $method_param = null, bool $inherited_enable = false) {
         // Evita que 2 Webservices sejam iniciados em uma mesma requisição
-        if (self::$started) return;
+        if (self::$started) {
+            return;
+        }
         self::$started = true;
 
         $this->webservice_controller = $webservice_controller;
@@ -87,7 +87,7 @@ abstract class WebService {
         $this->inherited_enable = $inherited_enable;
 
         $this->current_map = App::current();
-        $this->api_map = Manifest::map($this->current_map["route"]);
+        $this->api_map = Manifest::map($this->current_map['route']);
         $this->view = new View();
 
         $request_data = self::getRequestData();
@@ -96,32 +96,32 @@ abstract class WebService {
             // Verifica qual tipo de requisição vai acontecer
             if (isset($request_data['multi_request'])) {
                 $this->multiRequest($request_data);
-            } else if (isset($request_data['long_polling'])) {
+            } elseif (isset($request_data['long_polling'])) {
                 $this->longPolling($request_data);
-            } else if (isset($request_data[$this->method_param]) && is_string($request_data[$this->method_param])) {
+            } elseif (isset($request_data[$this->method_param]) && is_string($request_data[$this->method_param])) {
                 $this->requestCommon($request_data);
             } else {
-                $this->result_list = "Nenhuma ação foi passada para a API";
+                $this->result_list = 'Nenhuma ação foi passada para a API';
             }
 
             // Prepara o retorno
             if (isset($request_data['multi_request'])) {
                 $this->view->reset($this->result_list);
-            } else if (isset($request_data['long_polling'])) {
+            } elseif (isset($request_data['long_polling'])) {
                 $this->view->reset($this->result_list);
             } else {
                 $this->view->reset($this->result_list);
             }
         } catch (Exception $e) {
-            Log::e("Erro no gerenciador de APIs", $e);
-            $this->view->reset("Não foi possível carregar a API");
+            Log::e('Erro no gerenciador de APIs', $e);
+            $this->view->reset('Não foi possível carregar a API');
         }
 
         $this->view->render();
     }
 
     /**
-     * Define qual será o parâmetro padrão que irá guardar o método a ser chamado nas requisições
+     * Define qual será o parâmetro padrão que irá guardar o método a ser chamado nas requisições.
      *
      * @param string $default_method_param
      */
@@ -143,9 +143,13 @@ abstract class WebService {
         $request_data = [];
 
         $requests = [];
-        if ($merge === true) $requests = [$_GET, $_POST];
-        else if ($_SERVER['REQUEST_METHOD'] == "POST") $requests[] = $_POST;
-        else if ($_SERVER['REQUEST_METHOD'] == "GET") $requests[] = $_GET;
+        if ($merge === true) {
+            $requests = [$_GET, $_POST];
+        } elseif ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $requests[] = $_POST;
+        } elseif ($_SERVER['REQUEST_METHOD'] == 'GET') {
+            $requests[] = $_GET;
+        }
 
         foreach ($requests as $request_method) {
             foreach ($request_method as $index => $value) {
@@ -157,7 +161,7 @@ abstract class WebService {
     }
 
     /**
-     * Metodo de requisição comum
+     * Metodo de requisição comum.
      *
      * @param array $request_data
      *
@@ -179,9 +183,10 @@ abstract class WebService {
                 $webservice = $this;
 
                 // Pega o parametro da URL para obter a classe
-                $api_class = App::next("class");
+                $api_class = App::next('class');
                 if ($api_class == null || !class_exists($api_class)) {
-                    $this->result_list = "API não existe";
+                    $this->result_list = 'API não existe';
+
                     return;
                 }
 
@@ -191,17 +196,19 @@ abstract class WebService {
             // Transforma a ação no padrão do metodo
             $metodo = $this->param2method($method);
 
-            if ($this->methodValidate($api_class, $metodo))
+            if ($this->methodValidate($api_class, $metodo)) {
                 $this->result_list = call_user_func_array([$api, $metodo], [$request_data, null, $webservice]);
-            else $this->result_list = "Ação não encontrada";
+            } else {
+                $this->result_list = 'Ação não encontrada';
+            }
         } catch (Exception $e) {
             Log::e($e);
-            $this->result_list = "Não foi possível retornar os dados da API";
+            $this->result_list = 'Não foi possível retornar os dados da API';
         }
     }
 
     /**
-     * Metodo de requisição para multiplas APIs
+     * Metodo de requisição para multiplas APIs.
      *
      * @param $data
      *
@@ -215,9 +222,9 @@ abstract class WebService {
         $data['params'] = json_decode($data['params'], true);
 
         foreach ($data['params'] as $i => $v) {
-            if (isset($v[$this->method_param]) && substr_count($v[$this->method_param], "/") == 1) {
+            if (isset($v[$this->method_param]) && substr_count($v[$this->method_param], '/') == 1) {
                 // Separa a API da ação
-                list($map_name, $method_name) = explode("/", $v[$this->method_param]);
+                list($map_name, $method_name) = explode('/', $v[$this->method_param]);
                 unset($v[$this->method_param]);
 
                 try {
@@ -232,7 +239,8 @@ abstract class WebService {
                         // Verifica se a API existe
                         $api_class = $this->api_map['sub'][$map_name]['class'] ?? null;
                         if ($api_class == null || !class_exists($api_class)) {
-                            $this->result_list[$i] = "API não existe";
+                            $this->result_list[$i] = 'API não existe';
+
                             continue;
                         }
 
@@ -242,19 +250,21 @@ abstract class WebService {
                     // Transforma a ação no padrão do metodo
                     $method = $this->param2method($method_name);
 
-                    if ($this->methodValidate($api_class, $method))
+                    if ($this->methodValidate($api_class, $method)) {
                         $this->result_list[$i] = call_user_func_array([$api, $method], [$v, $this->result_list, $webservice]);
-                    else $this->result_list[$i] = "Ação não encontrada na API";
+                    } else {
+                        $this->result_list[$i] = 'Ação não encontrada na API';
+                    }
                 } catch (Exception $e) {
                     Log::e($e);
-                    $this->result_list[$i] = "Não foi possível retornar os dados da API";
+                    $this->result_list[$i] = 'Não foi possível retornar os dados da API';
                 }
             }
         }
     }
 
     /**
-     * Metodo de requisição por long polling
+     * Metodo de requisição por long polling.
      *
      * @param $data
      *
@@ -269,7 +279,7 @@ abstract class WebService {
         $tempo_limite = 20;
 
         // Seta a execução do php com 10 segundo a mais do que o longpoll para não parar um script pela metade
-        ini_set("max_execution_time", $tempo_limite + 10);
+        ini_set('max_execution_time', $tempo_limite + 10);
 
         $data['params'] = json_decode($data['params'], true);
 
@@ -277,9 +287,9 @@ abstract class WebService {
             $atualizacao = false;
 
             foreach ($data['params'] as $i => $v) {
-                if (isset($v[$this->method_param]) && substr_count($v[$this->method_param], "/") == 1) {
+                if (isset($v[$this->method_param]) && substr_count($v[$this->method_param], '/') == 1) {
                     // Separa a API da ação
-                    list($map_name, $method_name) = explode("/", $v[$this->method_param]);
+                    list($map_name, $method_name) = explode('/', $v[$this->method_param]);
                     unset($v[$this->method_param]);
 
                     try {
@@ -294,7 +304,8 @@ abstract class WebService {
                             // Verifica se a API existe
                             $api_class = $this->api_map['sub'][$map_name]['class'] ?? null;
                             if ($api_class == null || !class_exists($api_class)) {
-                                $this->result_list[$i] = "API não existe";
+                                $this->result_list[$i] = 'API não existe';
+
                                 continue;
                             }
 
@@ -309,12 +320,15 @@ abstract class WebService {
                             $this->result_list[$i] = call_user_func_array([$api, $method], [$v, $this->result_list, $webservice]);
 
                             // Verifica se existe um dado para ser retornado
-                            if (is_array($this->result_list[$i]) && count($this->result_list[$i]) > 0)
+                            if (is_array($this->result_list[$i]) && count($this->result_list[$i]) > 0) {
                                 $atualizacao = true;
-                        } else $this->result_list[$i] = "Ação não encontrada na API";
+                            }
+                        } else {
+                            $this->result_list[$i] = 'Ação não encontrada na API';
+                        }
                     } catch (Exception $e) {
                         Log::e($e);
-                        $this->result_list[$i] = "Não foi possível retornar os dados da API";
+                        $this->result_list[$i] = 'Não foi possível retornar os dados da API';
                     }
                 }
             }
@@ -325,13 +339,14 @@ abstract class WebService {
             } else {
                 // Reinicia o loop ate que o tempo limite seja atingido ou algo seja encontrado
                 sleep(1);
+
                 continue;
             }
         }
     }
 
     /**
-     * Verifica se é um método valido
+     * Verifica se é um método valido.
      *
      * Verifica se o método existe, se não começa com "__", se é público, se não é desta classe, e se pode ser herdado.
      *
@@ -342,7 +357,7 @@ abstract class WebService {
      * @throws \ReflectionException
      */
     private function methodValidate(string $class_name, string $method): bool {
-        if (!StrRes::startsWith($method, "__") && method_exists($class_name, $method)) {
+        if (!StrRes::startsWith($method, '__') && method_exists($class_name, $method)) {
             // Verifica se o metodo é publico
             $reflection = new ReflectionMethod($class_name, $method);
 
@@ -355,11 +370,12 @@ abstract class WebService {
                 return false;
             }
         }
+
         return false;
     }
 
     /**
-     * Converte o nome de uma ação para o padrão dos metodos
+     * Converte o nome de uma ação para o padrão dos metodos.
      *
      * Exemplo: "cadastrar_usuario" -> "cadastrarUsuario"
      *
@@ -368,10 +384,9 @@ abstract class WebService {
      * @return mixed
      */
     private function param2method(string $nome) {
-        $nome = ucwords(str_replace("_", " ", $nome));
-        $nome = str_replace(" ", "", $nome);
+        $nome = ucwords(str_replace('_', ' ', $nome));
+        $nome = str_replace(' ', '', $nome);
 
         return lcfirst($nome);
     }
-
 }

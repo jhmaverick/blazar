@@ -1,18 +1,17 @@
 <?php
 
-/**
+/*
  * This file is part of Blazar Framework.
  *
  * (c) João Henrique <joao_henriquee@outlook.com>
  *
- * For the full copyright and license information, please view the LICENSE file that was distributed with this source
- * code.
+ * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
  */
 
 namespace Blazar\Core;
 
 /**
- * Classe de gerenciamento de dados da aplicação
+ * Classe de gerenciamento de dados da aplicação.
  *
  * Responsável por gerenciar o status da aplicação como informações passadas por URL, navegação pelo mapa de classes...
  */
@@ -43,9 +42,13 @@ class App {
      */
     public static function next(string $index = null) {
         $param = App::get(App::$current_index);
-        if ($param !== null) App::$current_index++;
+        if ($param !== null) {
+            App::$current_index++;
+        }
 
-        if ($index !== null) return $param[$index] ?? null;
+        if ($index !== null) {
+            return $param[$index] ?? null;
+        }
 
         return $param;
     }
@@ -63,7 +66,9 @@ class App {
     public static function current(string $index = null) {
         $param = App::get(App::$current_index - 1);
 
-        if ($index !== null) return $param[$index] ?? null;
+        if ($index !== null) {
+            return $param[$index] ?? null;
+        }
 
         return $param;
     }
@@ -100,7 +105,7 @@ class App {
                 // Retorna os dados do index requisitado ou null se não existir
                 return App::$map_params[$index] ?? null;
             } else {
-                $arvore = explode("/", $index);
+                $arvore = explode('/', $index);
                 $index = (count($arvore) > 1) ? $index = end($arvore) : $index;
 
                 foreach (App::$map_params as $i => $v) {
@@ -154,7 +159,7 @@ class App {
             }
 
             return App::$parameters;
-        } else if ($type === App::PARAMS_APP) {
+        } elseif ($type === App::PARAMS_APP) {
             $url = self::param();
 
             $inicio = App::maxIndex() + 1;
@@ -173,7 +178,7 @@ class App {
             }
 
             return $params;
-        } else if ($type === App::PARAMS_MAP) {
+        } elseif ($type === App::PARAMS_MAP) {
             $url = self::param();
 
             $fim = App::maxIndex();
@@ -233,5 +238,4 @@ class App {
     public static function maxIndex(): int {
         return App::$max_index_map;
     }
-
 }

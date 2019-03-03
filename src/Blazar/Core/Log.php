@@ -1,12 +1,11 @@
 <?php
 
-/**
+/*
  * This file is part of Blazar Framework.
  *
  * (c) João Henrique <joao_henriquee@outlook.com>
  *
- * For the full copyright and license information, please view the LICENSE file that was distributed with this source
- * code.
+ * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
  */
 
 namespace Blazar\Core;
@@ -18,8 +17,7 @@ use Requests;
 use Throwable;
 
 /**
- * Controle de logs do sistema
- *
+ * Controle de logs do sistema.
  */
 class Log {
 
@@ -30,12 +28,12 @@ class Log {
     private const MAX_FILE_SIZE = (1024 * 1024);
 
     /**
-     * O diretório padrão de logs
+     * O diretório padrão de logs.
      */
-    const DEFAULT_DIR = "logs";
+    const DEFAULT_DIR = 'logs';
 
     /**
-     * Error Log
+     * Error Log.
      *
      * @see \Blazar\Core\Log::add()
      *
@@ -47,11 +45,11 @@ class Log {
      * @return array|null
      */
     public static function e($log, $auxiliar = null, bool $trace = false, string $tag = null): ?array {
-        return self::add("e", $log, $auxiliar, $trace, $tag);
+        return self::add('e', $log, $auxiliar, $trace, $tag);
     }
 
     /**
-     * Warning Log
+     * Warning Log.
      *
      * @see \Blazar\Core\Log::add()
      *
@@ -63,11 +61,11 @@ class Log {
      * @return array|null
      */
     public static function w($log, $auxiliar = null, bool $trace = false, string $tag = null): ?array {
-        return self::add("w", $log, $auxiliar, $trace, $tag);
+        return self::add('w', $log, $auxiliar, $trace, $tag);
     }
 
     /**
-     * Info Log
+     * Info Log.
      *
      * @see \Blazar\Core\Log::add()
      *
@@ -79,11 +77,11 @@ class Log {
      * @return array|null
      */
     public static function i($log, $auxiliar = null, bool $trace = false, string $tag = null): ?array {
-        return self::add("i", $log, $auxiliar, $trace, $tag);
+        return self::add('i', $log, $auxiliar, $trace, $tag);
     }
 
     /**
-     * Debug Log
+     * Debug Log.
      *
      * Esse log deve ser utilizado apenas para debug em desenvolvimento e removido.<br>
      * Logs de debug em produção irão gerar um log warning
@@ -98,14 +96,15 @@ class Log {
      * @return array|null
      */
     public static function d($log, $auxiliar = null, bool $trace = false, string $tag = null): ?array {
-        if (defined("CURRENT_ENV") && CURRENT_ENV == ENV_PRODUCTION)
-            self::add("w", "Um log de debug pode ter sido esquecido e entrou em produção.", null, true, $tag);
+        if (defined('CURRENT_ENV') && CURRENT_ENV == ENV_PRODUCTION) {
+            self::add('w', 'Um log de debug pode ter sido esquecido e entrou em produção.', null, true, $tag);
+        }
 
-        return self::add("d", $log, $auxiliar, $trace, $tag);
+        return self::add('d', $log, $auxiliar, $trace, $tag);
     }
 
     /**
-     * Salva um log
+     * Salva um log.
      *
      * O log será gravado no arquivo *.log.html<br>
      * A gravação do log pode ser desabilitada nas configs do manifest setando "logs" com false<br>
@@ -140,17 +139,19 @@ class Log {
     private static function add(string $type_log, $log, $auxiliar = null, bool $trace = false, string $tag = null): ?array {
         try {
             // Se a msg for uma throwable, gera uma string com os dados.
-            if ($log === null) $log = "null";
+            if ($log === null) {
+                $log = 'null';
+            }
 
-            $date_time = date("Y-m-d H:i:s");
-            $str_trace = "";
+            $date_time = date('Y-m-d H:i:s');
+            $str_trace = '';
 
             if ($trace) {
                 $ls_trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
 
                 // Verifica se a chamada foi repassada por um dos métodos intermediarios
-                if (isset($ls_trace[0]) && $ls_trace[0]["class"] == __CLASS__ && $ls_trace[0]["function"] == "add" &&
-                    isset($ls_trace[1]) && $ls_trace[1]["class"] == __CLASS__ && in_array($ls_trace[1]["function"], ["e", "w", "i", "d"])) {
+                if (isset($ls_trace[0]) && $ls_trace[0]['class'] == __CLASS__ && $ls_trace[0]['function'] == 'add' &&
+                    isset($ls_trace[1]) && $ls_trace[1]['class'] == __CLASS__ && in_array($ls_trace[1]['function'], ['e', 'w', 'i', 'd'])) {
                     array_shift($ls_trace);
                 }
 
@@ -158,37 +159,39 @@ class Log {
             }
 
             $log_info = [
-                "type" => $type_log,
-                "main" => self::formatText($log, true),
-                "aux" => ($auxiliar != null ? self::formatText($auxiliar, true) : null),
-                "date" => $date_time,
-                "trace" => $str_trace,
-                "tag" => $tag,
-                "url" => URL
+                'type' => $type_log,
+                'main' => self::formatText($log, true),
+                'aux' => ($auxiliar != null ? self::formatText($auxiliar, true) : null),
+                'date' => $date_time,
+                'trace' => $str_trace,
+                'tag' => $tag,
+                'url' => URL,
             ];
 
             // Envia o log para o console de desenvolvimento
-            if (defined("CURRENT_ENV") && CURRENT_ENV == ENV_DEVELOPMENT) self::logConsole($log_info);
+            if (defined('CURRENT_ENV') && CURRENT_ENV == ENV_DEVELOPMENT) {
+                self::logConsole($log_info);
+            }
 
             // Verifica se deve salvar o log em html
-            $format = Manifest::config("save_logs");
-            if ($format == "html" || $format == "all") {
+            $format = Manifest::config('save_logs');
+            if ($format == 'html' || $format == 'all') {
                 $texto = self::formatText($log);
-                $texto .= ($auxiliar != null) ? "<br><p>" . self::formatText($auxiliar) : "";
-                $texto .= ($str_trace != "") ? "<br><p>" . str_replace("\n", "<br>\n", $str_trace) . "</p>" : "";
+                $texto .= ($auxiliar != null) ? '<br><p>' . self::formatText($auxiliar) : '';
+                $texto .= ($str_trace != '') ? '<br><p>' . str_replace("\n", "<br>\n", $str_trace) . '</p>' : '';
 
                 self::saveHTML($type_log, $texto, $date_time, $tag);
             }
 
             // Verifica se deve salvar o log em json
-            if ($format == "json" || $format == "all" || $format === null) {
+            if ($format == 'json' || $format == 'all' || $format === null) {
                 self::saveJSON($log_info);
             }
 
             return $log_info;
-        } catch (Error|Throwable $e) {
+        } catch (Error | Throwable $e) {
             // Se catch tenta capturar todas as possíveis exceções
-            if (defined("CURRENT_ENV") && CURRENT_ENV == ENV_DEVELOPMENT) {
+            if (defined('CURRENT_ENV') && CURRENT_ENV == ENV_DEVELOPMENT) {
                 echo "<pre>\n== Erro ao adicionar Log =====================\n\n";
                 print_r($e);
                 echo "\n</pre>\n\n";
@@ -199,7 +202,7 @@ class Log {
     }
 
     /**
-     * Monta uma exibição amigavel para a trace
+     * Monta uma exibição amigavel para a trace.
      *
      * @param array $trace
      *
@@ -210,23 +213,23 @@ class Log {
         $i = 0;
 
         foreach ($trace as $v) {
-            $file = isset($v['file']) ? $v['file'] : "";
-            $line = isset($v['line']) ? $v['line'] : "";
-            $class = isset($v['class']) ? $v['class'] : "";
-            $type = isset($v['type']) ? $v['type'] : "";
-            $function = isset($v['function']) ? $v['function'] : "";
+            $file = isset($v['file']) ? $v['file'] : '';
+            $line = isset($v['line']) ? $v['line'] : '';
+            $class = isset($v['class']) ? $v['class'] : '';
+            $type = isset($v['type']) ? $v['type'] : '';
+            $function = isset($v['function']) ? $v['function'] : '';
             $args = [];
 
             if (isset($v['args'])) {
                 foreach ($v['args'] as $value) {
                     $arg = substr($value, 0, 15);
-                    $args[] = "'" . $arg . (strlen($value) > 15 ? "..." : "") . "'";
+                    $args[] = "'" . $arg . (strlen($value) > 15 ? '...' : '') . "'";
                 }
             }
 
-            $args = implode(", ", $args);
+            $args = implode(', ', $args);
 
-            $final_trace[] = "#$i " . $file . "(" . $line . "): " . $class . $type . $function . "($args)";
+            $final_trace[] = "#$i " . $file . '(' . $line . '): ' . $class . $type . $function . "($args)";
             $i++;
         }
 
@@ -236,7 +239,7 @@ class Log {
     }
 
     /**
-     * Gera um texto para arrays, exceptions, objetos e strings
+     * Gera um texto para arrays, exceptions, objetos e strings.
      *
      * @param string|array|Throwable $log
      * @param bool $in_array Se o retorno deve ser um array
@@ -247,7 +250,7 @@ class Log {
         $array_log = [];
 
         if (is_a($log, 'Throwable')) {
-            $log = (object)$log;
+            $log = (object) $log;
 
             if ($in_array) {
                 $array_log['type'] = 'throwable';
@@ -256,12 +259,12 @@ class Log {
 
                 $log = $array_log;
             } else {
-                $log = "<p>" .
-                    "<b>Throw Message:</b> " . str_replace("\n", "<br>\n", $log->getMessage()) .
+                $log = '<p>' .
+                    '<b>Throw Message:</b> ' . str_replace("\n", "<br>\n", $log->getMessage()) .
                     "<br>\n<br>\n" .
-                    "<span style=\"color: #FD0017;\">" . str_replace("\n", "<br>\n", $log->getTraceAsString()) . "</span></p>";
+                    '<span style="color: #FD0017;">' . str_replace("\n", "<br>\n", $log->getTraceAsString()) . '</span></p>';
             }
-        } else if (is_array($log) || is_object($log)) {
+        } elseif (is_array($log) || is_object($log)) {
             $obj_string = print_r($log, true);
 
             if ($in_array) {
@@ -271,7 +274,7 @@ class Log {
                 $log = $array_log;
             } else {
                 $log = '<pre>' . $obj_string . '</pre>';
-                $log = "<p>" . str_replace("\n", "<br>\n", $log) . "</p>";
+                $log = '<p>' . str_replace("\n", "<br>\n", $log) . '</p>';
             }
         } else {
             if ($in_array) {
@@ -280,7 +283,7 @@ class Log {
 
                 $log = $array_log;
             } else {
-                $log = "<p>" . str_replace("\n", "<br>\n", $log) . "</p>";
+                $log = '<p>' . str_replace("\n", "<br>\n", $log) . '</p>';
             }
         }
 
@@ -288,7 +291,7 @@ class Log {
     }
 
     /**
-     * Envia log para o console de depuração
+     * Envia log para o console de depuração.
      *
      * @param array $log
      *
@@ -298,11 +301,11 @@ class Log {
         $result = 0;
 
         try {
-            $console_url = Manifest::config("console_url");
+            $console_url = Manifest::config('console_url');
 
             if ($console_url !== null) {
-                $url = $console_url . "?" . http_build_query($log);
-                Requests::get($url, [], ["timeout" => 2000]);
+                $url = $console_url . '?' . http_build_query($log);
+                Requests::get($url, [], ['timeout' => 2000]);
             }
         } catch (Exception $e) {
         }
@@ -311,7 +314,7 @@ class Log {
     }
 
     /**
-     * Salva o log em um arquivo *.log.html
+     * Salva o log em um arquivo *.log.html.
      *
      * @param $type_log
      * @param $msg
@@ -322,32 +325,34 @@ class Log {
      */
     private static function saveHTML($type_log, $msg, $date_time, string $tag = null): bool {
         $log_dir = self::getDirLogs();
-        $arquivo = $log_dir . "/" . date("Y-m-d") . ".log.html";
+        $arquivo = $log_dir . '/' . date('Y-m-d') . '.log.html';
 
-        if (file_exists($arquivo) && filesize($arquivo) > self::MAX_FILE_SIZE) return false;
-
-        // Titulo para a mensagem
-        $title_color = "color: #CCCCCC;";
-        if ($type_log == "d") {
-            $type_log = "[Debug]";
-            $title_color = "color: #FDAD2B;";
-        } else if ($type_log == "e") {
-            $type_log = "[Error]";
-            $title_color = "color: #FF0000;";
-        } else if ($type_log == "w") {
-            $type_log = "[Warning]";
-            $title_color = "color: #FDE631;";
-        } else if ($type_log == "i") {
-            $type_log = "[Info]";
-            $title_color = "color: #356EFD;";
+        if (file_exists($arquivo) && filesize($arquivo) > self::MAX_FILE_SIZE) {
+            return false;
         }
 
-        $html_tag = ($tag !== null) ? "<span style=\"font-size: 12px;\"> - " . $tag . "</span>" : "";
+        // Titulo para a mensagem
+        $title_color = 'color: #CCCCCC;';
+        if ($type_log == 'd') {
+            $type_log = '[Debug]';
+            $title_color = 'color: #FDAD2B;';
+        } elseif ($type_log == 'e') {
+            $type_log = '[Error]';
+            $title_color = 'color: #FF0000;';
+        } elseif ($type_log == 'w') {
+            $type_log = '[Warning]';
+            $title_color = 'color: #FDE631;';
+        } elseif ($type_log == 'i') {
+            $type_log = '[Info]';
+            $title_color = 'color: #356EFD;';
+        }
+
+        $html_tag = ($tag !== null) ? '<span style="font-size: 12px;"> - ' . $tag . '</span>' : '';
 
         // Monta a mensagem com todas as informações passadas
-        $msg = "<p><span style=\"font-size: 12px; font-weight: bold; $title_color\">" . str_replace("\n", "<br>\n", $type_log) . "</span>" . $html_tag . "</p>" .
-            $msg . "<br>" . URL .
-            "<p style=\"font-size: 8px; color: #999999; border-bottom: 1px solid #CCCCCC\">" . date("d/m/Y à\s H:i:s", strtotime($date_time)) . "</p>\n";
+        $msg = "<p><span style=\"font-size: 12px; font-weight: bold; $title_color\">" . str_replace("\n", "<br>\n", $type_log) . '</span>' . $html_tag . '</p>' .
+            $msg . '<br>' . URL .
+            '<p style="font-size: 8px; color: #999999; border-bottom: 1px solid #CCCCCC">' . date("d/m/Y à\s H:i:s", strtotime($date_time)) . "</p>\n";
 
         file_put_contents($arquivo, $msg, FILE_APPEND);
 
@@ -355,7 +360,7 @@ class Log {
     }
 
     /**
-     * Salva o log em um arquivo *.log.json
+     * Salva o log em um arquivo *.log.json.
      *
      * @param array $log_info
      *
@@ -363,9 +368,11 @@ class Log {
      */
     private static function saveJSON(array $log_info): bool {
         $log_dir = self::getDirLogs();
-        $arquivo = $log_dir . "/" . date("Y-m-d") . ".log.json";
+        $arquivo = $log_dir . '/' . date('Y-m-d') . '.log.json';
 
-        if (file_exists($arquivo) && filesize($arquivo) > self::MAX_FILE_SIZE) return false;
+        if (file_exists($arquivo) && filesize($arquivo) > self::MAX_FILE_SIZE) {
+            return false;
+        }
 
         $logs = [];
 
@@ -385,7 +392,7 @@ class Log {
     }
 
     /**
-     * Retorna o diretório dos logs
+     * Retorna o diretório dos logs.
      *
      * Se o diretório não existir ele é criado
      *
@@ -393,13 +400,15 @@ class Log {
      */
     private static function getDirLogs(): string {
         // Diretório de saída dos logs
-        $log_dir = Manifest::config("logs_dir") ?? self::DEFAULT_DIR;
+        $log_dir = Manifest::config('logs_dir') ?? self::DEFAULT_DIR;
         $log_dir = trim($log_dir);
 
         $log_dir = FileSystem::pathResolve(SOURCE_DIR, $log_dir);
 
         $log_dir = FileSystem::pathJoin($log_dir);
-        if (!file_exists($log_dir)) mkdir($log_dir, 0777, true);
+        if (!file_exists($log_dir)) {
+            mkdir($log_dir, 0777, true);
+        }
 
         return $log_dir;
     }
