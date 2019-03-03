@@ -6,6 +6,8 @@
 ### Composer
 composer.lock
 vendor/
+/.php_cs
+/.php_cs.cache
 
 ### Node NPM
 package-lock.json

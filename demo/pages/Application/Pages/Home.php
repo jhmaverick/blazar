@@ -1,7 +1,5 @@
 <?php
-
 namespace Application\Pages;
-
 use Application\PageController;
 use Blazar\Component\Text\Text;
 use Blazar\Component\View\View;
@@ -12,6 +10,7 @@ use Blazar\Core\Log;
 class Home extends View {
     private $map_info;
 
+    #teste
     private $view_path = __DIR__ . "/home_view.php";
     private $page_res = [
         "home.css" => __DIR__ . "/home.css"

@@ -20,18 +20,17 @@ use Mustache_Engine;
 /**
  * Class de leitura de textos do sistema
  *
- * O diretório de textos padrão está definido em (ROOT . "texts/"), utilize o metodo "setDefaultDir" para alterar.
+ * O diretório de textos padrão está definido em (SOURCE_DIR . "texts/"), utilize o metodo "setDefaultDir" para alterar.
  */
 class Text {
 
-    // Arquivo padrão dos textos
+    public const DEFAULT_DIR = SOURCE_DIR . "/texts";
+    private const BLAZAR_DIR = BLAZAR_DIR . "/texts";
     private const MAIN_FILE = "main";
-    // Linguagem principal do arquivo(default representa o arquivo sem extensão de idioma)
     private const DEFAULT_LANG = "default";
 
     // Diretório padrão dos textos
-    private static $default_dir = APP_ROOT . "/texts/";
-    private static $blazar_dir = BLAZAR_ROOT . "/texts/";
+    private static $texts_dir = self::DEFAULT_DIR;
     private static $default_lang = self::DEFAULT_LANG;
 
     // Lista de arquivos já carregados
@@ -43,9 +42,8 @@ class Text {
      *
      * @param string $default_dir Caminho para o diretório
      */
-    public static function setDefaultDir(string $default_dir) {
-        if (!StrRes::endsWith($default_dir, "/")) $default_dir = $default_dir . "/";
-        self::$default_dir = $default_dir;
+    public static function setTextsDir(string $default_dir) {
+        self::$texts_dir = FileSystem::pathResolve($default_dir);
     }
 
     /**
@@ -193,10 +191,10 @@ class Text {
         if (StrRes::startsWith($file_name, "bzr-")) {
             // Ajusta caminho para os textos do framework
             $name = StrRes::replaceFirst($file_name, "bzr-", "");
-            $name = self::$blazar_dir . $name;
+            $name = self::BLAZAR_DIR . $name;
         } else {
             // Caminho para textos do projeto
-            $name = self::$default_dir . $file_name;
+            $name = self::$texts_dir . "/" . $file_name;
         }
 
         // Verifica se o arquivo já foi carregado
@@ -204,8 +202,7 @@ class Text {
             if (file_exists($name . ".json")) $name = $name . ".json";
             else return null;
 
-            // Remove comentarios e transforma em array
-            $file_content = StrRes::removeComments(@file_get_contents($name));
+            $file_content = @file_get_contents($name);
             if (json5_decode($file_content, true)) {
                 $list = json5_decode($file_content, true);
             } else {

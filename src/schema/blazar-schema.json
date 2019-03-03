@@ -46,9 +46,13 @@
           "default": "10MB",
           "description": "Max filesize to upload"
         },
+        "texts_dir": {
+          "type": "string",
+          "description": "Directory to texts files"
+        },
         "logs_dir": {
           "type": "string",
-          "description": "Directory logs"
+          "description": "Directory to logs files"
         },
         "save_logs": {
           "type": "string",

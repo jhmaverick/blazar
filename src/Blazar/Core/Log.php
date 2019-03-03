@@ -396,7 +396,7 @@ class Log {
         $log_dir = Manifest::config("logs_dir") ?? self::DEFAULT_DIR;
         $log_dir = trim($log_dir);
 
-        $log_dir = FileSystem::pathResolve(APP_ROOT, $log_dir);
+        $log_dir = FileSystem::pathResolve(SOURCE_DIR, $log_dir);
 
         $log_dir = FileSystem::pathJoin($log_dir);
         if (!file_exists($log_dir)) mkdir($log_dir, 0777, true);
