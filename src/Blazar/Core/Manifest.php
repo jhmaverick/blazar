@@ -26,7 +26,7 @@ use Throwable;
  */
 class Manifest extends App {
     const SCHEMA_PATH = BLAZAR_DIR . '/schema/blazar-schema.json';
-    const RECORDS_DIR = SOURCE_DIR . '/.records';
+    const CACHE_DIR = SOURCE_DIR . '/.cache';
 
     private static $started = false;
     private static $config = [];
@@ -64,7 +64,7 @@ class Manifest extends App {
             $serialize_name = 'mf_' . md5($serialize_name);
 
             // Se os dados do manifest não tiverem sido alterados utiliza eles para evitar validações e processamento
-            $serialize_file = self::RECORDS_DIR . '/' . $serialize_name;
+            $serialize_file = self::CACHE_DIR . '/' . $serialize_name;
 
             if (file_exists($serialize_file)) {
                 $dados_manifest = unserialize(file_get_contents($serialize_file));
@@ -91,7 +91,7 @@ class Manifest extends App {
                 $serialized = serialize($dados_manifest);
 
                 // Remove arquivos de versões antigas
-                $files = glob(self::RECORDS_DIR . '/mf_*');
+                $files = glob(self::CACHE_DIR . '/mf_*');
                 foreach ($files as $file) {
                     if (is_file($file)) {
                         unlink($file);
@@ -99,7 +99,7 @@ class Manifest extends App {
                 }
 
                 // Salva arquivo com serialize
-                mkdir(self::RECORDS_DIR, 0777, true);
+                mkdir(self::CACHE_DIR, 0777, true);
                 file_put_contents($serialize_file, $serialized);
             }
 
