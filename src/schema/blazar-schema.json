@@ -3,17 +3,23 @@
   "fileMatch": ["blazar-manifest.json", "custom-manifest.json"],
   "name": "blazar-manifest",
   "type": "object",
+  "version": "1.0",
   "additionalProperties": false,
   "properties": {
     "$schema": {
-      "type": "string",
-      "default": "vendor/jhmaverick/blazar/src/schema/blazar-manifest.json"
+      "type": "string"
     },
     "configs": {
       "type": "object",
       "description": "Application settings",
       "additionalProperties": false,
       "properties": {
+        "env": {
+          "type": "integer",
+          "default": 1,
+          "description": "Define current environment",
+          "enum": [1, 2, 3]
+        },
         "force_https": {
           "type": "boolean",
           "default": false,
@@ -24,12 +30,6 @@
           "default": 0,
           "description": "Use www",
           "enum": [-1, 0, 1]
-        },
-        "env": {
-          "type": "integer",
-          "default": 1,
-          "description": "Define current environment",
-          "enum": [1, 2, 3]
         },
         "max_img_width": {
           "type": "integer",
@@ -46,38 +46,24 @@
           "default": "10MB",
           "description": "Max filesize to upload"
         },
-        "logs": {
-          "type": ["string", "boolean", "object"],
-          "default": "logs",
-          "description": "Logs configs",
-          "additionalProperties": false,
-          "properties": {
-            "path": {
-              "type": "string",
-              "default": "logs",
-              "description": "Directory logs"
-            },
-            "save_json": {
-              "type": "boolean",
-              "default": true,
-              "description": "Save logs in JSON"
-            },
-            "save_html": {
-              "type": "boolean",
-              "default": false,
-              "description": "Save logs in HTML"
-            }
-          }
+        "logs_dir": {
+          "type": "string",
+          "description": "Directory logs"
+        },
+        "save_logs": {
+          "type": "string",
+          "default": "json",
+          "enum": ["all", "json", "html", "none"]
         },
         "cors": {
           "type": ["string", "null"],
           "default": null,
           "description": "Enable cors for domain"
         },
-        "autoload": {
+        "view_render_mustache": {
           "type": "boolean",
-          "default": true,
-          "description": "Use autoload for project classes"
+          "default": false,
+          "description": "Use mustache template as default in view render"
         },
         "console_url": {
           "type": "string",
@@ -137,7 +123,7 @@
       "description": "",
       "minProperties": 1,
       "patternProperties": {
-        "^[.a-zA-Z0-9_-]*$": {
+        "^[a-zA-Z0-9_-]*$": {
           "$ref": "#/definitions/map"
         }
       },

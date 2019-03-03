@@ -20,7 +20,8 @@ class Blazar {
 
     private static $instance;
     private static $started = false;
-    /**
+
+    /*
      * Mensagem de saída em caso de um fatal error
      * Códigos: 1 = construct, 2 = autoload, 3 = error_handler e 4 = exception_handler
      * set_exception_handler,

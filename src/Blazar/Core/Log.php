@@ -30,6 +30,11 @@ class Log {
     private const MAX_FILE_SIZE = (1024 * 1024);
 
     /**
+     * O diretório padrão de logs
+     */
+    const DEFAULT_DIR = "logs";
+
+    /**
      * Error Log
      *
      * @see \Blazar\Core\Log::add()
@@ -93,7 +98,7 @@ class Log {
      * @return array|null
      */
     public static function d($log, $auxiliar = null, bool $trace = false, string $tag = null): ?array {
-        if (CURRENT_ENV == ENV_PRODUCTION)
+        if (defined("CURRENT_ENV") && CURRENT_ENV == ENV_PRODUCTION)
             self::add("w", "Um log de debug pode ter sido esquecido e entrou em produção.", null, true, $tag);
 
         return self::add("d", $log, $auxiliar, $trace, $tag);
@@ -134,6 +139,9 @@ class Log {
      */
     private static function add(string $type_log, $log, $auxiliar = null, bool $trace = false, string $tag = null): ?array {
         try {
+            // Se a msg for uma throwable, gera uma string com os dados.
+            if ($log === null) $log = "null";
+
             $date_time = date("Y-m-d H:i:s");
             $str_trace = "";
 
@@ -149,12 +157,6 @@ class Log {
                 $str_trace = self::strTrace($ls_trace);
             }
 
-            // Se a msg for uma throwable, gera uma string com os dados.
-            if ($log === null) $log = "null";
-            $texto = self::formatText($log);
-            $texto .= ($auxiliar != null) ? "<br><p>" . self::formatText($auxiliar) : "";
-            $texto .= ($str_trace != "") ? "<br><p>" . str_replace("\n", "<br>\n", $str_trace) . "</p>" : "";
-
             $log_info = [
                 "type" => $type_log,
                 "main" => self::formatText($log, true),
@@ -166,17 +168,27 @@ class Log {
             ];
 
             // Envia o log para o console de desenvolvimento
-            if (CURRENT_ENV == ENV_DEVELOPMENT) self::logConsole($log_info);
+            if (defined("CURRENT_ENV") && CURRENT_ENV == ENV_DEVELOPMENT) self::logConsole($log_info);
 
-            // Verifica se deve salvar o Log no .log.html
-            //if (Manifest::config("logs") !== false) self::saveHTML($type_log, $texto, $date_time, $tag);
-            // Verifica se deve salvar o Log no .log.json
-            if (Manifest::config("logs") !== false) self::saveJSON($log_info);
+            // Verifica se deve salvar o log em html
+            $format = Manifest::config("save_logs");
+            if ($format == "html" || $format == "all") {
+                $texto = self::formatText($log);
+                $texto .= ($auxiliar != null) ? "<br><p>" . self::formatText($auxiliar) : "";
+                $texto .= ($str_trace != "") ? "<br><p>" . str_replace("\n", "<br>\n", $str_trace) . "</p>" : "";
+
+                self::saveHTML($type_log, $texto, $date_time, $tag);
+            }
+
+            // Verifica se deve salvar o log em json
+            if ($format == "json" || $format == "all" || $format === null) {
+                self::saveJSON($log_info);
+            }
 
             return $log_info;
         } catch (Error|Throwable $e) {
             // Se catch tenta capturar todas as possíveis exceções
-            if (CURRENT_ENV == ENV_DEVELOPMENT) {
+            if (defined("CURRENT_ENV") && CURRENT_ENV == ENV_DEVELOPMENT) {
                 echo "<pre>\n== Erro ao adicionar Log =====================\n\n";
                 print_r($e);
                 echo "\n</pre>\n\n";
@@ -286,8 +298,12 @@ class Log {
         $result = 0;
 
         try {
-            $url = Manifest::config("console_url") . "?" . http_build_query($log);
-            Requests::get($url, [], ["timeout" => 2000]);
+            $console_url = Manifest::config("console_url");
+
+            if ($console_url !== null) {
+                $url = $console_url . "?" . http_build_query($log);
+                Requests::get($url, [], ["timeout" => 2000]);
+            }
         } catch (Exception $e) {
         }
 
@@ -305,10 +321,7 @@ class Log {
      * @return bool
      */
     private static function saveHTML($type_log, $msg, $date_time, string $tag = null): bool {
-        // Diretorio de saida dos logs
-        $log_dir = FileSystem::pathJoin(APP_ROOT, Manifest::config("logs"));
-        if (!file_exists($log_dir)) mkdir($log_dir, 0777, true);
-
+        $log_dir = self::getDirLogs();
         $arquivo = $log_dir . "/" . date("Y-m-d") . ".log.html";
 
         if (file_exists($arquivo) && filesize($arquivo) > self::MAX_FILE_SIZE) return false;
@@ -336,7 +349,7 @@ class Log {
             $msg . "<br>" . URL .
             "<p style=\"font-size: 8px; color: #999999; border-bottom: 1px solid #CCCCCC\">" . date("d/m/Y à\s H:i:s", strtotime($date_time)) . "</p>\n";
 
-        FileSystem::write($arquivo, $msg, FileSystem::WRITE_APPEND);
+        file_put_contents($arquivo, $msg, FILE_APPEND);
 
         return true;
     }
@@ -349,22 +362,45 @@ class Log {
      * @return bool
      */
     private static function saveJSON(array $log_info): bool {
-        // Diretorio de saida dos logs
-        $log_dir = FileSystem::pathJoin(APP_ROOT, Manifest::config("logs"));
-        if (!file_exists($log_dir)) mkdir($log_dir, 0777, true);
-
+        $log_dir = self::getDirLogs();
         $arquivo = $log_dir . "/" . date("Y-m-d") . ".log.json";
 
         if (file_exists($arquivo) && filesize($arquivo) > self::MAX_FILE_SIZE) return false;
 
+        $logs = [];
+
         // Verifica se o arquivo já existe
-        $logs = json_decode(FileSystem::read($arquivo), true) ?? [];
+        $str_json = (file_exists($arquivo)) ? @file_get_contents($arquivo) : false;
+        if ($str_json != false) {
+            $logs = json_decode($str_json, true) ?? [];
+        }
+
         $logs[] = $log_info;
 
         // Salva o log com o novo index
         $logs_str = json_encode($logs, JSON_PRETTY_PRINT);
-        FileSystem::write($arquivo, $logs_str);
+        file_put_contents($arquivo, $logs_str);
 
         return true;
+    }
+
+    /**
+     * Retorna o diretório dos logs
+     *
+     * Se o diretório não existir ele é criado
+     *
+     * @return string
+     */
+    private static function getDirLogs(): string {
+        // Diretório de saída dos logs
+        $log_dir = Manifest::config("logs_dir") ?? self::DEFAULT_DIR;
+        $log_dir = trim($log_dir);
+
+        $log_dir = FileSystem::pathResolve(APP_ROOT, $log_dir);
+
+        $log_dir = FileSystem::pathJoin($log_dir);
+        if (!file_exists($log_dir)) mkdir($log_dir, 0777, true);
+
+        return $log_dir;
     }
 }

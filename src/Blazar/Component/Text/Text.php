@@ -205,7 +205,7 @@ class Text {
             else return null;
 
             // Remove comentarios e transforma em array
-            $file_content = StrRes::removeComments(FileSystem::read($name));
+            $file_content = StrRes::removeComments(@file_get_contents($name));
             if (json5_decode($file_content, true)) {
                 $list = json5_decode($file_content, true);
             } else {

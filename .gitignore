@@ -1,6 +1,7 @@
 ### Geral
 *.log.html
 *.log.json
+.records/
 
 ### Composer
 composer.lock

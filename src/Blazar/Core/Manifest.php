@@ -12,8 +12,12 @@
 namespace Blazar\Core;
 
 use Blazar\Component\FileSystem\FileSystem;
+use Blazar\Component\TypeRes\ArrayRes;
 use Blazar\Component\TypeRes\StrRes;
+use Blazar\Component\View\View;
 use Error;
+use JsonSchema\Constraints\Constraint;
+use JsonSchema\Validator;
 use Throwable;
 
 /**
@@ -21,26 +25,17 @@ use Throwable;
  */
 class Manifest extends App {
 
+    const SCHEMA_PATH = BLAZAR_ROOT . '/schema/blazar-schema.json';
+
     private static $started = false;
-    private static $config = [
-        "force_https" => false,
-        "force_www" => 0,
-        "max_img_width" => 1920,
-        "max_img_height" => 1080,
-        "max_upload_filesize" => "10MB",
-        "logs" => "logs",
-        "cors" => null,
-        "env" => ENV_PRODUCTION,
-        "console_url" => "http://localhost:4000"
-    ];
+    private static $config = [];
     private static $data = [];
     private static $dbs = [];
     private static $map = [];
 
     /**
      * Inicia a configuração do sistema com os dados do manifest
-     * TODO Gerar um arquivo serialise dos dados carregados para não ser necessario esse processamento todas as vezes
-     * O codigo do arquivo deve ser gerado com base no conteúdo do json e só ser recriado caso o conteudo mude
+     *
      * @throws BlazarException
      */
     public function __construct() {
@@ -52,25 +47,54 @@ class Manifest extends App {
             // Gera os parâmetros da url
             self::extractUrlParams();
 
-            // TODO Validar manifest por schema para garantir que apenas informações validas serão adicionadas
-
-            $manifest_path = (defined("MANIFEST_PATH")) ? MANIFEST_PATH : APP_ROOT . "/blazar-manifest.json";
+            $manifest_path = (defined("MANIFEST_PATH"))
+                ? FileSystem::pathResolve(APP_ROOT, MANIFEST_PATH)
+                : APP_ROOT . "/blazar-manifest.json";
 
             $dados_manifest = [];
             if (file_exists($manifest_path)) {
-                $dados_manifest = self::readManifestFile($manifest_path);
+                $serialize_name = filectime($manifest_path);
 
                 // Verifica se existe um manifest para mesclar com o principal
-                $custom_manifest = (defined("CUSTOM_MANIFEST")) ? CUSTOM_MANIFEST : APP_ROOT . "/custom-manifest.json";
+                $custom_manifest = (defined("CUSTOM_MANIFEST"))
+                    ? FileSystem::pathResolve(APP_ROOT, CUSTOM_MANIFEST)
+                    : APP_ROOT . "/custom-manifest.json";
 
                 if (file_exists($custom_manifest)) {
-                    $custom = self::readManifestFile($custom_manifest);
-                    $dados_manifest = array_replace_recursive($dados_manifest, $custom);
+                    $serialize_name .= "_" . filectime($custom_manifest);
+                }
+
+                $records_dir = APP_ROOT . "/.records";
+                $serialize_name = $records_dir . "/mf_" . md5($serialize_name);
+                if (file_exists($serialize_name)) {
+                    $dados_manifest = unserialize(file_get_contents($serialize_name));
+                } else {
+                    $dados_manifest = self::readManifestFile($manifest_path);
+
+                    if (file_exists($custom_manifest)) {
+                        $custom = self::readManifestFile($custom_manifest);
+                        $dados_manifest = array_replace_recursive($dados_manifest, $custom);
+                    }
+
+                    // Tratar os dados de acordo com schema
+                    self::validateSchema($dados_manifest);
+
+                    $serialized = serialize($dados_manifest);
+
+                    // Remove arquivos de versões antigas
+                    $files = glob($records_dir . '/mf_*');
+                    foreach ($files as $file) {
+                        if (is_file($file)) unlink($file);
+                    }
+
+                    // Salva arquivo com serialize
+                    mkdir($records_dir, 0777, true);
+                    file_put_contents($serialize_name, $serialized);
                 }
             }
 
-            // Mescla Configurações do manifest com as padrões
-            if (isset($dados_manifest['configs'])) self::$config = array_merge(self::$config, $dados_manifest['configs']);
+            // Pega as configurações do manifest
+            self::$config = $dados_manifest['configs'];
 
             // Aplica configurações
             self::applyConfigs();
@@ -98,14 +122,55 @@ class Manifest extends App {
             }
         } catch (Error|Throwable $e) {
             Log::e($e);
-            exit("Erro ao iniciar o sistema.");
+            exit("Manifest: Erro ao iniciar o sistema.");
         }
     }
 
     /**
-     * Pega configurações o indice configurações
+     * Valida o schema e aplica os valores padrões
      *
-     * @param string|null $index Nome do indice desejado ou null para retornar um array com todos.
+     * @param array $dados_manifest
+     *
+     * @throws BlazarException
+     */
+    private static function validateSchema(array &$dados_manifest) {
+        $object = ArrayRes::array2object($dados_manifest);
+
+        // Força a criação do índice para ele receber os defaults
+        if (!isset($object->configs)) $object->configs = new \stdClass();
+        // Aplica o caminho real do diretório de logs
+        if (!isset($object->configs->logs_dir)) $object->configs->logs_dir = Log::DEFAULT_DIR;
+
+        // Força o tipo "objeto" caso o índice exista
+        if (isset($object->data)) $object->data = (object)$object->data;
+        if (isset($object->dbs)) $object->dbs = (object)$object->dbs;
+        if (isset($object->map)) $object->map = (object)$object->map;
+
+        $validator = new Validator();
+        $schema = (object)['$ref' => 'file://' . realpath(self::SCHEMA_PATH)];
+
+        // Aplica os valores padrões
+        $validator->validate($object, $schema, Constraint::CHECK_MODE_APPLY_DEFAULTS);
+        // Quando possível converte o tipo para o formato correto exigido
+        $validator->validate($object, $schema, Constraint::CHECK_MODE_COERCE_TYPES);
+
+        if (!$validator->isValid()) {
+            $error = ["JSON does not validate. Violations:\n"];
+
+            foreach ($validator->getErrors() as $error) {
+                $error[] = sprintf("[%s] %s\n", $error['property'], $error['message']);
+            }
+
+            throw new BlazarException(implode("\n", $error));
+        }
+
+        $dados_manifest = ArrayRes::object2array($object);
+    }
+
+    /**
+     * Pega configurações o índice configurações
+     *
+     * @param string|null $index Nome do índice desejado ou null para retornar um array com todos.
      *
      * @return mixed
      */
@@ -234,7 +299,7 @@ class Manifest extends App {
         $file_name = explode("/", $local);
         $file_name = end($file_name);
 
-        $dados_manifest = FileSystem::read($local);
+        $dados_manifest = @file_get_contents($local);
 
         if ($dados_manifest === null) {
             throw new BlazarException("Manifest: O arquivo \"$file_name\" não foi encontrado.");
@@ -285,11 +350,11 @@ class Manifest extends App {
              *
              * ENV_DEVELOPMENT, ENV_TESTING ou ENV_PRODUCTION.
              */
-            define("CURRENT_ENV", Manifest::config("env"));
+            define("CURRENT_ENV", (int)Manifest::config("env"));
         }
 
-        // Se o índice logs estiver como true altera para o padrão
-        if (self::$config["logs"] == true) self::$config["logs"] = "logs";
+        // Aplica o padrão do mustache
+        View::mustacheDefault(Manifest::config("view_render_mustache"));
 
         // Redirecionar para https
         if (CURRENT_ENV == ENV_PRODUCTION && self::config("force_https") && !isset($_SERVER['HTTPS'])) {
@@ -350,11 +415,6 @@ class Manifest extends App {
         // O primeiro indice será o main
         reset($map_list);
         $main = key($map_list);
-
-        // Verifica conflitos de apps principais
-        if ($main == null) {
-            throw new BlazarException("Nenhum parâmetro foi definido como principal no index \"" . key($map_list) . "\".");
-        }
 
         // Verifica se o index da url é um parâmetro do sistema
         if (!isset($map_list[App::param($index)])) {

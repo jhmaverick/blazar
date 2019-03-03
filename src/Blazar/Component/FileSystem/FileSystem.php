@@ -5,7 +5,8 @@
  *
  * (c) João Henrique <joao_henriquee@outlook.com>
  *
- * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
+ * For the full copyright and license information, please view the LICENSE file that was distributed with this source
+ * code.
  */
 
 namespace Blazar\Component\FileSystem;
@@ -17,13 +18,7 @@ use Blazar\Component\TypeRes\StrRes;
  */
 class FileSystem {
 
-    /**#@+
-     * Local para a escrita no arquivo
-     */
-    const WRITE_OVERWRITE = "overwrite";
     const WRITE_APPEND = "append";
-    const WRITE_PREPEND = "prepend";
-    /**#@-*/
 
     private static $unidades_medida = ['KB', 'MB', 'GB', 'TB'];
 
@@ -66,59 +61,29 @@ class FileSystem {
     /**
      * Escreve em arquivo
      *
+     * @deprecated usar file_put_contents
+     *
      * @param string $file Caminho ate o arquivo.
      * @param string $text - Texto para adicionar.
-     * @param string $insert_in_position Posição onde o texto será inserido prepend, append ou overwrite.
+     * @param string $insert_in Posição onde o texto será inserido append ou overwrite.
      *
      * @return bool
      */
-    public static function write(string $file, string $text, string $insert_in_position = self::WRITE_OVERWRITE): bool {
-        // Adiciona texto ao inicio ou ao final do arquivo
-        if ($insert_in_position === self::WRITE_PREPEND && file_exists($file)) {
-            $ln = self::read($file);
-            if ($ln !== null) $text = $text . $ln;
-            else return false;
-        } else if ($insert_in_position === self::WRITE_APPEND && file_exists($file)) {
-            $ln = self::read($file);
-            if ($ln !== null) $text = $ln . $text;
-            else return false;
-        }
-
-        if (($fp = fopen($file, "w"))) {
-            fwrite($fp, $text);
-            fclose($fp);
-
-            return true;
-        } else return false;
+    public static function write(string $file, string $text, string $insert_in = null) {
+        return file_put_contents($file, $text, ($insert_in == self::WRITE_APPEND ? FILE_APPEND : null));
     }
 
     /**
-     * Ler conteudo de um arquivo
+     * Ler conteúdo de um arquivo
+     *
+     * @deprecated usar file_get_contents
      *
      * @param string $file Caminho ate o arquivo.
      *
      * @return string|null Retorna o conteudo ou null caso ocorra algum erro
      */
-    public static function read(string $file): ?string {
-        $linha = "";
-
-        if (file_exists($file)) {
-            // Quando o fopen falha ele retorna false ao inves do resource
-            // Este if testa se o fopen retornou os dados corretos para evitar erros
-            if (($ponteiro = fopen($file, "r"))) {
-                while (!feof($ponteiro)) {
-                    $linha .= fgets($ponteiro, 4096);
-                }
-
-                fclose($ponteiro);
-            } else {
-                return null;
-            }
-        } else {
-            return null;
-        }
-
-        return $linha;
+    public static function read(string $file) {
+        return @file_get_contents($file);
     }
 
     /**
@@ -133,14 +98,14 @@ class FileSystem {
         $files = scandir($dir_path);
 
         foreach ($files as $t) {
-            if (is_dir(rtrim($dir_path, '/') . '/' . $t)) {
+            if (is_dir(rtrim($dir_path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $t)) {
                 if ($t !== "." && $t !== "..") {
-                    $size = self::folderSize(rtrim($dir_path, '/') . '/' . $t);
+                    $size = self::folderSize(rtrim($dir_path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $t);
 
                     $total_size += $size;
                 }
             } else {
-                $size = filesize(rtrim($dir_path, '/') . '/' . $t);
+                $size = filesize(rtrim($dir_path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $t);
                 $total_size += $size;
             }
         }
@@ -238,36 +203,76 @@ class FileSystem {
     }
 
     /**
-     * Combina varios caminhos
+     * Combina vários caminhos
      *
-     * @param string[] $args Caminhos para unir
+     * Este método não verifica se o caminho final existe.
+     * Este método não verifica se o caminho final retornado existe.
+     *
+     * @param string $path1 Primeiro caminho
+     * @param string[] $paths n caminhos
      *
      * @return string
      */
-    public static function pathJoin(string ...$args): string {
+    public static function pathJoin(string $path1, string ...$paths): string {
+        array_unshift($paths, $path1);
         $starts_with_bar = false;
-        $paths = [];
+        $list = [];
 
         // Quebra cada argumento pela barra
-        foreach ($args as $arg) {
+        foreach ($paths as $arg) {
             $arg = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $arg);
 
-            if (count($paths) == 0 && StrRes::startsWith($arg, DIRECTORY_SEPARATOR))
+            if (count($list) == 0 && StrRes::startsWith($arg, DIRECTORY_SEPARATOR))
                 $starts_with_bar = true;
 
             $subitems = array_filter(explode(DIRECTORY_SEPARATOR, $arg), 'strlen');
-            $paths = array_merge($paths, $subitems);
+            $list = array_merge($list, $subitems);
         }
 
         $final = [];
         // Monta o caminho final
-        foreach ($paths as $path) {
-            if ('.' == $path) continue;
+        foreach ($list as $index) {
+            if ('.' == $index) continue;
 
-            if ('..' == $path) array_pop($final);
-            else $final[] = $path;
+            if ('..' == $index) array_pop($final);
+            else $final[] = $index;
         }
 
         return ($starts_with_bar ? DIRECTORY_SEPARATOR : "") . implode(DIRECTORY_SEPARATOR, $final);
+    }
+
+    /**
+     * Combina vários caminhos mantendo o último diretório da lista que estiver iniciando do root do sistema.
+     *
+     * Se nenhuma das partes estiver iniciando do root o diretório do arquivo que requisitou será o inicio do path
+     * final.<br>
+     * Este método não verifica se o caminho final retornado existe.
+     *
+     * @param string $path1 Primeiro caminho
+     * @param string[] $paths n caminhos
+     *
+     * @return string
+     */
+    public static function pathResolve(string $path1, string ...$paths): string {
+        // Adiciona o diretório do arquivo que chamou o método como o primeiro na fila de diretórios
+        $trace = debug_backtrace();
+        $dir = dirname($trace[0]["file"]);
+
+        array_unshift($paths, $dir, $path1);
+
+        $final = [];
+        for ($i = 0; $i < count($paths); $i++) {
+            // Verifica se o índice inicia do root do sistema
+            if (StrRes::startsWith($paths[$i], "/") ||
+                substr($paths[$i], 1, 2) == ":\\" ||
+                substr($paths[$i], 1, 2) == ":/"
+            ) {
+                $final = [$paths[$i]];
+            } else {
+                $final[] = $paths[$i];
+            }
+        }
+
+        return call_user_func_array([__CLASS__, "pathJoin"], $final);
     }
 }
