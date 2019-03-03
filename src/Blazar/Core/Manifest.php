@@ -130,7 +130,7 @@ class Manifest extends App {
                 // Reajusta os index da url com os padrões
                 self::$max_index_map = self::preencherParametro(0, $dados_manifest['map']);
             }
-        } catch (Error | Throwable $e) {
+        } catch (Error|Throwable $e) {
             Log::e($e);
             exit('Manifest: Erro ao iniciar o sistema.');
         }

@@ -189,7 +189,7 @@ class Log {
             }
 
             return $log_info;
-        } catch (Error | Throwable $e) {
+        } catch (Error|Throwable $e) {
             // Se catch tenta capturar todas as possíveis exceções
             if (defined('CURRENT_ENV') && CURRENT_ENV == ENV_DEVELOPMENT) {
                 echo "<pre>\n== Erro ao adicionar Log =====================\n\n";

@@ -112,7 +112,7 @@ class Blazar {
                     "Verifique se o arquivo \"blazar-manifest.json\" foi criado e se alguma classe foi adicionada ao índice \"map\".\n" .
                     'Para utilizar as classes do framework sem iniciar as aplicações do "map" utilize o método Blazar::prepare.');
             }
-        } catch (\Error | Throwable $e) {
+        } catch (\Error|Throwable $e) {
             \Blazar\Core\Log::e('Alguma exceção não foi tratada e chegou ao root', $e);
             exit('Não foi possível concluir a operação. Por favor tente mais tarde.');
         }

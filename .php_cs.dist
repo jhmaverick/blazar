@@ -1,5 +1,13 @@
 <?php
 
+/*
+ * This file is part of Blazar Framework.
+ *
+ * (c) João Henrique <joao_henriquee@outlook.com>
+ *
+ * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
+ */
+
 $header = <<<'EOF'
 This file is part of Blazar Framework.
 
@@ -73,8 +81,9 @@ return PhpCsFixer\Config::create()
         'switch_case_semicolon_to_colon' => true,
         'switch_case_space' => true,
         'binary_operator_spaces' => [
-            'align_equals' => false,
-            'align_double_arrow' => null,
+            'operators' => [
+                '|' => 'no_space',
+            ],
         ],
 
         'header_comment' => ['header' => $header],
