@@ -403,7 +403,7 @@ class Log {
         $log_dir = Manifest::config('logs_dir') ?? self::DEFAULT_DIR;
         $log_dir = trim($log_dir);
 
-        $log_dir = FileSystem::pathResolve(SOURCE_DIR, $log_dir);
+        $log_dir = FileSystem::pathResolve(PROJECT_ROOT, $log_dir);
 
         $log_dir = FileSystem::pathJoin($log_dir);
         if (!file_exists($log_dir)) {

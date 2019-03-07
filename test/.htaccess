@@ -1,0 +1,15 @@
+RewriteEngine On
+
+# Desativa listagem de diretorios no apache
+IndexIgnore *
+
+# Diretório de Imagens
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} -f
+# Parametros que irão forçar o php mesmo com arquivos existindo
+RewriteRule ^(midias/).+(\.png$|\.jpg)$ index.php/$1 [L]
+
+# Aplicação
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.+)$ index.php/$1 [L]

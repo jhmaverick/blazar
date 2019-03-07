@@ -20,11 +20,11 @@ use Mustache_Engine;
 /**
  * Class de leitura de textos do sistema.
  *
- * O diretório de textos padrão está definido em (SOURCE_DIR . "texts/"), utilize o metodo "setDefaultDir" para alterar.
+ * O diretório de textos padrão está definido em (PROJECT_ROOT . "texts/"), utilize o metodo "setDefaultDir" para alterar.
  */
 class Text {
-    public const DEFAULT_DIR = SOURCE_DIR . '/texts';
-    private const BLAZAR_DIR = BLAZAR_DIR . '/texts';
+    public const DEFAULT_DIR = PROJECT_ROOT . '/texts';
+    private const BLAZAR_TEXT = BLAZAR_ROOT . '/texts';
     private const MAIN_FILE = 'main';
     private const DEFAULT_LANG = 'default';
 
@@ -205,7 +205,7 @@ class Text {
         if (StrRes::startsWith($file_name, 'bzr-')) {
             // Ajusta caminho para os textos do framework
             $name = StrRes::replaceFirst($file_name, 'bzr-', '');
-            $name = self::BLAZAR_DIR . $name;
+            $name = self::BLAZAR_TEXT . $name;
         } else {
             // Caminho para textos do projeto
             $name = self::$texts_dir . '/' . $file_name;

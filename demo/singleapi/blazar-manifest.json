@@ -1,8 +1,0 @@
-{
-  "$schema": "../../src/schema/blazar-schema.json",
-  "map": {
-    "single_api": {
-      "class": "SingleAPI"
-    }
-  }
-}

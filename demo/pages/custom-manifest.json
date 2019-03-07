@@ -1,6 +1,0 @@
-{
-  "$schema": "../../src/schema/blazar-schema.json",
-  "configs": {
-    "env": 3
-  }
-}

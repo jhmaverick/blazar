@@ -25,8 +25,8 @@ use Throwable;
  * Classe de gerenciamento do blazar-manifest.json.
  */
 class Manifest extends App {
-    const SCHEMA_PATH = BLAZAR_DIR . '/schema/blazar-schema.json';
-    const CACHE_DIR = SOURCE_DIR . '/.cache';
+    const SCHEMA_PATH = BLAZAR_ROOT . '/schema/blazar-schema.json';
+    const CACHE_DIR = PROJECT_ROOT . '/.cache';
 
     private static $started = false;
     private static $config = [];
@@ -37,7 +37,7 @@ class Manifest extends App {
     /**
      * Inicia a configuração do sistema com os dados do manifest.
      */
-    public function __construct() {
+    public static function apply() {
         // Impede que a função seja iniciada mais de uma vez
         if (self::$started) {
             return;
@@ -74,12 +74,12 @@ class Manifest extends App {
 
                 // Manifesto principal
                 if ($files->main->exists) {
-                    $dados_manifest = self::readManifestFile($files->main->path);
+                    $dados_manifest = self::getFileContent($files->main->path);
                 }
 
                 // Manifesto customizado
                 if ($files->custom->exists) {
-                    $custom = self::readManifestFile($files->custom->path);
+                    $custom = self::getFileContent($files->custom->path);
                     if ($files->main->exists) {
                         $dados_manifest = array_replace_recursive($dados_manifest, $custom);
                     }
@@ -128,11 +128,11 @@ class Manifest extends App {
                 self::$map = $dados_manifest['map'];
 
                 // Reajusta os index da url com os padrões
-                self::$max_index_map = self::preencherParametro(0, $dados_manifest['map']);
+                self::$max_index_map = self::preencherParametro(0, self::$map);
             }
         } catch (Error|Throwable $e) {
             Log::e($e);
-            exit('Manifest: Erro ao iniciar o sistema.');
+            exit("Manifest: Erro ao iniciar o sistema.<br />\n" . $e->getMessage());
         }
     }
 
@@ -227,8 +227,8 @@ class Manifest extends App {
      */
     private static function filesInfo(): stdClass {
         $manifest_path = (defined('MANIFEST_PATH'))
-            ? FileSystem::pathResolve(SOURCE_DIR, MANIFEST_PATH)
-            : SOURCE_DIR . '/blazar-manifest.json';
+            ? FileSystem::pathResolve(PROJECT_ROOT, MANIFEST_PATH)
+            : PROJECT_ROOT . '/blazar-manifest.json';
 
         $main = (object) [
             'exists' => false,
@@ -243,8 +243,8 @@ class Manifest extends App {
 
         // Verifica se existe um manifest para mesclar com o principal
         $custom_manifest = (defined('CUSTOM_MANIFEST'))
-            ? FileSystem::pathResolve(SOURCE_DIR, CUSTOM_MANIFEST)
-            : SOURCE_DIR . '/custom-manifest.json';
+            ? FileSystem::pathResolve(PROJECT_ROOT, CUSTOM_MANIFEST)
+            : PROJECT_ROOT . '/custom-manifest.json';
 
         $custom = (object) [
             'exists' => false,
@@ -366,7 +366,7 @@ class Manifest extends App {
      * @return array
      * @throws BlazarException
      */
-    private static function readManifestFile(string $local): array {
+    private static function getFileContent(string $local): array {
         $file_name = explode('/', $local);
         $file_name = end($file_name);
 
@@ -381,8 +381,8 @@ class Manifest extends App {
 
         // Aplica o que foi encontrado nos includes no json principal
         foreach ($retorno[0] as $index => $value) {
-            if (file_exists(SOURCE_DIR . '/' . $retorno[1][$index])) {
-                $conteudo_json = file_get_contents(SOURCE_DIR . '/' . $retorno[1][$index]);
+            if (file_exists(PROJECT_ROOT . '/' . $retorno[1][$index])) {
+                $conteudo_json = file_get_contents(PROJECT_ROOT . '/' . $retorno[1][$index]);
 
                 if (json5_decode($conteudo_json, true) != null) {
                     $dados_manifest = StrRes::replaceFirst($dados_manifest, $retorno[0][$index], $conteudo_json);
