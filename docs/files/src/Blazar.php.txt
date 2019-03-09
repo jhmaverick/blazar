@@ -14,19 +14,6 @@ use Blazar\Core\Log;
 use Blazar\Core\Manifest;
 use Composer\Autoload\ClassLoader;
 
-/** This is a single line DocComment. */
-const testing = 6;
-
-/** This is a single line DocComment. */
-define('FOO', 'Page-level DocBlock it is not!');
-
-/**
- * sshhhhsssssss
- */
-function aadddda() {
-
-}
-
 class Blazar {
     private static $instance;
     private static $started = false;
