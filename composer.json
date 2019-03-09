@@ -50,6 +50,7 @@
   },
   "scripts": {
     "check-style": "php-cs-fixer fix --diff --dry-run",
-    "fix-style": "php-cs-fixer fix"
+    "fix-style": "php-cs-fixer fix",
+    "phpdoc-run": "phpdoc run --config --cache-folder=build/phpdoc-cache"
   }
 }

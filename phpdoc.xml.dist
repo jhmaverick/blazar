@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ This file is part of Blazar Framework.
+  ~
+  ~ (c) João Henrique <joao_henriquee@outlook.com>
+  ~
+  ~ For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
+  -->
+
+<phpdocumentor>
+    <title>Bazar</title>
+    <parser>
+        <encoding>utf-8</encoding>
+        <markers>
+            <item>TODO</item>
+            <item>FIXME</item>
+        </markers>
+        <extensions>
+            <extension>php</extension>
+        </extensions>
+    </parser>
+    <transformer>
+        <target>docs</target>
+    </transformer>
+    <logging>
+        <level>warn</level>
+        <paths>
+            <default>logs/{DATE}.log</default>
+            <errors>logs/{DATE}.errors.log</errors>
+        </paths>
+    </logging>
+    <transformations>
+        <template name="clean"/>
+    </transformations>
+    <files>
+        <directory>src</directory>
+        <file>bootstrap.php</file>
+    </files>
+</phpdocumentor>

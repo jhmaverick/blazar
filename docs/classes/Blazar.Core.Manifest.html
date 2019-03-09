@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+    <meta charset="utf-8"/>
+    <title>Bazar</title>
+    <meta name="author" content=""/>
+    <meta name="description" content=""/>
+
+    <link href="../css/bootstrap-combined.no-icons.min.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/prism.css" rel="stylesheet" media="all"/>
+    <link href="../css/template.css" rel="stylesheet" media="all"/>
+    
+    <!--[if lt IE 9]>
+    <script src="../js/html5.js"></script>
+    <![endif]-->
+    <script src="../js/jquery-1.11.0.min.js"></script>
+    <script src="../js/ui/1.10.4/jquery-ui.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/jquery.smooth-scroll.js"></script>
+    <script src="../js/prism.min.js"></script>
+    <!-- TODO: Add http://jscrollpane.kelvinluck.com/ to style the scrollbars for browsers not using webkit-->
+    <script type="text/javascript">
+    function loadExternalCodeSnippets() {
+        Array.prototype.slice.call(document.querySelectorAll('pre[data-src]')).forEach(function (pre) {
+            var src = pre.getAttribute('data-src').replace( /\\/g, '/');
+            var extension = (src.match(/\.(\w+)$/) || [, ''])[1];
+            var language = 'php';
+
+            var code = document.createElement('code');
+            code.className = 'language-' + language;
+
+            pre.textContent = '';
+
+            code.textContent = 'Loading…';
+
+            pre.appendChild(code);
+
+            var xhr = new XMLHttpRequest();
+
+            xhr.open('GET', src, true);
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4) {
+
+                    if (xhr.status < 400 && xhr.responseText) {
+                        code.textContent = xhr.responseText;
+
+                        Prism.highlightElement(code);
+                    }
+                    else if (xhr.status >= 400) {
+                        code.textContent = '✖ Error ' + xhr.status + ' while fetching file: ' + xhr.statusText;
+                    }
+                    else {
+                        code.textContent = '✖ Error: File does not exist or is empty';
+                    }
+                }
+            };
+
+            xhr.send(null);
+        });
+    }
+
+    $(document).ready(function(){
+        loadExternalCodeSnippets();
+    });
+    $('#source-view').on('shown', function () {
+        loadExternalCodeSnippets();
+    })
+</script>
+
+    <link rel="shortcut icon" href="../images/favicon.ico"/>
+    <link rel="apple-touch-icon" href="../images/apple-touch-icon.png"/>
+    <link rel="apple-touch-icon" sizes="72x72" href="../images/apple-touch-icon-72x72.png"/>
+    <link rel="apple-touch-icon" sizes="114x114" href="../images/apple-touch-icon-114x114.png"/>
+</head>
+<body>
+
+<div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <i class="icon-ellipsis-vertical"></i>
+            </a>
+            <a class="brand" href="../index.html">Bazar</a>
+
+            <div class="nav-collapse">
+                <ul class="nav pull-right">
+                                        <li class="dropdown">
+                        <a href="../index.html" class="dropdown-toggle" data-toggle="dropdown">
+                            API Documentation <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                                                        <li><a href="../namespaces/Blazar.html">\Blazar</a></li>
+                                                    </ul>
+                    </li>
+                                        <li class="dropdown" id="charts-menu">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            Charts <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a href="../graphs/class.html">
+                                    <i class="icon-list-alt"></i>&#160;Class hierarchy diagram
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="dropdown" id="reports-menu">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            Reports <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a href="../reports/errors.html">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <i class="icon-list-alt"></i>&#160;Errors <span class="label label-info pull-right">0</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="../reports/markers.html">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <i class="icon-list-alt"></i>&#160;Markers <span class="label label-info pull-right">2</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="../reports/deprecated.html">
+                                                                                                                                                                                                                                                                    <i class="icon-list-alt"></i>&#160;Deprecated <span class="label label-info pull-right">2</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!--<div class="go_to_top">-->
+    <!--<a href="#___" style="color: inherit">Back to top&#160;&#160;<i class="icon-upload icon-white"></i></a>-->
+    <!--</div>-->
+</div>
+
+<div id="___" class="container-fluid">
+        <section class="row-fluid">
+        <div class="span2 sidebar">
+                                <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle " data-toggle="collapse" data-target="#namespace-2123836597"></a>
+                                <a href="../namespaces/default.html" style="margin-left: 30px; padding-left: 0">\</a>
+            </div>
+            <div id="namespace-2123836597" class="accordion-body collapse in">
+                <div class="accordion-inner">
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-621233331"></a>
+                                <a href="../namespaces/Blazar.html" style="margin-left: 30px; padding-left: 0">Blazar</a>
+            </div>
+            <div id="namespace-621233331" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-2006548271"></a>
+                                <a href="../namespaces/Blazar.Component.html" style="margin-left: 30px; padding-left: 0">Component</a>
+            </div>
+            <div id="namespace-2006548271" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-839139562"></a>
+                                <a href="../namespaces/Blazar.Component.Dao.html" style="margin-left: 30px; padding-left: 0">Dao</a>
+            </div>
+            <div id="namespace-839139562" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Blazar.Component.Dao.CRUDMysql.html">CRUDMysql</a></li>
+                                                    <li class="class"><a href="../classes/Blazar.Component.Dao.Dao.html">Dao</a></li>
+                                                    <li class="class"><a href="../classes/Blazar.Component.Dao.DaoException.html">DaoException</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1968730068"></a>
+                                <a href="../namespaces/Blazar.Component.FileSystem.html" style="margin-left: 30px; padding-left: 0">FileSystem</a>
+            </div>
+            <div id="namespace-1968730068" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Blazar.Component.FileSystem.FileException.html">FileException</a></li>
+                                                    <li class="class"><a href="../classes/Blazar.Component.FileSystem.FileSystem.html">FileSystem</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-68312614"></a>
+                                <a href="../namespaces/Blazar.Component.Image.html" style="margin-left: 30px; padding-left: 0">Image</a>
+            </div>
+            <div id="namespace-68312614" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Blazar.Component.Image.Image.html">Image</a></li>
+                                                    <li class="class"><a href="../classes/Blazar.Component.Image.ImageException.html">ImageException</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-709728350"></a>
+                                <a href="../namespaces/Blazar.Component.SelectorDOM.html" style="margin-left: 30px; padding-left: 0">SelectorDOM</a>
+            </div>
+            <div id="namespace-709728350" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Blazar.Component.SelectorDOM.SelectorDOM.html">SelectorDOM</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-2065711260"></a>
+                                <a href="../namespaces/Blazar.Component.Text.html" style="margin-left: 30px; padding-left: 0">Text</a>
+            </div>
+            <div id="namespace-2065711260" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Blazar.Component.Text.Text.html">Text</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1605602711"></a>
+                                <a href="../namespaces/Blazar.Component.TypeRes.html" style="margin-left: 30px; padding-left: 0">TypeRes</a>
+            </div>
+            <div id="namespace-1605602711" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Blazar.Component.TypeRes.ArrayRes.html">ArrayRes</a></li>
+                                                    <li class="class"><a href="../classes/Blazar.Component.TypeRes.StrRes.html">StrRes</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-363508853"></a>
+                                <a href="../namespaces/Blazar.Component.View.html" style="margin-left: 30px; padding-left: 0">View</a>
+            </div>
+            <div id="namespace-363508853" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Blazar.Component.View.View.html">View</a></li>
+                                                    <li class="class"><a href="../classes/Blazar.Component.View.ViewException.html">ViewException</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-636118411"></a>
+                                <a href="../namespaces/Blazar.Component.WebService.html" style="margin-left: 30px; padding-left: 0">WebService</a>
+            </div>
+            <div id="namespace-636118411" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Blazar.Component.WebService.WebService.html">WebService</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                    
+                    <ul>
+                                                                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1206724232"></a>
+                                <a href="../namespaces/Blazar.Core.html" style="margin-left: 30px; padding-left: 0">Core</a>
+            </div>
+            <div id="namespace-1206724232" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Blazar.Core.App.html">App</a></li>
+                                                    <li class="class"><a href="../classes/Blazar.Core.BlazarException.html">BlazarException</a></li>
+                                                    <li class="class"><a href="../classes/Blazar.Core.Log.html">Log</a></li>
+                                                    <li class="class"><a href="../classes/Blazar.Core.Manifest.html">Manifest</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                    
+                    <ul>
+                                                                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Blazar.html">Blazar</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        </div>
+    </section>
+    <section class="row-fluid">
+        <div class="span10 offset2">
+            <div class="row-fluid">
+                <div class="span8 content class">
+                    <nav>
+                                                <a href="../namespaces/Blazar.Core.html">\Blazar\Core</a> <i class="icon-level-up"></i>
+                                            </nav>
+                    <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal"><i class="icon-code"></i></a>
+
+                    <h1><small>\Blazar\Core</small>Manifest</h1>
+                    <p><em>Classe de gerenciamento do blazar-manifest.json.</em></p>
+                    <p>Responsável por gerenciar o status da aplicação como informações passadas por URL, navegação pelo mapa de classes...</p>
+                    
+                                        
+                    <section id="summary">
+                        <h2>Summary</h2>
+                        <section class="row-fluid heading">
+                            <section class="span4">
+                                <a href="#methods">Methods</a>
+                            </section>
+                            <section class="span4">
+                                <a href="#properties">Properties</a>
+                            </section>
+                            <section class="span4">
+                                <a href="#constants">Constants</a>
+                            </section>
+                        </section>
+                        <section class="row-fluid public">
+                            <section class="span4">
+                                                                    <a href="../classes/Blazar.Core.App.html#method_next" class="">next()</a><br />
+                                                                    <a href="../classes/Blazar.Core.App.html#method_current" class="">current()</a><br />
+                                                                    <a href="../classes/Blazar.Core.App.html#method_get" class="">get()</a><br />
+                                                                    <a href="../classes/Blazar.Core.App.html#method_param" class="">param()</a><br />
+                                                                    <a href="../classes/Blazar.Core.App.html#method_urlParam" class="">urlParam()</a><br />
+                                                                    <a href="../classes/Blazar.Core.App.html#method_currentIndex" class="">currentIndex()</a><br />
+                                                                    <a href="../classes/Blazar.Core.App.html#method_maxIndex" class="">maxIndex()</a><br />
+                                                                    <a href="../classes/Blazar.Core.Manifest.html#method_apply" class="">apply()</a><br />
+                                                                    <a href="../classes/Blazar.Core.Manifest.html#method_config" class="">config()</a><br />
+                                                                    <a href="../classes/Blazar.Core.Manifest.html#method_data" class="">data()</a><br />
+                                                                    <a href="../classes/Blazar.Core.Manifest.html#method_db" class="">db()</a><br />
+                                                                    <a href="../classes/Blazar.Core.Manifest.html#method_map" class="">map()</a><br />
+                                                            </section>
+                            <section class="span4">
+                                                                    <em>No public properties found</em>
+                                                            </section>
+                            <section class="span4">
+                                                                    <a href="../classes/Blazar.Core.App.html#constant_PARAMS_ALL" class="">PARAMS_ALL</a><br />
+                                                                    <a href="../classes/Blazar.Core.App.html#constant_PARAMS_APP" class="">PARAMS_APP</a><br />
+                                                                    <a href="../classes/Blazar.Core.App.html#constant_PARAMS_MAP" class="">PARAMS_MAP</a><br />
+                                                                    <a href="../classes/Blazar.Core.Manifest.html#constant_SCHEMA_PATH" class="">SCHEMA_PATH</a><br />
+                                                                    <a href="../classes/Blazar.Core.Manifest.html#constant_CACHE_DIR" class="">CACHE_DIR</a><br />
+                                                            </section>
+                        </section>
+                        <section class="row-fluid protected">
+                            <section class="span4">
+                                                                    <em>No protected methods found</em>
+                                                            </section>
+                            <section class="span4">
+                                                                    <em>No protected properties found</em>
+                                                            </section>
+                            <section class="span4">
+                                <em>N/A</em>
+                            </section>
+                        </section>
+                        <section class="row-fluid private">
+                            <section class="span4">
+                                                                    <em>No private methods found</em>
+                                                            </section>
+                            <section class="span4">
+                                                                    <em>No private properties found</em>
+                                                            </section>
+                            <section class="span4">
+                                <em>N/A</em>
+                            </section>
+                        </section>
+                    </section>
+                </div>
+                <aside class="span4 detailsbar">
+                                        
+                    
+                    <dl>
+                        <dt>File</dt>
+                            <dd><a href="../files/src.Blazar.Core.Manifest.html"><div class="path-wrapper">src/Blazar/Core/Manifest.php</div></a></dd>
+                                                <dt>Class hierarchy</dt>
+                            <dd class="hierarchy">
+                                                                                                                                                                                                                                                                                                
+                                        <div class="namespace-wrapper"><a href="../classes/Blazar.Core.App.html">\Blazar\Core\App</a></div>
+                                                                                                    <div class="namespace-wrapper">\Blazar\Core\Manifest</div>
+                            </dd>
+
+                        
+                        
+                        
+                                                
+                                                                        </dl>
+                    <h2>Tags</h2>
+                    <table class="table table-condensed">
+                                            <tr><td colspan="2"><em>None found</em></td></tr>
+                                        </table>
+                </aside>
+            </div>
+
+                                    <a id="constants" name="constants"></a>
+            <div class="row-fluid">
+                <div class="span8 content class">
+                    <h2>Constants</h2>
+                </div>
+                <aside class="span4 detailsbar"></aside>
+            </div>
+
+                                <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_PARAMS_ALL" name="constant_PARAMS_ALL" class="anchor"></a>
+            <article id="constant_PARAMS_ALL" class="constant">
+                <h3 class="">PARAMS_ALL</h3>
+                <pre class="signature">PARAMS_ALL = 0</pre>
+                <p><em>Todos os parâmetros informados na URL</em></p>
+                
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Blazar.Core.App.html"><div class="path-wrapper">\Blazar\Core\App</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_PARAMS_APP" name="constant_PARAMS_APP" class="anchor"></a>
+            <article id="constant_PARAMS_APP" class="constant">
+                <h3 class="">PARAMS_APP</h3>
+                <pre class="signature">PARAMS_APP = 1</pre>
+                <p><em>Parâmetro destinado a aplicação</em></p>
+                
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Blazar.Core.App.html"><div class="path-wrapper">\Blazar\Core\App</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_PARAMS_MAP" name="constant_PARAMS_MAP" class="anchor"></a>
+            <article id="constant_PARAMS_MAP" class="constant">
+                <h3 class="">PARAMS_MAP</h3>
+                <pre class="signature">PARAMS_MAP = 2</pre>
+                <p><em>Parâmetro destinado a seleção de classes no mapa do manifest</em></p>
+                
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Blazar.Core.App.html"><div class="path-wrapper">\Blazar\Core\App</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_SCHEMA_PATH" name="constant_SCHEMA_PATH" class="anchor"></a>
+            <article id="constant_SCHEMA_PATH" class="constant">
+                <h3 class="">SCHEMA_PATH</h3>
+                <pre class="signature">SCHEMA_PATH = BLAZAR_ROOT . /schema/blazar-schema.json</pre>
+                <p><em></em></p>
+                
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_CACHE_DIR" name="constant_CACHE_DIR" class="anchor"></a>
+            <article id="constant_CACHE_DIR" class="constant">
+                <h3 class="">CACHE_DIR</h3>
+                <pre class="signature">CACHE_DIR = APP_ROOT . /.cache</pre>
+                <p><em></em></p>
+                
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                            
+                        
+                                    <a id="methods" name="methods"></a>
+            <div class="row-fluid">
+                <div class="span8 content class"><h2>Methods</h2></div>
+                <aside class="span4 detailsbar"></aside>
+            </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_next" name="method_next" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">next()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">next(string|null  <span class="argument">index = null</span>) : array|mixed|null</pre>
+                <p><em>Pega as informações do próximo parâmetro no mapa de classes com base na URL informada.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>string|null</td>
+                                <td>index </td>
+                                <td><p>Força o retorno de apenas um indice do array vindo do método ClassMap::get.</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                                    <h4>Returns</h4>
+                    array|mixed|null
+                                            &mdash; <p>
+Retorna os dados vindos do método ClassMap::get ou null caso um indice tenha sido informado e não exista no
+    array.<br> Para mais informações sobre o retorno veja a documentação de {@see \Blazar\Core\ClassMap::get}
+</p>
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                            <span class="label label-info">static</span>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Blazar.Core.App.html"><div class="path-wrapper">\Blazar\Core\App</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_current" name="method_current" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">current()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">current(string|null  <span class="argument">index = null</span>) : array|mixed|null</pre>
+                <p><em>Pega as informações do ultimo parâmetro chamado pelo método ClassMap::next.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>string|null</td>
+                                <td>index </td>
+                                <td><p>Força o retorno de apenas um indice do array vindo do método ClassMap::get.</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                                    <h4>Returns</h4>
+                    array|mixed|null
+                                            &mdash; <p>
+Retorna os dados vindos do metodo ClassMap::get ou null caso um indice tenha sido informado e não exista no
+    array.<br> Para mais informações sobre o retorno veja a documentação de {@see \Blazar\Core\ClassMap::get}
+</p>
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                            <span class="label label-info">static</span>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Blazar.Core.App.html"><div class="path-wrapper">\Blazar\Core\App</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_get" name="method_get" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">get()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">get(int|string|null  <span class="argument">index = null</span>) : array|null</pre>
+                <p><em>Pegar os dados do parâmetro da URL processada.</em></p>
+                <p>Os dados são gerados através do &quot;map&quot; do manifest e o que foi requisitado nos parâmetros da URL.<br>
+Cada índice representa um parâmetro chamado.
+<br>
+Indices do retorno:<br>
+[class] =&gt; string(Classe para inicializar)<br>
+[name] =&gt; string(O nome do indice)<br>
+[index] =&gt; int(Seu nível no map)<br>
+[route] =&gt; string(A rota no map)
+[url_path] =&gt; string(Seu path junto a url base)</p>
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>int|string|null</td>
+                                <td>index </td>
+                                <td><p>
+Se for <b>int</b>, retorna a posição parâmetro na url(A contagem começa a partir do 0).<br>
+Se for <b>string</b>, retorna o parâmetro com o nome informado.
+Se existir mais de um parâmetro com mesmo nome na arvore, será retornado o primeiro encontrado, para evitar
+isto informe a árvore na string separando por barra Ex: "usuarios/usuarios".<br>
+Se <b>null</b>, retorna um array com os dados de todos o mapa de classes.<br>
+</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                                    <h4>Returns</h4>
+                    array|null
+                                            &mdash; <p>
+O retorno depende do tipo do index informado.<br>
+Se o index informado não for encontrado retorna null.
+</p>
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                            <span class="label label-info">static</span>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Blazar.Core.App.html"><div class="path-wrapper">\Blazar\Core\App</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_param" name="method_param" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">param()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">param(int|null  <span class="argument">index = null</span>,   <span class="argument">type = App::PARAMS_ALL</span>) : array|string|null</pre>
+                <p><em>Parâmetros de execução do sistema com base nos dados da URL amigavel e do Manifest map.</em></p>
+                <p>Os parâmetros omitidos na URL são retornados utilizando os mapas definidos como &quot;main&quot; no manifest.</p>
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>int|null</td>
+                                <td>index </td>
+                                <td><p>
+Retorna o nome do parâmetro na posição informada.<br>
+Se não for informado retorna todas.
+</p></td>
+                            </tr>
+                                                    <tr>
+                                <td></td>
+                                <td>type </td>
+                                <td><p>
+Quais são os parâmetros que serão retornados.<br>
+{@see \Blazar\Core\Application::PARAMS_ALL}, {@see \Blazar\Core\Application::PARAMS_APP} e {@see \Blazar\Core\Application::PARAMS_MAP}
+</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                                    <h4>Returns</h4>
+                    array|string|null
+                                            &mdash; <p>
+O retorno depende do tipo do index informado.<br>
+Se o index informado não for encontrado retorna null.
+</p>
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                            <span class="label label-info">static</span>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Blazar.Core.App.html"><div class="path-wrapper">\Blazar\Core\App</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_urlParam" name="method_urlParam" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">urlParam()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">urlParam(int|null  <span class="argument">index = null</span>) : array|string|null</pre>
+                <p><em>Retorna apenas os parâmetros informados por URL amigas.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>int|null</td>
+                                <td>index </td>
+                                <td></td>
+                            </tr>
+                                            </table>
+                
+                
+                                    <h4>Returns</h4>
+                    array|string|null
+                                            &mdash; 
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                            <span class="label label-info">static</span>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Blazar.Core.App.html"><div class="path-wrapper">\Blazar\Core\App</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_currentIndex" name="method_currentIndex" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">currentIndex()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">currentIndex() : </pre>
+                <p><em>Informa qual foi o ultimo indice chamado pelo método next.</em></p>
+                
+
+                
+                
+                                    <h4>Returns</h4>
+                    
+                                            &mdash; 
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                            <span class="label label-info">static</span>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Blazar.Core.App.html"><div class="path-wrapper">\Blazar\Core\App</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_maxIndex" name="method_maxIndex" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">maxIndex()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">maxIndex() : </pre>
+                <p><em>Retorna o indice da ultima casa dos parâmetros de mapa.</em></p>
+                
+
+                
+                
+                                    <h4>Returns</h4>
+                    
+                                            &mdash; 
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                            <span class="label label-info">static</span>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Blazar.Core.App.html"><div class="path-wrapper">\Blazar\Core\App</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_apply" name="method_apply" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">apply()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">apply() : </pre>
+                <p><em>Inicia a configuração do sistema com os dados do manifest.</em></p>
+                
+
+                
+                
+                                    <h4>Returns</h4>
+                    
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                            <span class="label label-info">static</span>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Blazar.Core.Manifest.html"><div class="path-wrapper">\Blazar\Core\Manifest</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_config" name="method_config" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">config()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">config(string|null  <span class="argument">index = null</span>) : </pre>
+                <p><em>Pega configurações o índice configurações.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>string|null</td>
+                                <td>index </td>
+                                <td><p>Nome do índice desejado ou null para retornar um array com todos.</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                                    <h4>Returns</h4>
+                    
+                                            &mdash; 
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                            <span class="label label-info">static</span>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Blazar.Core.Manifest.html"><div class="path-wrapper">\Blazar\Core\Manifest</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_data" name="method_data" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">data()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">data(string|null  <span class="argument">index = null</span>) : </pre>
+                <p><em>Pega dados e informações da aplicação.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>string|null</td>
+                                <td>index </td>
+                                <td><p>Nome do indice desejado ou null para retornar um array com todos.</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                                    <h4>Returns</h4>
+                    
+                                            &mdash; 
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                            <span class="label label-info">static</span>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Blazar.Core.Manifest.html"><div class="path-wrapper">\Blazar\Core\Manifest</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_db" name="method_db" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">db()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">db(string|null  <span class="argument">connection_name = null</span>) : mixed||string|int</pre>
+                <p><em>Pega os dados de um Banco.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>string|null</td>
+                                <td>connection_name </td>
+                                <td><p>Nome da conexão desejada ou null para retornar um array com todas.</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                                    <h4>Returns</h4>
+                    mixed||string|int
+                                            &mdash; 
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                            <span class="label label-info">static</span>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Blazar.Core.Manifest.html"><div class="path-wrapper">\Blazar\Core\Manifest</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_map" name="method_map" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">map()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">map(string|null  <span class="argument">route = null</span>, string|null  <span class="argument">index = null</span>) : array|mixed|null</pre>
+                <p><em>Retorna o mapa de classes definido no manifest.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>string|null</td>
+                                <td>route </td>
+                                <td><p>
+Se for informado irá percorrer o array ate completar a rota informada.<br>
+Ex: nivel1/nivel2/nivel3
+</p></td>
+                            </tr>
+                                                    <tr>
+                                <td>string|null</td>
+                                <td>index </td>
+                                <td><p>Pega um indice no final da rota encontrada</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                                    <h4>Returns</h4>
+                    array|mixed|null
+                                            &mdash; <p>Retorna null caso uma rota tenha sido informada e não exista no manifest.</p>
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                            <span class="label label-info">static</span>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Blazar.Core.Manifest.html"><div class="path-wrapper">\Blazar\Core\Manifest</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                                                    </div>
+    </section>
+
+    <div id="source-view" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="source-view-label" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="source-view-label">Manifest.php</h3>
+        </div>
+        <div class="modal-body">
+            <pre data-src="../files/src/Blazar/Core/Manifest.php.txt" class="language-php line-numbers"></pre>
+        </div>
+    </div>
+
+    <footer class="row-fluid">
+        <section class="span10 offset2">
+            <section class="row-fluid">
+                <section class="span10 offset1">
+                    <section class="row-fluid footer-sections">
+                        <section class="span4">
+                                                        <h1><i class="icon-code"></i></h1>
+                            <div>
+                                <ul>
+                                                                            <li><a href="../namespaces/Blazar.html">\Blazar</a></li>
+                                                                    </ul>
+                            </div>
+                        </section>
+                        <section class="span4">
+                                                        <h1><i class="icon-bar-chart"></i></h1>
+                            <div>
+                                <ul>
+                                    <li><a href="../graphs/class.html">Class Hierarchy Diagram</a></li>
+                                </ul>
+                            </div>
+                        </section>
+                        <section class="span4">
+                                                        <h1><i class="icon-pushpin"></i></h1>
+                            <div>
+                                <ul>
+                                    <li><a href="../reports/errors.html">Errors</a></li>
+                                    <li><a href="../reports/markers.html">Markers</a></li>
+                                </ul>
+                            </div>
+                        </section>
+                    </section>
+                </section>
+            </section>
+            <section class="row-fluid">
+                <section class="span10 offset1">
+                    <hr />
+                    Documentation is powered by <a href="http://www.phpdoc.org/">phpDocumentor </a> and authored
+                    on March 9th, 2019 at 14:52.
+                </section>
+            </section>
+        </section>
+    </footer>
+</div>
+
+</body>
+</html>

@@ -19,7 +19,7 @@ if (version_compare(PHP_VERSION, '7.1', '<')) {
 mb_internal_encoding('UTF-8');
 mb_http_output('UTF-8');
 
-/* Ambiente de Produção */
+/** Ambiente de Produção */
 define('ENV_PRODUCTION', 1);
 
 /* Ambiente de Teste */
@@ -31,13 +31,13 @@ define('ENV_DEVELOPMENT', 3);
 /* O diretório raiz onde esta localizado o framework no vendor */
 define('BLAZAR_ROOT', str_replace('\\', '/', __DIR__));
 
-if (!defined('PROJECT_ROOT')) {
+if (!defined('APP_ROOT')) {
     /*
      * O caminho ate o diretório raiz do código fonte
      *
      * Esta constante pode ser definida manualmente antes da chamada do método prepare ou init
      */
-    define('PROJECT_ROOT', str_replace('\\', '/', Blazar::getProjectRoot()));
+    define('APP_ROOT', str_replace('\\', '/', Blazar::getProjectRoot()));
 }
 
 if (!defined('URL_BASE')) {

@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+    <meta charset="utf-8"/>
+    <title>Bazar</title>
+    <meta name="author" content=""/>
+    <meta name="description" content=""/>
+
+    <link href="../css/bootstrap-combined.no-icons.min.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/prism.css" rel="stylesheet" media="all"/>
+    <link href="../css/template.css" rel="stylesheet" media="all"/>
+    
+    <!--[if lt IE 9]>
+    <script src="../js/html5.js"></script>
+    <![endif]-->
+    <script src="../js/jquery-1.11.0.min.js"></script>
+    <script src="../js/ui/1.10.4/jquery-ui.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/jquery.smooth-scroll.js"></script>
+    <script src="../js/prism.min.js"></script>
+    <!-- TODO: Add http://jscrollpane.kelvinluck.com/ to style the scrollbars for browsers not using webkit-->
+    <script type="text/javascript">
+    function loadExternalCodeSnippets() {
+        Array.prototype.slice.call(document.querySelectorAll('pre[data-src]')).forEach(function (pre) {
+            var src = pre.getAttribute('data-src').replace( /\\/g, '/');
+            var extension = (src.match(/\.(\w+)$/) || [, ''])[1];
+            var language = 'php';
+
+            var code = document.createElement('code');
+            code.className = 'language-' + language;
+
+            pre.textContent = '';
+
+            code.textContent = 'Loading…';
+
+            pre.appendChild(code);
+
+            var xhr = new XMLHttpRequest();
+
+            xhr.open('GET', src, true);
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4) {
+
+                    if (xhr.status < 400 && xhr.responseText) {
+                        code.textContent = xhr.responseText;
+
+                        Prism.highlightElement(code);
+                    }
+                    else if (xhr.status >= 400) {
+                        code.textContent = '✖ Error ' + xhr.status + ' while fetching file: ' + xhr.statusText;
+                    }
+                    else {
+                        code.textContent = '✖ Error: File does not exist or is empty';
+                    }
+                }
+            };
+
+            xhr.send(null);
+        });
+    }
+
+    $(document).ready(function(){
+        loadExternalCodeSnippets();
+    });
+    $('#source-view').on('shown', function () {
+        loadExternalCodeSnippets();
+    })
+</script>
+
+    <link rel="shortcut icon" href="../images/favicon.ico"/>
+    <link rel="apple-touch-icon" href="../images/apple-touch-icon.png"/>
+    <link rel="apple-touch-icon" sizes="72x72" href="../images/apple-touch-icon-72x72.png"/>
+    <link rel="apple-touch-icon" sizes="114x114" href="../images/apple-touch-icon-114x114.png"/>
+</head>
+<body>
+
+<div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <i class="icon-ellipsis-vertical"></i>
+            </a>
+            <a class="brand" href="../index.html">Bazar</a>
+
+            <div class="nav-collapse">
+                <ul class="nav pull-right">
+                                        <li class="dropdown">
+                        <a href="../index.html" class="dropdown-toggle" data-toggle="dropdown">
+                            API Documentation <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                                                        <li><a href="../namespaces/Blazar.html">\Blazar</a></li>
+                                                    </ul>
+                    </li>
+                                        <li class="dropdown" id="charts-menu">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            Charts <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a href="../graphs/class.html">
+                                    <i class="icon-list-alt"></i>&#160;Class hierarchy diagram
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="dropdown" id="reports-menu">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            Reports <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a href="../reports/errors.html">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <i class="icon-list-alt"></i>&#160;Errors <span class="label label-info pull-right">0</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="../reports/markers.html">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <i class="icon-list-alt"></i>&#160;Markers <span class="label label-info pull-right">2</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="../reports/deprecated.html">
+                                                                                                                                                                                                                                                                    <i class="icon-list-alt"></i>&#160;Deprecated <span class="label label-info pull-right">2</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!--<div class="go_to_top">-->
+    <!--<a href="#___" style="color: inherit">Back to top&#160;&#160;<i class="icon-upload icon-white"></i></a>-->
+    <!--</div>-->
+</div>
+
+<div id="___" class="container-fluid">
+        <section class="row-fluid">
+        <div class="span2 sidebar">
+                                <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle " data-toggle="collapse" data-target="#namespace-1020133048"></a>
+                                <a href="../namespaces/default.html" style="margin-left: 30px; padding-left: 0">\</a>
+            </div>
+            <div id="namespace-1020133048" class="accordion-body collapse in">
+                <div class="accordion-inner">
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-756392434"></a>
+                                <a href="../namespaces/Blazar.html" style="margin-left: 30px; padding-left: 0">Blazar</a>
+            </div>
+            <div id="namespace-756392434" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-861649360"></a>
+                                <a href="../namespaces/Blazar.Component.html" style="margin-left: 30px; padding-left: 0">Component</a>
+            </div>
+            <div id="namespace-861649360" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-843958255"></a>
+                                <a href="../namespaces/Blazar.Component.Dao.html" style="margin-left: 30px; padding-left: 0">Dao</a>
+            </div>
+            <div id="namespace-843958255" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Blazar.Component.Dao.CRUDMysql.html">CRUDMysql</a></li>
+                                                    <li class="class"><a href="../classes/Blazar.Component.Dao.Dao.html">Dao</a></li>
+                                                    <li class="class"><a href="../classes/Blazar.Component.Dao.DaoException.html">DaoException</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-227872917"></a>
+                                <a href="../namespaces/Blazar.Component.FileSystem.html" style="margin-left: 30px; padding-left: 0">FileSystem</a>
+            </div>
+            <div id="namespace-227872917" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Blazar.Component.FileSystem.FileException.html">FileException</a></li>
+                                                    <li class="class"><a href="../classes/Blazar.Component.FileSystem.FileSystem.html">FileSystem</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-12669233"></a>
+                                <a href="../namespaces/Blazar.Component.Image.html" style="margin-left: 30px; padding-left: 0">Image</a>
+            </div>
+            <div id="namespace-12669233" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Blazar.Component.Image.Image.html">Image</a></li>
+                                                    <li class="class"><a href="../classes/Blazar.Component.Image.ImageException.html">ImageException</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1297236205"></a>
+                                <a href="../namespaces/Blazar.Component.SelectorDOM.html" style="margin-left: 30px; padding-left: 0">SelectorDOM</a>
+            </div>
+            <div id="namespace-1297236205" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Blazar.Component.SelectorDOM.SelectorDOM.html">SelectorDOM</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-232305608"></a>
+                                <a href="../namespaces/Blazar.Component.Text.html" style="margin-left: 30px; padding-left: 0">Text</a>
+            </div>
+            <div id="namespace-232305608" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Blazar.Component.Text.Text.html">Text</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-4324425"></a>
+                                <a href="../namespaces/Blazar.Component.TypeRes.html" style="margin-left: 30px; padding-left: 0">TypeRes</a>
+            </div>
+            <div id="namespace-4324425" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Blazar.Component.TypeRes.ArrayRes.html">ArrayRes</a></li>
+                                                    <li class="class"><a href="../classes/Blazar.Component.TypeRes.StrRes.html">StrRes</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1493869799"></a>
+                                <a href="../namespaces/Blazar.Component.View.html" style="margin-left: 30px; padding-left: 0">View</a>
+            </div>
+            <div id="namespace-1493869799" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Blazar.Component.View.View.html">View</a></li>
+                                                    <li class="class"><a href="../classes/Blazar.Component.View.ViewException.html">ViewException</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1496029681"></a>
+                                <a href="../namespaces/Blazar.Component.WebService.html" style="margin-left: 30px; padding-left: 0">WebService</a>
+            </div>
+            <div id="namespace-1496029681" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Blazar.Component.WebService.WebService.html">WebService</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                    
+                    <ul>
+                                                                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-994113276"></a>
+                                <a href="../namespaces/Blazar.Core.html" style="margin-left: 30px; padding-left: 0">Core</a>
+            </div>
+            <div id="namespace-994113276" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Blazar.Core.App.html">App</a></li>
+                                                    <li class="class"><a href="../classes/Blazar.Core.BlazarException.html">BlazarException</a></li>
+                                                    <li class="class"><a href="../classes/Blazar.Core.Log.html">Log</a></li>
+                                                    <li class="class"><a href="../classes/Blazar.Core.Manifest.html">Manifest</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                    
+                    <ul>
+                                                                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Blazar.html">Blazar</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        </div>
+    </section>
+    <section class="row-fluid">
+        <div class="span10 offset2">
+            <div class="row-fluid">
+                <div class="span8 content class">
+                    <nav>
+                                                <a href="../namespaces/Blazar.Component.Dao.html">\Blazar\Component\Dao</a> <i class="icon-level-up"></i>
+                                            </nav>
+                    <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal"><i class="icon-code"></i></a>
+
+                    <h1><small>\Blazar\Component\Dao</small>CRUDMysql</h1>
+                    <p><em>Operações CRUD para mysql.</em></p>
+                    
+                    
+                                        
+                    <section id="summary">
+                        <h2>Summary</h2>
+                        <section class="row-fluid heading">
+                            <section class="span4">
+                                <a href="#methods">Methods</a>
+                            </section>
+                            <section class="span4">
+                                <a href="#properties">Properties</a>
+                            </section>
+                            <section class="span4">
+                                <a href="#constants">Constants</a>
+                            </section>
+                        </section>
+                        <section class="row-fluid public">
+                            <section class="span4">
+                                                                    <a href="../classes/Blazar.Component.Dao.Dao.html#method___construct" class="">__construct()</a><br />
+                                                                    <a href="../classes/Blazar.Component.Dao.Dao.html#method_hasColumn" class="">hasColumn()</a><br />
+                                                                    <a href="../classes/Blazar.Component.Dao.Dao.html#method_getColumns" class="">getColumns()</a><br />
+                                                                    <a href="../classes/Blazar.Component.Dao.Dao.html#method_getStringColumns" class="">getStringColumns()</a><br />
+                                                                    <a href="../classes/Blazar.Component.Dao.Dao.html#method_getStringColumnsExcept" class="">getStringColumnsExcept()</a><br />
+                                                                    <a href="../classes/Blazar.Component.Dao.Dao.html#method_checkStruct" class="">checkStruct()</a><br />
+                                                                    <a href="../classes/Blazar.Component.Dao.Dao.html#method_tableStruct" class="">tableStruct()</a><br />
+                                                                    <a href="../classes/Blazar.Component.Dao.Dao.html#method_cleanStruct" class="">cleanStruct()</a><br />
+                                                                    <a href="../classes/Blazar.Component.Dao.Dao.html#method_addPrefix" class="">addPrefix()</a><br />
+                                                                    <a href="../classes/Blazar.Component.Dao.Dao.html#method_removePrefix" class="">removePrefix()</a><br />
+                                                                    <a href="../classes/Blazar.Component.Dao.Dao.html#method_stringOrderBy" class="">stringOrderBy()</a><br />
+                                                                    <a href="../classes/Blazar.Component.Dao.Dao.html#method_checkLimit" class="">checkLimit()</a><br />
+                                                            </section>
+                            <section class="span4">
+                                                                    <em>No public properties found</em>
+                                                            </section>
+                            <section class="span4">
+                                                                    <a href="../classes/Blazar.Component.Dao.Dao.html#constant_PREPARE_DEFAULT" class="">PREPARE_DEFAULT</a><br />
+                                                                    <a href="../classes/Blazar.Component.Dao.Dao.html#constant_PREPARE_SELECT" class="">PREPARE_SELECT</a><br />
+                                                                    <a href="../classes/Blazar.Component.Dao.Dao.html#constant_PREPARE_INSERT" class="">PREPARE_INSERT</a><br />
+                                                                    <a href="../classes/Blazar.Component.Dao.CRUDMysql.html#constant_TP_INSERT_NORMAL" class="">TP_INSERT_NORMAL</a><br />
+                                                                    <a href="../classes/Blazar.Component.Dao.CRUDMysql.html#constant_TP_INSERT_REPLACE" class="">TP_INSERT_REPLACE</a><br />
+                                                                    <a href="../classes/Blazar.Component.Dao.CRUDMysql.html#constant_TP_INSERT_OR_UPDATE" class="">TP_INSERT_OR_UPDATE</a><br />
+                                                                    <a href="../classes/Blazar.Component.Dao.CRUDMysql.html#constant_TP_INSERT_IGNORE" class="">TP_INSERT_IGNORE</a><br />
+                                                                    <a href="../classes/Blazar.Component.Dao.CRUDMysql.html#constant_FIELD_VALUE" class="">FIELD_VALUE</a><br />
+                                                                    <a href="../classes/Blazar.Component.Dao.CRUDMysql.html#constant_FIELD_AUTO_MARK" class="">FIELD_AUTO_MARK</a><br />
+                                                                    <a href="../classes/Blazar.Component.Dao.CRUDMysql.html#constant_FIELD_UPDATE" class="">FIELD_UPDATE</a><br />
+                                                            </section>
+                        </section>
+                        <section class="row-fluid protected">
+                            <section class="span4">
+                                                                    <em>No protected methods found</em>
+                                                            </section>
+                            <section class="span4">
+                                                                    <em>No protected properties found</em>
+                                                            </section>
+                            <section class="span4">
+                                <em>N/A</em>
+                            </section>
+                        </section>
+                        <section class="row-fluid private">
+                            <section class="span4">
+                                                                    <em>No private methods found</em>
+                                                            </section>
+                            <section class="span4">
+                                                                    <em>No private properties found</em>
+                                                            </section>
+                            <section class="span4">
+                                <em>N/A</em>
+                            </section>
+                        </section>
+                    </section>
+                </div>
+                <aside class="span4 detailsbar">
+                                            <span class="label label-info">abstract</span>
+                                        
+                    
+                    <dl>
+                        <dt>File</dt>
+                            <dd><a href="../files/src.Blazar.Component.Dao.CRUDMysql.html"><div class="path-wrapper">src/Blazar/Component/Dao/CRUDMysql.php</div></a></dd>
+                                                <dt>Class hierarchy</dt>
+                            <dd class="hierarchy">
+                                                                                                                                                                                                                                                                                                
+                                        <div class="namespace-wrapper"><a href="../classes/Blazar.Component.Dao.Dao.html">\Blazar\Component\Dao\Dao</a></div>
+                                                                                                    <div class="namespace-wrapper">\Blazar\Component\Dao\CRUDMysql</div>
+                            </dd>
+
+                        
+                        
+                        
+                                                
+                                                                        </dl>
+                    <h2>Tags</h2>
+                    <table class="table table-condensed">
+                                            <tr><td colspan="2"><em>None found</em></td></tr>
+                                        </table>
+                </aside>
+            </div>
+
+                                    <a id="constants" name="constants"></a>
+            <div class="row-fluid">
+                <div class="span8 content class">
+                    <h2>Constants</h2>
+                </div>
+                <aside class="span4 detailsbar"></aside>
+            </div>
+
+                                <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_PREPARE_DEFAULT" name="constant_PREPARE_DEFAULT" class="anchor"></a>
+            <article id="constant_PREPARE_DEFAULT" class="constant">
+                <h3 class="">PREPARE_DEFAULT</h3>
+                <pre class="signature">PREPARE_DEFAULT = 0</pre>
+                <p><em></em></p>
+                
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Blazar.Component.Dao.Dao.html"><div class="path-wrapper">\Blazar\Component\Dao\Dao</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_PREPARE_SELECT" name="constant_PREPARE_SELECT" class="anchor"></a>
+            <article id="constant_PREPARE_SELECT" class="constant">
+                <h3 class="">PREPARE_SELECT</h3>
+                <pre class="signature">PREPARE_SELECT = 1</pre>
+                <p><em></em></p>
+                
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Blazar.Component.Dao.Dao.html"><div class="path-wrapper">\Blazar\Component\Dao\Dao</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_PREPARE_INSERT" name="constant_PREPARE_INSERT" class="anchor"></a>
+            <article id="constant_PREPARE_INSERT" class="constant">
+                <h3 class="">PREPARE_INSERT</h3>
+                <pre class="signature">PREPARE_INSERT = 2</pre>
+                <p><em></em></p>
+                
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Blazar.Component.Dao.Dao.html"><div class="path-wrapper">\Blazar\Component\Dao\Dao</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_TP_INSERT_NORMAL" name="constant_TP_INSERT_NORMAL" class="anchor"></a>
+            <article id="constant_TP_INSERT_NORMAL" class="constant">
+                <h3 class="">TP_INSERT_NORMAL</h3>
+                <pre class="signature">TP_INSERT_NORMAL = 1</pre>
+                <p><em></em></p>
+                
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_TP_INSERT_REPLACE" name="constant_TP_INSERT_REPLACE" class="anchor"></a>
+            <article id="constant_TP_INSERT_REPLACE" class="constant">
+                <h3 class="">TP_INSERT_REPLACE</h3>
+                <pre class="signature">TP_INSERT_REPLACE = 2</pre>
+                <p><em></em></p>
+                
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_TP_INSERT_OR_UPDATE" name="constant_TP_INSERT_OR_UPDATE" class="anchor"></a>
+            <article id="constant_TP_INSERT_OR_UPDATE" class="constant">
+                <h3 class="">TP_INSERT_OR_UPDATE</h3>
+                <pre class="signature">TP_INSERT_OR_UPDATE = 3</pre>
+                <p><em></em></p>
+                
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_TP_INSERT_IGNORE" name="constant_TP_INSERT_IGNORE" class="anchor"></a>
+            <article id="constant_TP_INSERT_IGNORE" class="constant">
+                <h3 class="">TP_INSERT_IGNORE</h3>
+                <pre class="signature">TP_INSERT_IGNORE = 4</pre>
+                <p><em></em></p>
+                
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_FIELD_VALUE" name="constant_FIELD_VALUE" class="anchor"></a>
+            <article id="constant_FIELD_VALUE" class="constant">
+                <h3 class="">FIELD_VALUE</h3>
+                <pre class="signature">FIELD_VALUE = value</pre>
+                <p><em></em></p>
+                
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_FIELD_AUTO_MARK" name="constant_FIELD_AUTO_MARK" class="anchor"></a>
+            <article id="constant_FIELD_AUTO_MARK" class="constant">
+                <h3 class="">FIELD_AUTO_MARK</h3>
+                <pre class="signature">FIELD_AUTO_MARK = auto_mark</pre>
+                <p><em></em></p>
+                
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_FIELD_UPDATE" name="constant_FIELD_UPDATE" class="anchor"></a>
+            <article id="constant_FIELD_UPDATE" class="constant">
+                <h3 class="">FIELD_UPDATE</h3>
+                <pre class="signature">FIELD_UPDATE = update</pre>
+                <p><em></em></p>
+                
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                            
+                        
+                                    <a id="methods" name="methods"></a>
+            <div class="row-fluid">
+                <div class="span8 content class"><h2>Methods</h2></div>
+                <aside class="span4 detailsbar"></aside>
+            </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method___construct" name="method___construct" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">__construct()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">__construct(mixed||string|int  <span class="argument">dados</span>,   <span class="argument">cc = true</span>) : </pre>
+                <p><em>Dao constructor.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>mixed||string|int</td>
+                                <td>dados </td>
+                                <td><p>Os dados da conexão</p></td>
+                            </tr>
+                                                    <tr>
+                                <td></td>
+                                <td>cc </td>
+                                <td><p>Gera uma conexão compartilhada com outras classes que estão acessando o mesmo db</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                                    <h4>Returns</h4>
+                    
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Blazar.Component.Dao.Dao.html"><div class="path-wrapper">\Blazar\Component\Dao\Dao</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_hasColumn" name="method_hasColumn" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">hasColumn()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">hasColumn(  <span class="argument">column</span>) : </pre>
+                <p><em>Verifica se a coluna existe na tabela.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td></td>
+                                <td>column </td>
+                                <td></td>
+                            </tr>
+                                            </table>
+                
+                
+                                    <h4>Returns</h4>
+                    
+                                            &mdash; 
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Blazar.Component.Dao.Dao.html"><div class="path-wrapper">\Blazar\Component\Dao\Dao</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_getColumns" name="method_getColumns" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">getColumns()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">getColumns() : mixed||string|int</pre>
+                <p><em>Lista de campos da tabela.</em></p>
+                
+
+                
+                
+                                    <h4>Returns</h4>
+                    mixed||string|int
+                                            &mdash; <p>
+Retorna a lista com os nomes das constantes com o index e seu valor.<br>
+Ex: [COL_ID => "id", COL_NOME => "nome", ...]
+</p>
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Blazar.Component.Dao.Dao.html"><div class="path-wrapper">\Blazar\Component\Dao\Dao</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_getStringColumns" name="method_getStringColumns" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">getStringColumns()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">getStringColumns(array|string|null  <span class="argument">columns = null</span>, string|null  <span class="argument">tb_name = null</span>,   <span class="argument">as_array = false</span>) : array|string</pre>
+                <p><em>Retorna uma string com as colunas da tabela pronta para uso em um select.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>array|string|null</td>
+                                <td>columns </td>
+                                <td><p>
+Array com as constantes das colunas
+Caso deseje retornar com "AS" então adicione a constante no index e a nomeação no valor
+Se passado como null ou "*" então retorna todas as colunas
+</p></td>
+                            </tr>
+                                                    <tr>
+                                <td>string|null</td>
+                                <td>tb_name </td>
+                                <td><p>O nome que a tabela esta usando na query para ser adicionado em cada coluna, padrão
+[a-zA-Z0-9_]</p></td>
+                            </tr>
+                                                    <tr>
+                                <td></td>
+                                <td>as_array </td>
+                                <td><p>Retornar como array</p></td>
+                            </tr>
+                                            </table>
+                
+                                    <h4>Throws</h4>
+                    <dl>
+                                                    <dt>\Blazar\Component\Dao\DaoException</dt>
+                            <dd></dd>
+                                                                    </dl>
+                
+                                    <h4>Returns</h4>
+                    array|string
+                                            &mdash; 
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Blazar.Component.Dao.Dao.html"><div class="path-wrapper">\Blazar\Component\Dao\Dao</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_getStringColumnsExcept" name="method_getStringColumnsExcept" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">getStringColumnsExcept()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">getStringColumnsExcept(mixed||string|int  <span class="argument">columns</span>, string|null  <span class="argument">tb_name = null</span>,   <span class="argument">as_array = false</span>) : array|string</pre>
+                <p><em>Retorna uma string com as colunas da tabela que não estão na lista passada pronta para uso em um select.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>mixed||string|int</td>
+                                <td>columns </td>
+                                <td><p>Array com as constantes das colunas que não serão retornadas</p></td>
+                            </tr>
+                                                    <tr>
+                                <td>string|null</td>
+                                <td>tb_name </td>
+                                <td><p>O nome que a tabela esta usando na query para ser adicionado em cada coluna, padrão
+[a-zA-Z0-9_]</p></td>
+                            </tr>
+                                                    <tr>
+                                <td></td>
+                                <td>as_array </td>
+                                <td><p>Retornar como array</p></td>
+                            </tr>
+                                            </table>
+                
+                                    <h4>Throws</h4>
+                    <dl>
+                                                    <dt>\Blazar\Component\Dao\DaoException</dt>
+                            <dd></dd>
+                                                                    </dl>
+                
+                                    <h4>Returns</h4>
+                    array|string
+                                            &mdash; 
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Blazar.Component.Dao.Dao.html"><div class="path-wrapper">\Blazar\Component\Dao\Dao</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_checkStruct" name="method_checkStruct" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">checkStruct()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">checkStruct(mixed||string|int  <span class="argument">dados</span>,   <span class="argument">completa = false</span>) : </pre>
+                <p><em>Verifica se a estrutura segue o padrão da tabela.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>mixed||string|int</td>
+                                <td>dados </td>
+                                <td><p>[index =&gt; valor, index =&gt; valor...]</p></td>
+                            </tr>
+                                                    <tr>
+                                <td></td>
+                                <td>completa </td>
+                                <td><p>Verifica se não esta faltando indexes</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                                    <h4>Returns</h4>
+                    
+                                            &mdash; 
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Blazar.Component.Dao.Dao.html"><div class="path-wrapper">\Blazar\Component\Dao\Dao</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_tableStruct" name="method_tableStruct" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">tableStruct()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">tableStruct(mixed||string|int  <span class="argument">dados = []</span>, mixed||string|int  <span class="argument">add_data = []</span>) : mixed||string|int</pre>
+                <p><em>Retorna o array com a estrutura da tabela.</em></p>
+                <p>As colunas viram indexes e recebem null</p>
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>mixed||string|int</td>
+                                <td>dados </td>
+                                <td><p>Se vazio ele gera a estrutura</p></td>
+                            </tr>
+                                                    <tr>
+                                <td>mixed||string|int</td>
+                                <td>add_data </td>
+                                <td><p>Mescla uma lista dentro da estrutura principal</p></td>
+                            </tr>
+                                            </table>
+                
+                                    <h4>Throws</h4>
+                    <dl>
+                                                    <dt>\Blazar\Component\Dao\DaoException</dt>
+                            <dd></dd>
+                                                                    </dl>
+                
+                                    <h4>Returns</h4>
+                    mixed||string|int
+                                            &mdash; 
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Blazar.Component.Dao.Dao.html"><div class="path-wrapper">\Blazar\Component\Dao\Dao</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_cleanStruct" name="method_cleanStruct" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">cleanStruct()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">cleanStruct(mixed||string|int  <span class="argument">dados</span>) : mixed||string|int</pre>
+                <p><em>Remove os indices que não pertencem a tabela.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>mixed||string|int</td>
+                                <td>dados </td>
+                                <td><p>[index =&gt; valor, index =&gt; valor...]</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                                    <h4>Returns</h4>
+                    mixed||string|int
+                                            &mdash; 
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Blazar.Component.Dao.Dao.html"><div class="path-wrapper">\Blazar\Component\Dao\Dao</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_addPrefix" name="method_addPrefix" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">addPrefix()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">addPrefix(string|string[]  <span class="argument">dados</span>,   <span class="argument">replace_indices = false</span>) : </pre>
+                <p><em>Aplica o pré-fixo da tabela em indices que ainda não possuem.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>string|string[]</td>
+                                <td>dados </td>
+                                <td><p>
+O prefixo só é removido se existir um campo na tabela com o nome.<br>
+Se for uma string retorna:<br>
+Ex: "nome" retorna "user_nome".<br><br>
+Se for um array sequencial retorna:<br>
+Ex: ["id", "nome"] retorna ["user_id", "user_nome"].<br><br>
+Se for um array:<br>
+Ex: ["id" => 1, "nome" => "João"] retorna ["user_id" => 1, "user_nome" => "João"].
+</p></td>
+                            </tr>
+                                                    <tr>
+                                <td></td>
+                                <td>replace_indices </td>
+                                <td><p>
+Se true substitui indices que duplicarem na tabela<br>
+Ex: [user_id => 20, id => 1000] retorna [user_id => 1000]<br>
+Se false mantem os originais.
+</p></td>
+                            </tr>
+                                            </table>
+                
+                                    <h4>Throws</h4>
+                    <dl>
+                                                    <dt>\Blazar\Component\Dao\DaoException</dt>
+                            <dd></dd>
+                                                                    </dl>
+                
+                                    <h4>Returns</h4>
+                    
+                                            &mdash; 
+                                    
+                                                            <h4>Examples</h4>
+                                                                <h5>&lt;code&gt;
+const TABLE = &quot;usuario&quot;;&lt;br&gt;
+const PREFIX = &quot;user&quot;;&lt;br&gt;
+&lt;br&gt;
+$this-&gt;addPrefix([nome =&gt; &quot;Meu Nome&quot;, idade =&gt; 25]);&lt;br&gt;
+Retorna [user_nome =&gt; &quot;Menu nome&quot;, user_idade =&gt; 25]
+&lt;/code&gt;</h5>
+                        <pre class="pre-scrollable"></pre>
+                                                </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Blazar.Component.Dao.Dao.html"><div class="path-wrapper">\Blazar\Component\Dao\Dao</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_removePrefix" name="method_removePrefix" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">removePrefix()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">removePrefix(string|array[]|string[]  <span class="argument">dados</span>,   <span class="argument">replace_indices = false</span>) : array|string</pre>
+                <p><em>Remove os pré-fixos da tabela em indices.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>string|array[]|string[]</td>
+                                <td>dados </td>
+                                <td><p>
+O prefixo só é removido se existir um campo na tabela com o nome.<br>
+Se for uma string retorna.<br>
+Ex: "user_nome" retorna "nome".<br><br>
+Se for um array sequencial retorna.<br>
+Ex: ["user_id", "user_nome"] retorna ["id", "nome"].<br><br>
+Se for dados em um vetor.<br>
+Ex: ["user_id" => 1, "user_nome" => "João"] retorna ["id" => 1, "nome" => "João"].<br><br>
+Se for dados em uma matriz.<br>
+Ex: [["user_id" => 1, "user_nome" => "João"], ["user_id" => 2, "user_nome" => "José"]]<br>
+retorna [["id" => 1, "nome" => "João"], ["id" => 2, "nome" => "José"]].<br><br>
+</p></td>
+                            </tr>
+                                                    <tr>
+                                <td></td>
+                                <td>replace_indices </td>
+                                <td><p>
+Se true substitui indices que duplicarem na tabela<br>
+Ex: [user_id => 20, id => 1000] retorna [id => 20]<br>
+Se false mantem o prefixo dos que duplicarem.
+</p></td>
+                            </tr>
+                                            </table>
+                
+                                    <h4>Throws</h4>
+                    <dl>
+                                                    <dt>\Blazar\Component\Dao\DaoException</dt>
+                            <dd></dd>
+                                                                    </dl>
+                
+                                    <h4>Returns</h4>
+                    array|string
+                                            &mdash; 
+                                    
+                                                            <h4>Examples</h4>
+                                                                <h5>&lt;code&gt;
+const TABLE = &quot;usuario&quot;;&lt;br&gt;
+const PREFIX = &quot;user&quot;;&lt;br&gt;
+&lt;br&gt;
+$this-&gt;removePrefix([user_nome =&gt; &quot;Meu Nome&quot;, user_idade =&gt; 25]);&lt;br&gt;
+Retorna [nome =&gt; &quot;Menu nome&quot;, idade =&gt; 25]
+&lt;/code&gt;
+
+Apenas os prefixos da tabela serão removidos, resultados retornados por JOIN continuarão com seus prefixos.&lt;br&gt;
+Se for necessario remover os prefixos desses resultados, esse metodo deve ser chamado atraves da instancia da
+    classe responsavel.</h5>
+                        <pre class="pre-scrollable"></pre>
+                                                </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Blazar.Component.Dao.Dao.html"><div class="path-wrapper">\Blazar\Component\Dao\Dao</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_stringOrderBy" name="method_stringOrderBy" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">stringOrderBy()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">stringOrderBy(mixed||string|int  <span class="argument">dados</span>) : string|null</pre>
+                <p><em>Prepara a ordenação de uma tabela para buscas.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>mixed||string|int</td>
+                                <td>dados </td>
+                                <td><p>[coluna1, coluna2 =&gt; &quot;desc&quot;, coluna3]</p></td>
+                            </tr>
+                                            </table>
+                
+                                    <h4>Throws</h4>
+                    <dl>
+                                                    <dt>\Blazar\Component\Dao\DaoException</dt>
+                            <dd></dd>
+                                                                    </dl>
+                
+                                    <h4>Returns</h4>
+                    string|null
+                                            &mdash; 
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Blazar.Component.Dao.Dao.html"><div class="path-wrapper">\Blazar\Component\Dao\Dao</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_checkLimit" name="method_checkLimit" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">checkLimit()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">checkLimit(string|int  <span class="argument">limit</span>) : </pre>
+                <p><em>Trata valores do limit contra sql injection.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>string|int</td>
+                                <td>limit </td>
+                                <td></td>
+                            </tr>
+                                            </table>
+                
+                
+                                    <h4>Returns</h4>
+                    
+                                            &mdash; <p>Retorna true se for um limit valido</p>
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Blazar.Component.Dao.Dao.html"><div class="path-wrapper">\Blazar\Component\Dao\Dao</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                                                    </div>
+    </section>
+
+    <div id="source-view" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="source-view-label" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="source-view-label">CRUDMysql.php</h3>
+        </div>
+        <div class="modal-body">
+            <pre data-src="../files/src/Blazar/Component/Dao/CRUDMysql.php.txt" class="language-php line-numbers"></pre>
+        </div>
+    </div>
+
+    <footer class="row-fluid">
+        <section class="span10 offset2">
+            <section class="row-fluid">
+                <section class="span10 offset1">
+                    <section class="row-fluid footer-sections">
+                        <section class="span4">
+                                                        <h1><i class="icon-code"></i></h1>
+                            <div>
+                                <ul>
+                                                                            <li><a href="../namespaces/Blazar.html">\Blazar</a></li>
+                                                                    </ul>
+                            </div>
+                        </section>
+                        <section class="span4">
+                                                        <h1><i class="icon-bar-chart"></i></h1>
+                            <div>
+                                <ul>
+                                    <li><a href="../graphs/class.html">Class Hierarchy Diagram</a></li>
+                                </ul>
+                            </div>
+                        </section>
+                        <section class="span4">
+                                                        <h1><i class="icon-pushpin"></i></h1>
+                            <div>
+                                <ul>
+                                    <li><a href="../reports/errors.html">Errors</a></li>
+                                    <li><a href="../reports/markers.html">Markers</a></li>
+                                </ul>
+                            </div>
+                        </section>
+                    </section>
+                </section>
+            </section>
+            <section class="row-fluid">
+                <section class="span10 offset1">
+                    <hr />
+                    Documentation is powered by <a href="http://www.phpdoc.org/">phpDocumentor </a> and authored
+                    on March 9th, 2019 at 14:52.
+                </section>
+            </section>
+        </section>
+    </footer>
+</div>
+
+</body>
+</html>
