@@ -50,14 +50,11 @@ if (!defined('URL_BASE')) {
 }
 
 if (!defined('URL')) {
-    // Porta usada
-    $port = ($_SERVER['SERVER_PORT'] != 80 && $_SERVER['SERVER_PORT'] != 443) ? ':' . $_SERVER['SERVER_PORT'] : '';
-
     /* RL real atual completa com a porta(Caso não seja a 80 ou a 443)
      *
      * Esta constante pode ser definida manualmente antes de incluir o composer
      */
-    define('URL', '//' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . $port);
+    define('URL', '//' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
 }
 
 Blazar::prepare();

@@ -139,12 +139,9 @@ class Blazar {
         $app_dir = $_SERVER['DOCUMENT_ROOT'] . $_SERVER['SCRIPT_NAME'];
         $app_dir = implode('/', explode('/', $app_dir, -1));
 
-        // Porta usada
-        $port = ($_SERVER['SERVER_PORT'] != 80 && $_SERVER['SERVER_PORT'] != 443) ? ':' . $_SERVER['SERVER_PORT'] : '';
-
         // Trata a base da URL onde o sistema foi iniciado
         $dir = explode(str_replace('\\', '/', $_SERVER['DOCUMENT_ROOT']), str_replace('\\', '/', $app_dir));
-        $base = '//' . str_replace('//', '/', $_SERVER['HTTP_HOST'] . $port . '/' . end($dir) . '/');
+        $base = '//' . str_replace('//', '/', $_SERVER['HTTP_HOST'] . '/' . end($dir) . '/');
 
         return $base;
     }
