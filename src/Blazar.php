@@ -22,7 +22,7 @@ class Blazar {
      * Mensagem de saída em caso de um fatal error
      * Códigos: 1 = construct, 2 = error_handler, 3 = exception_handler
      */
-    private const FATAL_ERROR_MSG = 'Não foi possível concluir a operação. Por favor tente mais tarde.';
+    private static $fatal_error_msg = 'Não foi possível concluir a operação. Por favor tente mais tarde.';
 
     /**
      * Blazar constructor.
@@ -53,15 +53,15 @@ class Blazar {
             }
         } catch (Throwable $e) {
             Log::e($e, null, true, 'blazar-bootstrap');
-            exit('Error 1 - ' . self::FATAL_ERROR_MSG);
+            exit('Error 1 - ' . self::$fatal_error_msg);
         }
     }
 
     /**
      * Prepara o ambiente do framework sem iniciar o mapa de classes.
      *
-     * Esse método inicia as constantes do sistema, Faz a leitura do manifest e inicia
-     * o tratamento de erros pelo framework.
+     * Este método e chamado automaticamente pelo bootstrap ao incluir o composer.<br>
+     * Chama o manifest e inicia o tratamento de erros e exceptions pelo framework.
      *
      * @return bool
      */
@@ -207,13 +207,13 @@ class Blazar {
             }
 
             if ($fatal) {
-                exit('Error 2.1 - ' . self::FATAL_ERROR_MSG);
+                exit('Error 2.1 - ' . self::$fatal_error_msg);
             }
 
             return true;
         } catch (Throwable $e) {
             Log::e($e, null, false);
-            exit('Error 2.2 - ' . self::FATAL_ERROR_MSG);
+            exit('Error 2.2 - ' . self::$fatal_error_msg);
         }
     }
 }

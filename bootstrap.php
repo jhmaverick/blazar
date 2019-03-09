@@ -19,32 +19,30 @@ if (version_compare(PHP_VERSION, '7.1', '<')) {
 mb_internal_encoding('UTF-8');
 mb_http_output('UTF-8');
 
-/** Ambiente de Produção */
+// Ambiente de Produção
 define('ENV_PRODUCTION', 1);
 
-/* Ambiente de Teste */
+// Ambiente de Teste
 define('ENV_TESTING', 2);
 
-/* Ambiente de desenvolvimento */
+// Ambiente de desenvolvimento
 define('ENV_DEVELOPMENT', 3);
 
-/* O diretório raiz onde esta localizado o framework no vendor */
+// O diretório raiz onde esta localizado o framework no vendor
 define('BLAZAR_ROOT', str_replace('\\', '/', __DIR__));
 
 if (!defined('APP_ROOT')) {
-    /*
-     * O caminho ate o diretório raiz do código fonte
+    /* O caminho ate o diretório raiz do código fonte
      *
-     * Esta constante pode ser definida manualmente antes da chamada do método prepare ou init
+     * Esta constante pode ser definida manualmente antes de incluir o composer
      */
     define('APP_ROOT', str_replace('\\', '/', Blazar::getProjectRoot()));
 }
 
 if (!defined('URL_BASE')) {
-    /*
-     * URL seguida do caminho ate o diretório onde o index foi iniciado
+    /* URL seguida do caminho ate o diretório onde o index foi iniciado
      *
-     * Esta constante pode ser definida manualmente antes da chamada do método prepare ou init
+     * Esta constante pode ser definida manualmente antes de incluir o composer
      */
     define('URL_BASE', Blazar::getURLBase());
 } elseif (substr(URL_BASE, -1) !== '/') {
@@ -55,7 +53,10 @@ if (!defined('URL')) {
     // Porta usada
     $port = ($_SERVER['SERVER_PORT'] != 80 && $_SERVER['SERVER_PORT'] != 443) ? ':' . $_SERVER['SERVER_PORT'] : '';
 
-    /* URL real atual completa */
+    /* RL real atual completa com a porta(Caso não seja a 80 ou a 443)
+     *
+     * Esta constante pode ser definida manualmente antes de incluir o composer
+     */
     define('URL', '//' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . $port);
 }
 

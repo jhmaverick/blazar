@@ -8,7 +8,7 @@
   -->
 
 <phpdocumentor>
-    <title>Bazar</title>
+    <title>Blazar Doc</title>
     <parser>
         <encoding>utf-8</encoding>
         <markers>
