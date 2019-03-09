@@ -98,8 +98,12 @@ class Manifest extends App {
                     }
                 }
 
+                // Cria o diretório de cache
+                if (!file_exists(self::CACHE_DIR)) {
+                    mkdir(self::CACHE_DIR, 0777, true);
+                }
+
                 // Salva arquivo com serialize
-                mkdir(self::CACHE_DIR, 0777, true);
                 file_put_contents($serialize_file, $serialized);
             }
 
@@ -230,7 +234,7 @@ class Manifest extends App {
             ? FileSystem::pathResolve(APP_ROOT, MANIFEST_PATH)
             : APP_ROOT . '/blazar-manifest.json';
 
-        $main = (object) [
+        $main = (object)[
             'exists' => false,
             'path' => $manifest_path,
             'change_time' => null,
@@ -246,7 +250,7 @@ class Manifest extends App {
             ? FileSystem::pathResolve(APP_ROOT, CUSTOM_MANIFEST)
             : APP_ROOT . '/custom-manifest.json';
 
-        $custom = (object) [
+        $custom = (object)[
             'exists' => false,
             'path' => $custom_manifest,
             'change_time' => null,
@@ -257,7 +261,7 @@ class Manifest extends App {
             $custom->change_time = filectime($custom_manifest);
         }
 
-        return (object) [
+        return (object)[
             'main' => $main,
             'custom' => $custom,
         ];
@@ -287,17 +291,17 @@ class Manifest extends App {
 
         // Força o tipo "objeto" caso o índice exista
         if (isset($object->data)) {
-            $object->data = (object) $object->data;
+            $object->data = (object)$object->data;
         }
         if (isset($object->dbs)) {
-            $object->dbs = (object) $object->dbs;
+            $object->dbs = (object)$object->dbs;
         }
         if (isset($object->map)) {
-            $object->map = (object) $object->map;
+            $object->map = (object)$object->map;
         }
 
         $validator = new Validator();
-        $schema = (object) ['$ref' => 'file://' . realpath(self::SCHEMA_PATH)];
+        $schema = (object)['$ref' => 'file://' . realpath(self::SCHEMA_PATH)];
 
         // Aplica os valores padrões
         $validator->validate($object, $schema, Constraint::CHECK_MODE_APPLY_DEFAULTS);
@@ -418,7 +422,7 @@ class Manifest extends App {
              *
              * ENV_DEVELOPMENT, ENV_TESTING ou ENV_PRODUCTION.
              */
-            define('CURRENT_ENV', (int) Manifest::config('env'));
+            define('CURRENT_ENV', (int)Manifest::config('env'));
         }
 
         // Aplica o padrão do mustache

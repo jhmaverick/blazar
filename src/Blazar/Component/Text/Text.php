@@ -20,7 +20,7 @@ use Mustache_Engine;
 /**
  * Class de leitura de textos do sistema.
  *
- * O diretório de textos padrão está definido em (PROJECT_ROOT . "texts/"), utilize o metodo "setDefaultDir" para alterar.
+ * O diretório de textos padrão está definido em (APP_ROOT . "texts/"), utilize o metodo "setDefaultDir" para alterar.
  */
 class Text {
     public const DEFAULT_DIR = APP_ROOT . '/texts';
