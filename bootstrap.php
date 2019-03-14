@@ -36,7 +36,7 @@ if (!defined('APP_ROOT')) {
      *
      * Esta constante pode ser definida manualmente antes de incluir o composer
      */
-    define('APP_ROOT', str_replace('\\', '/', Blazar::getProjectRoot()));
+    define('APP_ROOT', str_replace('\\', '/', Blazar::getAppRoot()));
 }
 
 if (!defined('URL_BASE')) {

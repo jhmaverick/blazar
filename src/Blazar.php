@@ -114,10 +114,11 @@ class Blazar {
      *
      * @return string
      */
-    public static function getProjectRoot() {
+    public static function getAppRoot() {
         try {
             $reflector = new ReflectionClass(ClassLoader::class);
             $project_root = $reflector->getFileName();
+            $project_root = str_replace("\\", "/", $project_root);
             $project_root = StrRes::replaceLast($project_root, '/vendor/composer/ClassLoader.php', '');
 
             return $project_root;
