@@ -136,15 +136,20 @@ class Blazar {
      * @return string
      */
     public static function getURLBase() {
-        // Pega o diretório do arquivo que iniciou a execução
-        $app_dir = $_SERVER['DOCUMENT_ROOT'] . $_SERVER['SCRIPT_NAME'];
-        $app_dir = implode('/', explode('/', $app_dir, -1));
+        try {
+            // Pega o diretório do arquivo que iniciou a execução
+            $app_dir = $_SERVER['DOCUMENT_ROOT'] . $_SERVER['SCRIPT_NAME'];
+            $app_dir = implode('/', explode('/', $app_dir, -1));
 
-        // Trata a base da URL onde o sistema foi iniciado
-        $dir = explode(str_replace('\\', '/', $_SERVER['DOCUMENT_ROOT']), str_replace('\\', '/', $app_dir));
-        $base = '//' . str_replace('//', '/', $_SERVER['HTTP_HOST'] . '/' . end($dir) . '/');
+            // Trata a base da URL onde o sistema foi iniciado
+            $dir = explode(str_replace('\\', '/', $_SERVER['DOCUMENT_ROOT']), str_replace('\\', '/', $app_dir));
+            $base = '//' . str_replace('//', '/', $_SERVER['HTTP_HOST'] . '/' . end($dir) . '/');
 
-        return $base;
+            return $base;
+        } catch (Exception|Error $e) {
+            Log::e($e);
+            return null;
+        }
     }
 
     /**

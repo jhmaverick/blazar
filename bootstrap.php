@@ -50,11 +50,16 @@ if (!defined('URL_BASE')) {
 }
 
 if (!defined('URL')) {
-    /* RL real atual completa com a porta(Caso não seja a 80 ou a 443)
-     *
-     * Esta constante pode ser definida manualmente antes de incluir o composer
-     */
-    define('URL', '//' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
+    try {
+        /* RL real atual completa com a porta(Caso não seja a 80 ou a 443)
+         *
+         * Esta constante pode ser definida manualmente antes de incluir o composer
+         */
+        define('URL', '//' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
+    } catch (Exception|Error $e) {
+        Blazar\Core\Log::e($e);
+        return null;
+    }
 }
 
 Blazar::prepare();
