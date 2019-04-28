@@ -16,10 +16,6 @@ use Composer\Autoload\ClassLoader;
 
 class Blazar {
 
-    public const ENV_PRODUCTION = 1;
-    public const ENV_TESTING = 2;
-    public const ENV_DEVELOPMENT = 3;
-
     private static $blazar_root;
     private static $instance;
     private static $started = false;
@@ -54,7 +50,7 @@ class Blazar {
             });
 
             // Desabilita exibição de erros na produção
-            if (CURRENT_ENV == Blazar::ENV_PRODUCTION) {
+            if (CURRENT_ENV == ENV_PRODUCTION) {
                 ini_set('display_errors', 'Off');
             } else {
                 ini_set('display_errors', 'On');

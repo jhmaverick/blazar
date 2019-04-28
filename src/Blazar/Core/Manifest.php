@@ -463,20 +463,20 @@ class Manifest extends App {
         View::mustacheDefault(Manifest::config('view_render_mustache'));
 
         // Redirecionar para https
-        if (CURRENT_ENV == Blazar::ENV_PRODUCTION && self::config('force_https') && !isset($_SERVER['HTTPS'])) {
+        if (CURRENT_ENV == ENV_PRODUCTION && self::config('force_https') && !isset($_SERVER['HTTPS'])) {
             header('location: https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
             exit();
         }
 
         // Força redirecionamento para url com "www."
-        if (CURRENT_ENV == Blazar::ENV_PRODUCTION &&
+        if (CURRENT_ENV == ENV_PRODUCTION &&
             self::config('force_www') == 1 &&
             substr_count($_SERVER['SERVER_NAME'], 'www.') == 0
         ) {
             header('location: //www.' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
             exit();
         } // Força redirecionamento para url sem "www."
-        elseif (CURRENT_ENV == Blazar::ENV_PRODUCTION &&
+        elseif (CURRENT_ENV == ENV_PRODUCTION &&
             self::config('force_www') == -1 &&
             substr_count($_SERVER['SERVER_NAME'], 'www.') != 0
         ) {
