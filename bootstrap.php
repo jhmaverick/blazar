@@ -72,7 +72,7 @@ if (!defined('URL')) {
          */
         define('URL', '//' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
     } catch (Exception|Error $e) {
-        Blazar\Core\Log::e($e);
+        \Blazar\Component\Log\Log::e($e);
         return null;
     }
 }

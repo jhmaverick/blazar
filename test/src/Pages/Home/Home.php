@@ -10,11 +10,11 @@
 
 namespace TestApp\Pages\Home;
 
+use Blazar\Component\Log\Log;
 use Blazar\Component\Text\Text;
 use Blazar\Component\View\View;
 use Blazar\Component\View\ViewException;
 use Blazar\Core\App;
-use Blazar\Core\Log;
 
 class Home extends View {
     private $map_info;

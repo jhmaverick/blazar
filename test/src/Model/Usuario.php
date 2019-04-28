@@ -12,7 +12,7 @@ namespace TestApp\Model;
 
 use Blazar\Component\Dao\CRUDMysql;
 use Blazar\Component\Dao\DaoException;
-use Blazar\Core\Log;
+use Blazar\Component\Log\Log;
 use Blazar\Core\Manifest;
 
 class Usuario extends CRUDMysql {

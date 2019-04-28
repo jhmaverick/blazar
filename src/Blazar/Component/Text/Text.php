@@ -12,9 +12,9 @@ namespace Blazar\Component\Text;
 
 use Blazar;
 use Blazar\Component\FileSystem\FileSystem;
+use Blazar\Component\Log\Log;
 use Blazar\Component\TypeRes\StrRes;
 use Blazar\Core\BlazarException;
-use Blazar\Core\Log;
 use Exception;
 use Mustache_Engine;
 

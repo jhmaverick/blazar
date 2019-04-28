@@ -8,9 +8,9 @@
  * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
  */
 
+use Blazar\Component\Log\Log;
 use Blazar\Component\TypeRes\StrRes;
 use Blazar\Core\BlazarException;
-use Blazar\Core\Log;
 use Blazar\Core\Manifest;
 use Composer\Autoload\ClassLoader;
 

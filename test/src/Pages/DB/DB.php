@@ -11,10 +11,10 @@
 namespace TestApp\Pages\DB;
 
 use Blazar\Component\Dao\DaoException;
+use Blazar\Component\Log\Log;
 use Blazar\Component\View\View;
 use Blazar\Component\View\ViewException;
 use Blazar\Core\App;
-use Blazar\Core\Log;
 use TestApp\Model\Usuario;
 
 class DB extends View {
