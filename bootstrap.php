@@ -19,17 +19,32 @@ if (version_compare(PHP_VERSION, '7.1', '<')) {
 mb_internal_encoding('UTF-8');
 mb_http_output('UTF-8');
 
-// Ambiente de Produção
-define('ENV_PRODUCTION', 1);
+if (!defined('ENV_PRODUCTION')) {
+    /**
+     * Ambiente de Produção
+     *
+     * @deprecated user Blazar::ENV_PRODUCTION
+     */
+    define('ENV_PRODUCTION', 1);
+}
 
-// Ambiente de Teste
-define('ENV_TESTING', 2);
+if (!defined('ENV_TESTING')) {
+    /**
+     * Ambiente de Teste
+     *
+     * @deprecated user Blazar::ENV_TESTING
+     */
+    define('ENV_TESTING', 2);
+}
 
-// Ambiente de desenvolvimento
-define('ENV_DEVELOPMENT', 3);
-
-// O diretório raiz onde esta localizado o framework no vendor
-define('BLAZAR_ROOT', str_replace('\\', '/', __DIR__));
+if (!defined('ENV_DEVELOPMENT')) {
+    /**
+     * Ambiente de desenvolvimento
+     *
+     * @deprecated user Blazar::ENV_DEVELOPMENT
+     */
+    define('ENV_DEVELOPMENT', 3);
+}
 
 if (!defined('APP_ROOT')) {
     /* O caminho ate o diretório raiz do código fonte

@@ -10,6 +10,7 @@
 
 namespace Blazar\Core;
 
+use Blazar;
 use Blazar\Component\FileSystem\FileSystem;
 use Error;
 use Exception;
@@ -96,7 +97,7 @@ class Log {
      * @return array|null
      */
     public static function d($log, $auxiliar = null, bool $trace = false, string $tag = null): ?array {
-        if (defined('CURRENT_ENV') && CURRENT_ENV == ENV_PRODUCTION) {
+        if (defined('CURRENT_ENV') && CURRENT_ENV == Blazar::ENV_PRODUCTION) {
             self::add('w', 'Um log de debug pode ter sido esquecido e entrou em produção.', null, true, $tag);
         }
 
@@ -169,7 +170,7 @@ class Log {
             ];
 
             // Envia o log para o console de desenvolvimento
-            if (defined('CURRENT_ENV') && CURRENT_ENV == ENV_DEVELOPMENT) {
+            if (defined('CURRENT_ENV') && CURRENT_ENV == Blazar::ENV_DEVELOPMENT) {
                 self::logConsole($log_info);
             }
 
@@ -191,7 +192,7 @@ class Log {
             return $log_info;
         } catch (Error|Throwable $e) {
             // Se catch tenta capturar todas as possíveis exceções
-            if (defined('CURRENT_ENV') && CURRENT_ENV == ENV_DEVELOPMENT) {
+            if (defined('CURRENT_ENV') && CURRENT_ENV == Blazar::ENV_DEVELOPMENT) {
                 echo "<pre>\n== Erro ao adicionar Log =====================\n\n";
                 print_r($e);
                 echo "\n</pre>\n\n";

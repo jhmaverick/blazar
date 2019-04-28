@@ -10,6 +10,7 @@
 
 namespace Blazar\Component\Text;
 
+use Blazar;
 use Blazar\Component\FileSystem\FileSystem;
 use Blazar\Component\TypeRes\StrRes;
 use Blazar\Core\BlazarException;
@@ -24,7 +25,6 @@ use Mustache_Engine;
  */
 class Text {
     public const DEFAULT_DIR = APP_ROOT . '/texts';
-    private const BLAZAR_TEXT = BLAZAR_ROOT . '/texts';
     private const MAIN_FILE = 'main';
     private const DEFAULT_LANG = 'default';
 
@@ -205,7 +205,7 @@ class Text {
         if (StrRes::startsWith($file_name, 'bzr-')) {
             // Ajusta caminho para os textos do framework
             $name = StrRes::replaceFirst($file_name, 'bzr-', '');
-            $name = self::BLAZAR_TEXT . $name;
+            $name = Blazar::getBlazarRoot() . '/texts' . $name;
         } else {
             // Caminho para textos do projeto
             $name = self::$texts_dir . '/' . $file_name;

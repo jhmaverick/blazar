@@ -10,6 +10,7 @@
 
 namespace Blazar\Core;
 
+use Blazar;
 use Blazar\Component\FileSystem\FileSystem;
 use Blazar\Component\Text\Text;
 use Blazar\Component\TypeRes\ArrayRes;
@@ -25,8 +26,11 @@ use Throwable;
  * Classe de gerenciamento do blazar-manifest.json.
  */
 class Manifest extends App {
-    const SCHEMA_PATH = BLAZAR_ROOT . '/schema/blazar-schema.json';
+    const SCHEMA_PATH = '/schema/blazar-schema.json';
     const CACHE_DIR = APP_ROOT . '/.cache';
+
+    private static $use_cache = true;
+    private static $manifest = null;
 
     private static $started = false;
     private static $config = [];
@@ -66,45 +70,56 @@ class Manifest extends App {
             // Se os dados do manifest não tiverem sido alterados utiliza eles para evitar validações e processamento
             $serialize_file = self::CACHE_DIR . '/' . $serialize_name;
 
-            if (file_exists($serialize_file)) {
+            // Desabilita o cache para array passados pelo php
+//            if (is_array(self::$manifest)) {
+//                self::$use_cache = false;
+//            }
+
+            if (file_exists($serialize_file) && self::$use_cache) {
                 $dados_manifest = unserialize(file_get_contents($serialize_file));
             } else {
                 // Objeto do manifest
                 $dados_manifest = [];
 
-                // Manifesto principal
-                if ($files->main->exists) {
-                    $dados_manifest = self::getFileContent($files->main->path);
-                }
-
-                // Manifesto customizado
-                if ($files->custom->exists) {
-                    $custom = self::getFileContent($files->custom->path);
+                if (is_array(self::$manifest)) {
+                    $dados_manifest = self::$manifest;
+                } else {
+                    // Manifesto principal
                     if ($files->main->exists) {
-                        $dados_manifest = array_replace_recursive($dados_manifest, $custom);
+                        $dados_manifest = self::getFileContent($files->main->path);
+                    }
+
+                    // Manifesto customizado
+                    if ($files->custom->exists) {
+                        $custom = self::getFileContent($files->custom->path);
+                        if ($files->main->exists) {
+                            $dados_manifest = array_replace_recursive($dados_manifest, $custom);
+                        }
                     }
                 }
 
                 // Tratar os dados de acordo com schema
                 self::validateSchema($dados_manifest);
 
-                $serialized = serialize($dados_manifest);
+                if (self::$use_cache) {
+                    $serialized = serialize($dados_manifest);
 
-                // Remove arquivos de versões antigas
-                $files = glob(self::CACHE_DIR . '/mf_*');
-                foreach ($files as $file) {
-                    if (is_file($file)) {
-                        unlink($file);
+                    // Remove arquivos de versões antigas
+                    $files = glob(self::CACHE_DIR . '/mf_*');
+                    foreach ($files as $file) {
+                        if (is_file($file)) {
+                            unlink($file);
+                        }
                     }
-                }
 
-                // Cria o diretório de cache
-                if (!file_exists(self::CACHE_DIR)) {
-                    mkdir(self::CACHE_DIR, 0777, true);
-                }
+                    // Cria o diretório de cache
+                    if (!file_exists(self::CACHE_DIR)) {
+                        mkdir(self::CACHE_DIR, 0777, true);
+                    }
 
-                // Salva arquivo com serialize
-                file_put_contents($serialize_file, $serialized);
+                    // Salva arquivo com serialize
+                    file_put_contents($serialize_file, $serialized);
+                }
             }
 
             // Pega as configurações do manifest
@@ -138,6 +153,24 @@ class Manifest extends App {
             Log::e($e);
             exit("Manifest: Erro ao iniciar o sistema.<br />\n" . $e->getMessage());
         }
+    }
+
+    /**
+     * Define os dados do manifest através de um array passado pelo php ao invés de utilizar o arquivo JSON
+     *
+     * @param array $manifest
+     */
+    public static function setManifest(array $manifest): void {
+        self::$manifest = $manifest;
+    }
+
+    /**
+     * Se o framework deve salvar o manifesto gerado em um diretório de cache
+     *
+     * @param bool $use_cache
+     */
+    public static function useCache(bool $use_cache): void {
+        self::$use_cache = $use_cache;
     }
 
     /**
@@ -301,7 +334,7 @@ class Manifest extends App {
         }
 
         $validator = new Validator();
-        $schema = (object)['$ref' => 'file://' . realpath(self::SCHEMA_PATH)];
+        $schema = (object)['$ref' => 'file://' . realpath(Blazar::getBlazarRoot() . self::SCHEMA_PATH)];
 
         // Aplica os valores padrões
         $validator->validate($object, $schema, Constraint::CHECK_MODE_APPLY_DEFAULTS);
@@ -429,20 +462,20 @@ class Manifest extends App {
         View::mustacheDefault(Manifest::config('view_render_mustache'));
 
         // Redirecionar para https
-        if (CURRENT_ENV == ENV_PRODUCTION && self::config('force_https') && !isset($_SERVER['HTTPS'])) {
+        if (CURRENT_ENV == Blazar::ENV_PRODUCTION && self::config('force_https') && !isset($_SERVER['HTTPS'])) {
             header('location: https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
             exit();
         }
 
         // Força redirecionamento para url com "www."
-        if (CURRENT_ENV == ENV_PRODUCTION &&
+        if (CURRENT_ENV == Blazar::ENV_PRODUCTION &&
             self::config('force_www') == 1 &&
             substr_count($_SERVER['SERVER_NAME'], 'www.') == 0
         ) {
             header('location: //www.' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
             exit();
         } // Força redirecionamento para url sem "www."
-        elseif (CURRENT_ENV == ENV_PRODUCTION &&
+        elseif (CURRENT_ENV == Blazar::ENV_PRODUCTION &&
             self::config('force_www') == -1 &&
             substr_count($_SERVER['SERVER_NAME'], 'www.') != 0
         ) {
