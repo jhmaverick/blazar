@@ -1,0 +1,51 @@
+version: "3"
+
+services:
+
+  webserver:
+    build:
+      dockerfile: ./Dockerfile
+      context: .
+    image: "jhmaverick/blazar:latest"
+    container_name: blazar-webserver
+    restart: "no"
+    privileged: true
+    environment:
+      # Informações do ambiente
+      RUN_USER_ID: "${USER_ID:-33}"
+      RUN_GROUP_ID: "${GROUP_ID:-33}"
+    ports:
+      # WEB
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./:/opt/web
+      - ./data/logs/nginx:/var/log/nginx
+      - ./data/logs/php:/var/log/php
+    networks:
+      - default
+
+  mariadb:
+    image: mariadb/server:10.4
+    container_name: blazar-mariadb
+    restart: "no"
+    logging:
+      driver: none
+    environment:
+      MARIADB_ROOT_PASSWORD: "root"
+      MARIADB_DATABASE: "blazar-dev"
+      MARIADB_ROOT_HOST: "%"
+      MARIADB_INITDB_SKIP_TZINFO: 1
+    volumes:
+      - ./data/mariadb/data:/var/lib/mysql
+      - ./data/mariadb/logs:/var/log/mysql
+      - ./dev-project/blazar-dev.sql:/docker-entrypoint-initdb.d/00_blazar-dev.sql
+    ports:
+      - "3306:3306"
+    command: ["mysqld", "--innodb-flush-method=fsync"]
+    networks:
+      - default
+
+networks:
+  default:
+    driver: bridge

@@ -32,7 +32,7 @@ class ArrayRes {
         if (json_last_error() !== JSON_ERROR_NONE) {
             return null;
         } else {
-            return (object) json_decode($json);
+            return (object)json_decode($json);
         }
     }
 
@@ -49,7 +49,7 @@ class ArrayRes {
         if (json_last_error() !== JSON_ERROR_NONE) {
             return null;
         } else {
-            return (array) json_decode($json, true);
+            return (array)json_decode($json, true);
         }
     }
 
@@ -64,6 +64,7 @@ class ArrayRes {
     public static function route(array $array, string $route) {
         $route = preg_replace('/\/+/', '/', $route);
         $route = trim($route, '/ ');
+
         if ($route == '') {
             return $array;
         }
@@ -79,6 +80,64 @@ class ArrayRes {
             }
 
             $array = $array[$atual];
+        }
+
+        return $array;
+    }
+
+    /**
+     * Insere dado em um array multidimensional seguindo uma rota informada.
+     *
+     * @param array $array Array que receberá o valor.
+     * @param string $route Ex: "nivel1/nivel2/indice".
+     * @param mixed $value Valor a ser inserido na rota.
+     * @param bool $merge Aplica um merge caso a rota e o valor informado sejam do tipo array
+     *
+     * @return array|mixed|null <p>
+     * Retorna um array com o valor inserido na rota.<br>
+     * Se a rota não for encontrada o array original é retornado.
+     * </p>
+     */
+    public static function insertInRoute(array $array, string $route, $value, bool $merge = false) {
+        $route = preg_replace('/\/+/', '/', $route);
+        $route = trim($route, '/ ');
+
+        if ($route == '') {
+            if ($merge && is_array($value)) {
+                $array = array_merge($array, $value);
+            } else {
+                $array = $value;
+            }
+
+            return $array;
+        }
+
+        // Percorre a rota informada
+        $arvore = explode('/', $route);
+
+        $last = &$array;
+        for ($i = 0; $i < count($arvore); $i++) {
+            $temp = &$last;
+            $atual = $arvore[$i];
+
+            // Cria o indice se ele não existir
+            if (!isset($temp[$atual])) {
+                $temp[$atual] = [];
+            }
+
+            // Insere o valor caso seja o indice final da rota
+            if (isset($temp[$atual]) && ($i + 1) == count($arvore)) {
+                if ($merge && is_array($temp[$atual]) && is_array($value)) {
+                    $temp[$atual] = array_merge($temp[$atual], $value);
+                } else {
+                    $temp[$atual] = $value;
+                }
+
+                return $array;
+            }
+
+            unset($last);
+            $last = &$temp[$atual];
         }
 
         return $array;

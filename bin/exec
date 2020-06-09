@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+
+# Execução de comandos utilizando aplicações da imagem base
+
+# O modo interativo (-i[input] -t[output]) pode causar alguns problemas no saída de dados.
+# Se essa variável for informada antes do script com um valor diferente de "yes", o modo será desativado na execução.
+# Se o terminal onde o script estiver sendo executado não aceitar o modo interativo esse valor será ignorado.
+TTY="${TTY:-yes}"
+
+# Local na maquina real
+DIRNAME="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+PROJECT_ROOT="$(cd "$DIRNAME/.." && pwd)"
+# Local equivalente ao PROJECT_ROOT no container
+WEB_DIR=/opt/web
+
+if [[ "$(echo "$PWD" | grep "$PROJECT_ROOT")" ]]; then
+    # Substitui o PROJECT_ROOT pelo WEB_DIR para manter o terminal na mesma pasta dentro do container
+    WORK_DIR=$(echo "$PWD" | sed "0,/$(echo "$PROJECT_ROOT" | sed 's/\//\\\//g')/s//${WEB_DIR//\//\\\/}/")
+else
+    # Se o "PWD" não estiver no projeto ou em um dos seus subdiretórios(volume da pasta /opt/web no container) a execução é encerrada.
+    echo -e "O terminal não está aberto no diretório do projeto ou em um dos seus descendentes.\n" >&2
+    echo "Diretório atual: $PWD" >&2
+    echo "Diretório do projeto: $PROJECT_ROOT" >&2
+    exit
+fi
+
+# Volumes para os dados gerados pelo usuário real
+mkdir -p "$PROJECT_ROOT/data/user"
+mkdir -p "$PROJECT_ROOT/data/user-root"
+
+# Verifica se o comando será executado no modo interativo
+if tty -s && [[ "${TTY,,}" == "yes" ]]; then
+    interactive="-it"
+fi
+
+# Cria a rede para as aplicações do NúcleoGov se ela não existir
+network_name="$(basename -- "$PROJECT_ROOT")_default"
+if [[ ! "$(docker network ls -qf name="$network_name")" ]]; then
+    docker network create -d bridge "$network_name"
+fi
+
+# Verifica se deve executar como root
+if [[ "${RUN_AS_ROOT,,}" == "yes" ]]; then
+    # Se "RUN_AS_ROOT" e algum ID tiver sido informado, apenas o ID que não tiver sido definido receberá o do root.
+    RUN_USER_ID="${RUN_USER_ID:-0}"
+    RUN_GROUP_ID="${RUN_GROUP_ID:-0}"
+fi
+
+# Verifica se os IDs foram preenchidos, se não pega o do usuário real
+RUN_USER_ID="${RUN_USER_ID:-$(id -u)}"
+RUN_GROUP_ID="${RUN_GROUP_ID:-$(id -g)}"
+
+# Executa o build da imagem se ele ainda não existir
+if [[ ! "$(docker image ls -aq -f reference="jhmaverick/blazar:latest")" ]]; then
+    bash "$PROJECT_ROOT/bin/build" -i main
+    echo
+fi
+
+# Executa o comando utilizando a imagem base
+docker run --rm $interactive \
+  --network "$network_name" \
+  --entrypoint /opt/blazar/entrypoint/exec-cmd \
+  -w "$WORK_DIR" \
+  -e RUN_USER_ID="$RUN_USER_ID" \
+  -e RUN_GROUP_ID="$RUN_GROUP_ID" \
+  -v "$PROJECT_ROOT":"$WEB_DIR" \
+  -v "$PROJECT_ROOT/data/user":/home/user \
+  -v "$PROJECT_ROOT/data/user-root":/root \
+  jhmaverick/blazar:latest "$@"

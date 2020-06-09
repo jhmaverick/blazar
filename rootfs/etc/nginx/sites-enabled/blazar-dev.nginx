@@ -1,0 +1,25 @@
+server {
+    listen 80 default_server;
+    server_name _;
+    access_log /var/log/nginx/blazar-dev.access.log main_ext;
+    error_log  /var/log/nginx/blazar-dev.error.log warn;
+    root /opt/web/dev-project/public_html;
+    index index.php index.html index.htm;
+
+    include /etc/nginx/snippets/blazar-dev-rules.nginx;
+}
+
+server {
+    listen 443 ssl http2 default_server;
+    server_name _;
+    access_log /var/log/nginx/blazar-dev.access.log main_ext;
+    error_log  /var/log/nginx/blazar-dev.error.log warn;
+    root /opt/web/dev-project/public_html;
+    index index.php index.html index.htm;
+
+    ssl_certificate /etc/nginx/ssl/selfsigned.crt;
+    ssl_certificate_key /etc/nginx/ssl/selfsigned.key;
+    include /etc/nginx/snippets/ssl-params.nginx;
+
+    include /etc/nginx/snippets/blazar-dev-rules.nginx;
+}

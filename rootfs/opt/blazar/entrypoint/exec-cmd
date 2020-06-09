@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+
+# Entrypoint alternativo para execução de comandos
+#
+# O script deve ser executado como root.
+# Para executar como outro usuário informe as variáveis RUN_USER_ID e RUN_GROUP_ID.
+
+set -e
+
+if [[ "$(id -u)" != "0" ]]; then
+    echo "O script deve ser executado como root." >&2
+    echo "Para executar comandos como outro usuário informe as variáveis \"RUN_USER_ID\" e \"RUN_GROUP_ID\"." >&2
+    exit
+fi
+
+RUN_USER_ID="${RUN_USER_ID:-0}"
+RUN_GROUP_ID="${RUN_GROUP_ID:-0}"
+
+# Verifica se deve executar com um usuário diferente do root
+if [[ "$RUN_USER_ID" != "0" && "$RUN_GROUP_ID" != "0" ]]; then
+    if [[ ! -d /home/user ]]; then
+        mkdir -p /home/user
+        chown -R "$RUN_USER_ID":"$RUN_GROUP_ID" /home/user
+    fi
+
+    # Verifica se existe um grupo com o ID
+    if [[ ! "$(getent group "$RUN_GROUP_ID" | cut -d: -f1)" ]]; then
+        chgrp -R "$RUN_GROUP_ID" /home/user
+        groupadd --non-unique --gid "$RUN_GROUP_ID" user
+    elif [[ "$(getent group "$RUN_GROUP_ID" | cut -d: -f1)" != "user" ]]; then
+        chgrp -R "$RUN_GROUP_ID" /home/user
+        groupmod --non-unique --gid "$RUN_GROUP_ID" user
+    fi
+
+    # Verifica se existe um usuário com o ID
+    if [[ ! "$(getent passwd "$RUN_USER_ID" | cut -d: -f1)" ]]; then
+        chown -R "$RUN_USER_ID" /home/user
+        useradd --non-unique --home-dir /home/user --shell /bin/sh --uid "$RUN_USER_ID" --gid user user
+    elif [[ "$(getent passwd "$RUN_USER_ID" | cut -d: -f1)" != "user" ]]; then
+        chown -R "$RUN_USER_ID" /home/user
+        usermod --non-unique --uid "$RUN_USER_ID" user
+    fi
+
+    if [[ ! -f /etc/sudoers.d/user ]]; then
+        echo "user ALL=(ALL) NOPASSWD: ALL" | sudo EDITOR='tee -a' visudo -f /etc/sudoers.d/user &>/dev/null
+    fi
+
+    # Executa o comando com o usuário gerado
+    if [[ "$@" ]]; then
+        sudo -H -u user "$@"
+    else
+        sudo -H -u user bash
+    fi
+else
+    # Executa o comando como root
+    if [[ "$@" ]]; then
+        exec "$@"
+    else
+        bash
+    fi
+fi

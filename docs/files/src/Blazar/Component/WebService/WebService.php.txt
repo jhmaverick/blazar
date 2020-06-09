@@ -10,10 +10,10 @@
 
 namespace Blazar\Component\WebService;
 
+use Blazar\Component\Log\Log;
 use Blazar\Component\TypeRes\StrRes;
 use Blazar\Component\View\View;
 use Blazar\Core\App;
-use Blazar\Core\Log;
 use Blazar\Core\Manifest;
 use Exception;
 use ReflectionMethod;

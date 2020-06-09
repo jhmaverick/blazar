@@ -1,0 +1,21 @@
+#!/usr/bin/env php
+<?php
+try {
+    $autoload = null;
+    for ($i = 1; $i <= 10; $i++) {
+        if (file_exists($check = dirname(__DIR__, $i) . '/vendor/autoload.php')) {
+            $autoload = $check;
+            break;
+        }
+    }
+
+    if (empty($autoload)) {
+        throw new Exception("Autoload não encontrado.");
+    }
+
+    require_once $autoload;
+
+    \Blazar\Component\Cli\CliInterface::init($argv);
+} catch (Throwable $e) {
+    fwrite(STDERR, $e->getMessage() . "\n");
+}

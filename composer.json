@@ -13,6 +13,11 @@
       "email": "joao_henriquee@outlook.com"
     }
   ],
+  "bin": ["src/Blazar/Component/Cli/bin/blazar-cmd"],
+  "config": {
+    "optimize-autoloader": true,
+    "process-timeout": 0
+  },
   "require": {
     "php": "^7.1",
     "ext-json": "*",
@@ -21,12 +26,16 @@
     "ext-gd": "*",
     "ext-curl": "*",
     "ext-dom": "*",
+    "ext-ctype": "*",
     "mustache/mustache": "^2.12",
     "brightnucleus/mime-types": "^0.2.0",
     "rmccue/requests": ">=1.0",
     "colinodell/json5": "^2.0",
     "vlucas/phpdotenv": "^3.3",
-    "justinrainbow/json-schema": "^5.2"
+    "justinrainbow/json-schema": "^5.2",
+    "monolog/monolog": "^1.25.2",
+    "graylog2/gelf-php": "^1.6",
+    "maxbanton/cwh": "^1.1.13"
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^2.14",
@@ -42,11 +51,8 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "TestApp\\": "test/src/"
+      "BlazarDev\\": "dev-project/BlazarDev/"
     }
-  },
-  "config": {
-    "optimize-autoloader": true
   },
   "scripts": {
     "check-style": "php-cs-fixer fix --diff --dry-run",

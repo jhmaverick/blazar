@@ -1,14 +1,26 @@
 ### Geral
-/logs/
+/**/logs/
 *.log.html
 *.log.json
 .cache/
+*.log
+/**/tmp/
+/**/.env
+/data/
+/**/blazar-manifest.override.json
+!/env-files/**/blazar-manifest.override.json
+
+### Docker
+/**/container.env
+/**/docker-compose.override.yml
+!/env-files/**/docker-compose.override.yml
 
 ### Composer
-composer.lock
-vendor/
+/**/vendor/
+/composer.phar
 /.php_cs
 /.php_cs.cache
+/src/**/composer.lock
 
 ### Node NPM
 package-lock.json
@@ -16,6 +28,34 @@ node_modules/
 
 ### Outros
 /build/
+/blazar.wiki/
 
 ### JetBrains
-.idea/
+## Ignorar todos os arquivos do diretório .idea ...
+/.idea/*
+
+## Exceto ...
+# Informações do Modulo principal e seus Diretórios
+!/.idea/modules.xml
+!/.idea/*.iml
+!/.idea/webResources.xml
+
+# Configurações de execução
+!/.idea/runConfigurations/
+
+# Escopos
+!/.idea/scopes/
+
+# Formatação do código
+!/.idea/codeStyles/codeStyleConfig.xml
+!/.idea/codeStyles/Project.xml
+
+# Informações de linguagens e codificações
+!/.idea/encodings.xml
+!/.idea/vcs.xml
+!/.idea/misc.xml
+!/.idea/sqldialects.xml
+!/.idea/externalDependencies.xml
+
+### Não organizados
+

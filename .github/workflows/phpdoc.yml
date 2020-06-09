@@ -1,0 +1,31 @@
+name: PHPDoc CI
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: Build e Commit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Atualiza o PHPDoc
+        run: |
+          rm -rf ./docs
+          mkdir -p ./docs
+          docker run --rm -v $(pwd):/data phpdoc/phpdoc:v3.0.0-alpha.3 run --config ./phpdoc.xml.dist
+
+      - name: Salvar alterações
+        run: |
+          git config --global user.email "joao_henriquee@outlook.com"
+          git config --global user.name "$GITHUB_ACTOR"
+          git remote add github "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY.git"
+          git pull github ${GITHUB_REF} --ff-only
+          git add ./docs/
+          git commit -m "Atualiza a documentação"
+          git push github HEAD:${GITHUB_REF}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

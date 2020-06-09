@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+
+# Verifica as dependências de arquivos e diretórios na estrutura do projeto e tenta cria-los.
+#
+# Verifica o .env
+# Verifica se os sub-modulos do git foram inicializados.
+# Verifica as dependências do composer.
+# Verifica os diretórios e arquivos dos volumes.
+#
+# Este script configura o ambiente com base na versão instalada, para atualizar execute o project-update
+
+set -e
+
+DIRNAME="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+PROJECT_ROOT="$(cd "$DIRNAME/.." && pwd)"
+cd "$PROJECT_ROOT" || exit
+
+# shellcheck disable=SC1090
+source "$PROJECT_ROOT/bin/func/env-file.sh"
+
+if [[ ! "$(command -v docker)" ]]; then
+    echo "O executável do \"docker\" não foi encontrado na maquina." >&2
+    exit 1
+fi
+
+if [[ ! "$(command -v docker-compose)" ]]; then
+    echo "O executável do \"docker-compose\" não foi encontrado na maquina." >&2
+    exit 1
+fi
+
+if [[ ! "$(command -v git)" ]]; then
+    echo "O executável do \"git\" não foi encontrado na maquina." >&2
+    exit 1
+fi
+
+# Caminho do arquivo .env
+env_file="$PROJECT_ROOT/.env"
+
+# Cria o arquivo .env se ele não existir
+if [[ ! -f "$env_file" ]]; then
+    echo "" >> "$env_file"
+fi
+
+# Executa composer install se for a primeira execução
+if [[ ! -d "$PROJECT_ROOT/vendor/" ]]; then
+    bash "$PROJECT_ROOT/bin/exec" composer install
+fi
+
+# Cria os diretórios necessários para os volumes
+mkdir -p "$PROJECT_ROOT/data/"{mariadb,phpmyadmin}
+mkdir -p "$PROJECT_ROOT/data/logs/"{nginx,php}

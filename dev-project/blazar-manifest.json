@@ -1,0 +1,47 @@
+{
+  "$schema": "../schema/blazar-schema.json",
+  "configs": {
+    "env": 3,
+    "logs_dir": "../logs",
+    "console_url": "http://blazar-logs:4000"
+  },
+  "data": {
+  },
+  "dbs": {
+    "main_db": {
+      "drive": "mysql",
+      "host": "blazar-mariadb",
+      "user": "root",
+      "pass": "root",
+      "db": "blazar-dev"
+    }
+  },
+  "map": {
+    "home": {
+      "class": "BlazarDev\\Pages\\Home\\Home"
+    },
+    "pg_midias": {
+      "class": "BlazarDev\\Pages\\Midias\\Midias"
+    },
+    "db": {
+      "class": "BlazarDev\\Pages\\DB\\DB"
+    },
+    "singleapi": {
+      "class": "BlazarDev\\SingleAPI\\SingleAPI"
+    },
+    "multiapi": {
+      "class": "BlazarDev\\MultiAPI\\MultiAPI",
+      "sub": {
+        "teste1": {
+          "class": "BlazarDev\\MultiAPI\\APIs\\Teste1"
+        },
+        "teste2": {
+          "class": "BlazarDev\\MultiAPI\\APIs\\Teste2"
+        }
+      }
+    },
+    "midias": {
+      "class": "BlazarDev\\Midias"
+    }
+  }
+}

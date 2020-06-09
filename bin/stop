@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+# Encerra containers do projeto
+
+remove="${1:-no}"
+
+set -e
+
+DIRNAME="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+PROJECT_ROOT="$(cd "$DIRNAME/.." && pwd)"
+cd "$PROJECT_ROOT" || exit
+
+echo "Verificando se será necessário encerrar algum container antes de continuar..."
+
+# Encerra os containers do projeto
+if [[ "$(docker-compose config 2>/dev/null)" ]] && [[ "$(docker-compose ps -q)" ]]; then
+    if [[ "${remove,,}" == "yes" ]]; then
+        docker-compose rm -fs
+    else
+        docker-compose stop
+    fi
+fi
+
+# Verifica se algum container esta usando uma das portas necessárias e encerra
+ports=( 80 443 )
+for port in ${ports[@]}; do
+    container_id="$(docker ps | awk -v pattern=":$port->" '$0 ~ pattern { print $1 }')"
+    container_name="$(docker ps | awk -v pattern=":$port->" '$0 ~ pattern { print $1 }')"
+
+    if [[ "$container_id" ]]; then
+        container_name="$(docker ps -f id="$container_id" --format "{{.Names}}")"
+        echo "Encerrando container \"$container_name\" para liberar a porta $port"
+
+        docker stop "$container_id"
+        #docker rm -f "$container_id"
+    fi
+done

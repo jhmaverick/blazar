@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+# Atualiza o PHPDOC
+
+set -e
+
+DIRNAME="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+PROJECT_ROOT="$(cd "$DIRNAME/.." && pwd)"
+cd "$PROJECT_ROOT" || exit
+
+# Remove restos de alguma execução anterior
+RUN_AS_ROOT=yes bash "$PROJECT_ROOT/bin/exec" sh -c "rm -rf ./build"
+
+# Remove a documentação antiga
+RUN_AS_ROOT=yes bash "$PROJECT_ROOT/bin/exec" sh -c "rm -rf ./docs"
+mkdir -p "$PROJECT_ROOT/docs"
+
+# O parâmetro cache folder é necessário para que o phpdoc não misturar códigos de outros projetos na documentação
+docker run --rm -v $(pwd):/data phpdoc/phpdoc:v3.0.0-alpha.3 run --config ./phpdoc.xml.dist --cache-folder=./build/api-cache/phpdoc-cache
+
+# Limpa os dados da execução
+RUN_AS_ROOT=yes bash "$PROJECT_ROOT/bin/exec" sh -c "rm -rf ./build"
+
+# Corrige permissão dos arquivos
+RUN_AS_ROOT=yes bash "$PROJECT_ROOT/bin/exec" sh -c "chown $(id -u):$(id -g) -R ./docs"

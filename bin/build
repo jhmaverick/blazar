@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+
+# Executa build da Imagem Base
+
+set -e
+
+DIRNAME="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+PROJECT_ROOT="$(cd "$DIRNAME/.." && pwd)"
+cd "$PROJECT_ROOT" || exit
+
+source "$PROJECT_ROOT/bin/func/env-file.sh"
+env_read "$PROJECT_ROOT/project-info.env"
+
+env_read "$PROJECT_ROOT/.env"
+
+## Validação de argumentos #######
+source "$PROJECT_ROOT/bin/func/arguments.sh"
+
+shortopts="rhi:"
+longopts="run,no-cache,help,image:"
+opts=$(posix_getopt "$shortopts" "$longopts" "$@")
+
+# Valores padrões
+RUN="no"
+NO_CACHE="no"
+HELP="no"
+IMAGE="main"
+
+if [[ $? -eq 0 ]]; then
+    eval "set -- ${opts}"
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            ( --                ) shift; break;;
+            ( -h|--help         ) HELP="yes"; shift; break;;
+            ( -i|--image        ) IMAGE="$2"; shift 2;;
+            ( -r|--run          ) RUN="yes"; shift;;
+            ( --no-cache        ) NO_CACHE="yes"; shift;;
+        esac
+    done
+fi
+
+if [[ "$HELP" == "yes" ]]; then
+    echo "Imagem Base"
+    echo -e "\nOpções:"
+    echo "  -h, --help               Ajuda."
+    echo "  -r, --run                Executar um contêiner da imagem após o build."
+    echo "  -i, --image              Qual imagem será buildada (main, gui)."
+    echo "  --no-cache               Buildar sem utilizar cache."
+    exit
+fi
+
+
+## Inicia Rotinas #######
+
+# Executa build da imagem
+if [[ "$NO_CACHE" == "yes" ]]; then
+    build_no_cache="--no-cache"
+fi
+
+if [[ "$IMAGE" == "main" ]]; then
+    docker image build $build_no_cache --force-rm \
+        -t "jhmaverick/blazar:latest" .
+else
+    echo "Imagem inválida." >&2
+    exit 1
+fi

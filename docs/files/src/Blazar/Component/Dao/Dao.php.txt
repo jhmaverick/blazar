@@ -10,8 +10,8 @@
 
 namespace Blazar\Component\Dao;
 
+use Blazar\Component\Log\Log;
 use Blazar\Component\TypeRes\StrRes;
-use Blazar\Core\Log;
 use Error;
 use PDO;
 use PDOException;

@@ -1,0 +1,5 @@
+### Ignora tudo
+/*
+
+### Habilita apenas os locais que se forem alterados irão afetar o build da imagem
+!/rootfs/

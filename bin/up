@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+
+# Inicia o ambiente de desenvolvimento
+
+set -e
+
+DIRNAME="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+PROJECT_ROOT="$(cd "$DIRNAME/.." && pwd)"
+
+## Validação de argumentos #######
+source "$PROJECT_ROOT/bin/func/arguments.sh"
+source "$PROJECT_ROOT/bin/func/env-file.sh"
+
+shortopts="bch"
+longopts="build,no-cache,show-configs,help"
+opts=$(posix_getopt "$shortopts" "$longopts" "$@")
+
+# Valores padrões
+export USER_ID=$(id -u)
+export GROUP_ID=$(id -g)
+BUILD="no"
+NO_CACHE="no"
+SHOW_CONFIGS="no"
+HELP="no"
+up_args=""
+
+if [[ $? -eq 0 ]]; then
+    eval "set -- ${opts}"
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            ( --                ) shift; break;;
+            ( -h|--help         ) HELP="yes"; shift; break;;
+            ( -b|--build        ) BUILD="yes"; shift;;
+            ( --no-cache        ) NO_CACHE="yes"; shift;;
+            ( -c|--show-configs ) SHOW_CONFIGS="yes"; shift;;
+        esac
+    done
+fi
+
+if [[ "$HELP" == "yes" ]]; then
+    echo "Execução do Projeto"
+    echo -e "\nOpções:"
+    echo "  -h, --help               Ajuda"
+    echo "  -b, --build              Executa o build da imagem antes de iniciar"
+    echo "  --no-cache               Buildar sem utilizar cache"
+    echo "  -c, --show-configs       Exibir docker-compose.yml com as configurações aplicadas"
+    exit
+fi
+
+
+## Inicia Rotinas #######
+
+# Verifica as dependências de arquivos e diretórios na estrutura do projeto e tenta cria-los.
+bash "$PROJECT_ROOT/bin/configure-env"
+
+# Importa variáveis do arquivo .env
+env_read "$PROJECT_ROOT/.env"
+
+# Encerra os containers em execução
+bash "$PROJECT_ROOT/bin/stop"
+
+if [[ "${BUILD,,}" == "yes" ]] || [[ ! "$(docker image ls -aq -f reference="jhmaverick/blazar:latest")" ]]; then
+    if [[ "$NO_CACHE" == "yes" ]]; then
+        build_no_cache="--no-cache"
+    fi
+
+    bash "$PROJECT_ROOT/bin/build" -i main $build_no_cache
+    echo
+
+    up_args="--force-recreate"
+fi
+
+if [[ "${SHOW_CONFIGS,,}" == "yes" ]]; then
+    # Exibe as configurações do docker-compose.yml com as variáveis de ambiente aplicadas
+    docker-compose config
+else
+    # Inicia container
+    docker-compose up $up_args
+fi
+
+

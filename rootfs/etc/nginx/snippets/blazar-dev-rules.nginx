@@ -1,0 +1,25 @@
+include /etc/nginx/snippets/gzip.nginx;
+
+location / {
+    # Diretório de Midias
+    location ~* /midias/(.*)$ {
+        rewrite ^(.+)$ /index.php last;
+    }
+
+    if (!-e $request_filename) {
+        rewrite ^(.+)$ /index.php last;
+    }
+
+    try_files $uri $uri/ /index.php;
+}
+
+location ~ \.php$ {
+    fastcgi_pass unix:/var/run/php/blazar-dev.sock;
+    include /etc/nginx/snippets/fastcgi-php.conf;
+    fastcgi_read_timeout 1800;
+}
+
+location ~ "/(.htaccess|.htpasswd|.ini)$" {
+    deny    all;
+    return  404;
+}

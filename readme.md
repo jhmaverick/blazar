@@ -1,34 +1,50 @@
-
-# Blazar Framework
-Blazar é um framework PHP com os principais recursos para desenvolver uma aplicação.
+# Blazar
 
 * Mapa de classes pela URL
 * Gerenciador de imagens
 * Web Service
 * Biblioteca para conexão com Banco de Dados
-* Biblioteca para gerenciar textos da aplicação
 * Gestor de logs para aplicação
 
 ### Documentação
-https://github.com/jhmaverick/blazar/wiki
 
-### phpDocumentor
-https://jhmaverick.github.io/blazar/
+**Wiki:** https://github.com/jhmaverick/blazar/wiki \
+**PHPDoc:** https://jhmaverick.github.io/blazar/
 
-## Instalação
+## Criar um projeto utilizando o Blazar
 
-### Utilizando blazar-cli
+Requisitos:
 
-`npm install -g blazar-cli`
-`blazar create [project-name]`
+* Git
+* Composer
+
+### Criar via blazar-cli
+
+Instalar o Blazar CLI: `npm install -g blazar-cli`\
+Criar o projeto: `blazar create [project-name]`
 
 
-### Utilizando git
+### Criar utilizando o git
 
 `git clone https://github.com/jhmaverick/blazar-project.git [project-name] && cd [project-name] && rm -rf .git && composer install`
 
+
 ## Ler logs em ambiente de desenvolvimento
 
-`npm install -g blazar-cli`
+Instalar o Blazar CLI: `npm install -g blazar-cli`\
+Executar Leitor de logs: `blazar console`
 
-`blazar console`
+
+## Desenvolvimento do Blazar
+
+Para iniciar os serviços de desenvolvimento, clone o repositório e na raiz do projeto execute: `bash bin/up`
+
+
+## Versões
+
+### 2.0
+
+* Adiciona Docker para iniciar os serviços de desenvolvimento do projeto;
+* Remove a classe de manipulação de Textos(Text) para dar espaço a utilização de bibliotecas como a i18n;
+* Remove a classe "SelectorDOM";
+* Arquivo de sobrescrita "custom-manifest.json" renomeado para "blazar-manifest.override.json".

@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "fileMatch": ["blazar-manifest.json", "custom-manifest.json"],
+  "fileMatch": ["blazar-manifest.json", "blazar-manifest.override.json"],
   "name": "blazar-manifest",
   "type": "object",
   "version": "1.0",
@@ -45,10 +45,6 @@
           "type": "string",
           "default": "10MB",
           "description": "Max filesize to upload"
-        },
-        "texts_dir": {
-          "type": "string",
-          "description": "Directory to texts files"
         },
         "logs_dir": {
           "type": "string",

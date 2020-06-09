@@ -10,8 +10,8 @@
 
 namespace Blazar\Component\View;
 
+use Blazar\Component\Log\Log;
 use Blazar\Core\App;
-use Blazar\Core\Log;
 use BrightNucleus\MimeTypes\MimeTypes;
 use Mustache_Engine;
 
