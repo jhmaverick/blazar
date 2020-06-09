@@ -29,6 +29,10 @@
     "singleapi": {
       "class": "BlazarDev\\SingleAPI\\SingleAPI"
     },
+    "restful": {
+      "class": "BlazarDev\\RESTful\\RESTful",
+      "restful": true
+    },
     "multiapi": {
       "class": "BlazarDev\\MultiAPI\\MultiAPI",
       "sub": {
