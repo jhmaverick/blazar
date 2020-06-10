@@ -14,14 +14,23 @@
 
 <body>
 <h1>Home</h1>
-<h3>Demo do <?= $blazar ?></h3>
-<br>
+<h3><?= $blazar ?></h3>
+
+<p><?= $msg ?></p>
 
 <a href="home">Página Home</a><br>
 <a href="db">Página DB</a><br>
 <a href="pg_midias">Página Mídias</a><br>
 
-<p><?= $msg ?></p>
+<h3>Idiomas</h3>
+
+Localidade atual: <?= locale_get_default() ?><br>
+Texto por extenso com tradução para o português: <?= __('Hello %name%', ['%name%' => 'João']) ?><br>
+Texto disponível em português e inglês: <?= $GLOBALS['translator']->trans('color') ?><br>
+Texto disponível apenas em inglês: <?= __('car') ?><br>
+Texto sem tradução: <?= __('Teste') ?><br>
+
+<h3>APIs</h3>
 
 <script>
     $.post("<?= URL_BASE ?>singleapi", {"method": "login"}, function (res) {

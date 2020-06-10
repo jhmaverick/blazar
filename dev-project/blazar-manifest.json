@@ -3,7 +3,8 @@
   "configs": {
     "env": 3,
     "logs_dir": "../logs",
-    "console_url": "http://blazar-logs:4000"
+    "console_url": "http://blazar-logs:4000",
+    "fallback_locales": ["en"]
   },
   "data": {
   },

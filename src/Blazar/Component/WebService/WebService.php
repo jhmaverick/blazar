@@ -48,6 +48,7 @@ abstract class WebService {
     private $api_map;
     private $view;
     private $inherited_enable = false;
+    private $restful = false;
 
     // Retornos dos métodos de múltiplas requisições
     private $result_list = [];
@@ -74,8 +75,13 @@ abstract class WebService {
      * <code>public function showName() {...</code
      * </p>
      * @param bool $inherited_enable Habilitar uso de métodos herdados
+     * @param bool $restful Se deve usar o padrão REST
      */
-    public function __construct(bool $webservice_controller = false, string $method_param = null, bool $inherited_enable = false) {
+    public function __construct(bool $webservice_controller = false,
+                                string $method_param = null,
+                                bool $inherited_enable = null,
+                                bool $restful = null
+    ) {
         // Evita que 2 Webservices sejam iniciados em uma mesma requisição
         if (self::$started) {
             return;
@@ -84,7 +90,8 @@ abstract class WebService {
 
         $this->webservice_controller = $webservice_controller;
         $this->method_param = $method_param ?? self::$default_method_param;
-        $this->inherited_enable = $inherited_enable;
+        $this->inherited_enable = $inherited_enable ?? $this->inherited_enable;
+        $this->restful = $restful ?? $this->restful;
 
         $this->current_map = App::current();
         $this->api_map = Manifest::map($this->current_map['route']);
@@ -94,7 +101,9 @@ abstract class WebService {
 
         try {
             // Verifica qual tipo de requisição vai acontecer
-            if (isset($this->api_map['restful']) && $this->api_map['restful'] == true) {
+            if ((!isset($this->api_map['restful']) && $this->restful == true)
+                || (isset($this->api_map['restful']) && $this->api_map['restful'] == true)
+            ) {
                 $this->restful();
             } elseif (isset($request_data['multi_request'])) {
                 $this->multiRequest($request_data);

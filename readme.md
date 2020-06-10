@@ -45,7 +45,8 @@ Para iniciar os serviços de desenvolvimento, clone o repositório e na raiz do 
 ### 2.0
 
 * Adiciona Docker para iniciar os serviços de desenvolvimento do projeto;
-* Remove a classe de manipulação de Textos(Text) para dar espaço a utilização de bibliotecas como a i18n;
+* Adiciona a biblioteca de traduções do Symfony;
+* Remove a classe de manipulação de Textos(Text) para dar espaço a utilização do Symfony Translation;
 * Remove a classe "SelectorDOM";
 * Arquivo de sobrescrita "custom-manifest.json" renomeado para "blazar-manifest.override.json";
 * Adiciona suporte ao padrão REST nas APIs.
