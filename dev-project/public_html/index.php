@@ -11,6 +11,7 @@
 use Blazar\Core\Blazar;
 
 define('APP_ROOT', dirname(__DIR__));
+define("APP_LOCALE", "pt_BR");
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 

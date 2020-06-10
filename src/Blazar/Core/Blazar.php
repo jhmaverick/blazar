@@ -40,6 +40,26 @@ class Blazar {
             // Aplica configurações do framework
             Manifest::apply();
 
+            // Pega o idioma em uso
+            $current_locale = $GLOBALS['translator']->getLocale();
+
+            // Idiomas que serão usados caso o texto não exista no idioma em uso
+            $fallback_locales = Manifest::config('fallback_locales') ?? [];
+            if (!empty($fallback_locales)) {
+                $GLOBALS['translator']->setFallbackLocales($fallback_locales);
+
+                foreach ($fallback_locales as $lang) {
+                    if ($lang != $current_locale && !empty($lang) && file_exists(APP_ROOT . "/translations/$lang.php")) {
+                        $GLOBALS['translator']->addResource('array', APP_ROOT . "/translations/$lang.php", $lang);
+                    }
+                }
+            }
+
+            // Carrega o Idioma em uso atualmente
+            if (!empty($current_locale) && file_exists(APP_ROOT . "/translations/$current_locale.php")) {
+                $GLOBALS['translator']->addResource('array', APP_ROOT . "/translations/$current_locale.php", $current_locale);
+            }
+
             // Captura Exceções não tratadas
             set_exception_handler(function (Throwable $e) {
                 Log::e($e, null, false, 'exception_handler');

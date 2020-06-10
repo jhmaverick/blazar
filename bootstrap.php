@@ -110,21 +110,4 @@ if (php_sapi_name() != "cli") {
 
     // Aplica as configurações no ambiente
     Blazar::prepare();
-
-    // Idiomas que serão usados caso o texto não exista no idioma em uso
-    $fallback_locales = Manifest::config('fallback_locales') ?? [];
-    if (!empty($fallback_locales)) {
-        $GLOBALS['translator']->setFallbackLocales($fallback_locales);
-
-        foreach ($fallback_locales as $lang) {
-            if ($lang != $current_locale && !empty($lang) && file_exists(APP_ROOT . "/translations/$lang.php")) {
-                $GLOBALS['translator']->addResource('array', APP_ROOT . "/translations/$lang.php", $lang);
-            }
-        }
-    }
-
-    // Carrega o Idioma em uso atualmente
-    if (!empty($current_locale) && file_exists(APP_ROOT . "/translations/$current_locale.php")) {
-        $GLOBALS['translator']->addResource('array', APP_ROOT . "/translations/$current_locale.php", $current_locale);
-    }
 }
