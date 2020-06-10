@@ -24,4 +24,13 @@ class RESTful extends WebService {
         return $condicao . "|" . $valor . "|" . $dados;
     }
 
+    public function patch(array $dados) {
+        $url_params = App::param(null, App::PARAMS_APP);
+        $condicao = $url_params[0] ?? null;
+        $valor = $url_params[1] ?? null;
+        $dados = json_encode($dados);
+
+        return $condicao . "|" . $valor . "|" . $dados;
+    }
+
 }
