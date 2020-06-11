@@ -16,25 +16,25 @@ use Blazar\Component\WebService\WebService;
  * Class API.
  */
 class MultiAPI extends WebService {
+
     public function __construct() {
         $this->autoLogin();
-
-        parent::__construct(true, 'acao', true);
+        parent::__construct();
     }
 
     /**
      * Auto Login.
      *
-     * Verifica se existe um post ou get com o parametro para iniciar um sessão.<br>
+     * Verifica se existe um post ou get com o parâmetro para iniciar um sessão.<br>
      * <br>
-     * Parametros necessarios:<br>
+     * Parâmetros necessários:<br>
      * $_POST['auto_login']['login'] e $_POST['auto_login']['pass'] ou<br>
      * $_POST['auto_login']['login'] e $_POST['auto_login']['pass_md5']
      *
      * @return bool
      */
     private function autoLogin() {
-        $dados = $this->getRequestData();
+        $dados = array_merge($_GET, $_POST);
 
         // Faz login para acessos de apps externos
         if (isset($dados['auto_login']['login']) &&

@@ -49,4 +49,8 @@ Para iniciar os serviços de desenvolvimento, clone o repositório e na raiz do 
 * Remove a classe de manipulação de Textos(Text) para dar espaço a utilização do Symfony Translation;
 * Remove a classe "SelectorDOM";
 * Arquivo de sobrescrita "custom-manifest.json" renomeado para "blazar-manifest.override.json";
+* Agrupa os métodos do construtor da classe WebService. Agora as configurações podem ser definidas através de um array ou no mapa da classe no manifest.
 * Adiciona suporte ao padrão REST nas APIs.
+* Altera o status de resposta do http quando ocorrer um erro no WebService.
+* Execuções em "Long Polling" precisam ser habilitadas nas configurações da API.
+

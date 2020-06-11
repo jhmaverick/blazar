@@ -11,6 +11,11 @@
 namespace Blazar\Component\FileSystem;
 
 use Blazar\Component\TypeRes\StrRes;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use SplFileInfo;
+use Throwable;
+use ZipArchive;
 
 /**
  * Classe de recursos para auxiliar com arquivos e Diretórios.
@@ -287,4 +292,166 @@ class FileSystem {
 
         return call_user_func_array([__CLASS__, 'pathJoin'], $final);
     }
+
+    /**
+     * Zipar arquivos de um diretório
+     *
+     * @param string $src Diretório de fonte
+     * @param string $dest Diretório de saida do zip
+     * @param array $ignore Não zipar estes arquivos
+     *
+     * @return bool
+     */
+    public static function zipFiles(string $src, string $dest, array $ignore = []) {
+        try {
+            $src = rtrim($src, '/');
+
+            // Initialize archive object
+            $zip = new ZipArchive();
+            $zip->open($dest, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+
+            // Create recursive directory iterator
+            /** @var SplFileInfo[] $files */
+            $files = new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator($src),
+                RecursiveIteratorIterator::LEAVES_ONLY
+            );
+
+            foreach ($files as $name => $file) {
+                if (basename($file) == '.' || basename($file) == '..') continue;
+
+                $continue = false;
+                foreach ($ignore as $item) {
+                    $recorte = explode("$item" . '/', $file->getRealPath());
+
+                    if ($file->getRealPath() === $item || count($recorte) > 1) {
+                        $continue = true;
+                    }
+                }
+
+                if ($continue) {
+                    continue;
+                }
+
+                // Skip directories (they would be added automatically)
+                if (!$file->isDir()) {
+                    // Get real and relative path for current file
+                    $filePath = str_replace('\\', '/', $file->getRealPath());
+                    $relativePath = substr($filePath, strlen($src) + 1);
+
+                    // Add current file to archive
+                    $zip->addFile($filePath, $relativePath);
+                }
+            }
+
+            // Zip archive will be created only after closing object
+            $zip->close();
+        } catch (Throwable $e) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Apagar diretório recursivamente
+     *
+     * @param string $src Diretório de origem
+     * @param string $dest Diretório de destino
+     * @param array $ignore Não copiar estes arquivos
+     *
+     * @return bool
+     */
+    public static function copyRecursive(string $src, string $dest, array $ignore = []) {
+        if (!file_exists($src)) return false;
+
+        try {
+            $dir = opendir($src);
+
+            if (!file_exists($dest)) {
+                @mkdir($dest, 0777, true);
+            }
+
+            while (false !== ($file = readdir($dir))) {
+                $file_src_path = $src . '/' . $file;
+                $file_dest_path = $dest . '/' . $file;
+
+                if (!in_array($file_src_path, $ignore) && ($file != '.') && ($file != '..')) {
+                    if (is_dir($file_src_path)) {
+                        self::copyRecursive($file_src_path, $file_dest_path, $ignore);
+                    } else {
+                        copy($file_src_path, $file_dest_path);
+                    }
+                }
+            }
+
+            closedir($dir);
+        } catch (Throwable $e) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Apagar diretório recursivamente
+     *
+     * @param string $dir Diretório
+     * @param array $ignore Não apagar estes arquivos
+     * @param bool $del_root Apagar o diretório(Os subdiretórios serão apagados mesmo se false);
+     *
+     * @return bool
+     */
+    public static function rmdirRecursive(string $dir, array $ignore = [], bool $del_root = true) {
+        if (!file_exists($dir)) return false;
+
+        try {
+            foreach (scandir($dir) as $file) {
+                if ('.' === $file || '..' === $file) continue;
+
+                if (!in_array("$dir/$file", $ignore)) {
+                    if (is_link("$dir/$file")) {
+                        // Links simbolicos do linux
+                        unlink("$dir/$file");
+                    } else if (self::isSymbolicLink("$dir/$file")) {
+                        // Atalhos do windows
+                        rmdir("$dir/$file");
+                    } else if (is_dir("$dir/$file")) {
+                        // Diretórios comuns
+                        self::rmdirRecursive("$dir/$file", $ignore, true);
+                    } else {
+                        // Outros arquivos
+                        unlink("$dir/$file");
+                    }
+                }
+            }
+
+            if ($del_root === true) {
+                rmdir($dir);
+            }
+        } catch (Throwable $e) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Verificação de links simbolicos do windows
+     *
+     * @param string $target
+     * @return bool
+     */
+    public static function isSymbolicLink($target) {
+        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+            if (file_exists($target) && readlink($target) != $target) {
+                return true;
+            }
+        } else if (is_link($target)) {
+            return true;
+        }
+
+        return false;
+    }
+
 }

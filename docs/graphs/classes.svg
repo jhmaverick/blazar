@@ -201,8 +201,7 @@
 <!-- \\Blazar\\Component\\WebService\\WebService -->
 <g id="node19" class="node"><title>\\Blazar\\Component\\WebService\\WebService</title>
 <polygon fill="none" stroke="black" points="514.69,-76 430.69,-76 430.69,-40 514.69,-40 514.69,-76"/>
-<text text-anchor="start" x="438.69" y="-61.2" font-family="Courier,monospace" font-size="11.00">«abstract»</text>
-<text text-anchor="start" x="438.69" y="-49.2" font-family="Courier,monospace" font-size="11.00">WebService</text>
+<text text-anchor="middle" x="472.69" y="-55.2" font-family="Courier,monospace" font-size="11.00">WebService</text>
 </g>
 <!-- \\Blazar\\Core\\App -->
 <g id="node20" class="node"><title>\\Blazar\\Core\\App</title>

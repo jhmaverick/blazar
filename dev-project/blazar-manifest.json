@@ -4,7 +4,9 @@
     "env": 3,
     "logs_dir": "../logs",
     "console_url": "http://blazar-logs:4000",
-    "fallback_locales": ["en"]
+    "fallback_locales": [
+      "en"
+    ]
   },
   "data": {
   },
@@ -36,6 +38,9 @@
     },
     "multiapi": {
       "class": "BlazarDev\\MultiAPI\\MultiAPI",
+      "controller": true,
+      "method": "acao",
+      "inherited": true,
       "sub": {
         "teste1": {
           "class": "BlazarDev\\MultiAPI\\APIs\\Teste1"

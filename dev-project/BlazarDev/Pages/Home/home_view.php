@@ -34,7 +34,7 @@ Texto sem tradução: <?= __('Teste') ?><br>
 
 <script>
     $.post("<?= URL_BASE ?>singleapi", {"method": "login"}, function (res) {
-        $("body").append("Result SingleAPI: " + res + "<br>")
+        $("body").append("Result SingleAPI: " + JSON.stringify(res) + "<br>")
     });
 
     $.post("<?= URL_BASE ?>multiapi", {

@@ -19,36 +19,30 @@ use Exception;
 use ReflectionMethod;
 
 /**
- * Classe para disponibilizar APIs em rede atraves de requisições GET e POST.
+ * Gerenciamento de APIs.
  *
  * As APIs disponíveis devem estar em manifest>map<br>
  * <br>
- * Exemplo de requisições:<br>
- * * common: .../api_map_name/?method=(method_name)&(param1)=(value)&(param2)=(value)&...<br>
- * * multi_request:
- * .../?multi_request&params={(request_key1):{method:(api_map_name/method_name),(param1):(value),(param2)=(value)},
- * (request_key2):{method:(api_map_name/method_name),(param1):(value),(param2)=(value)}, ...}<br>
- * * long_polling:
- * .../?long_polling&params={(request_key1):{method:(api_map_name/method_name),(param1):(value),(param2)=(value)},
- * (request_key2):{method:(api_map_name/method_name),(param1):(value),(param2)=(value)}, ...}<br>
- * <br>
  * Os métodos das APIs irão receber os seguintes parâmetros:<br>
- * #0 array [data] As informações da requisição.<br>
- * #1 array|null [result_list] (Apenas para multi_request e long_polling) A lista de resultados gerados pelas
- * requisições anteriores
- * #2 object|null [instance] (Apenas para webservice) A instância da classe webservice.<br>
+ * * 0 array [data] As informações da requisição.<br>
+ * * 1 array|null [result_list] (Apenas para multi_request e long_polling) A lista de resultados gerados pelas
+ * requisições anteriores<br>
+ * * 2 object|null [instance] (Apenas para webservice) A instância da classe webservice.<br>
  */
-abstract class WebService {
+class WebService {
+
     private static $default_method_param = 'method';
     private static $started = false;
 
-    private $method_param;
-    private $webservice_controller;
+    private $method_name;
+    private $is_controller;
     private $current_map;
     private $api_map;
     private $view;
-    private $inherited_enable = false;
-    private $restful = false;
+    private $inherited_methods;
+    private $restful;
+    private $return_info;
+    private $long_polling;
 
     // Retornos dos métodos de múltiplas requisições
     private $result_list = [];
@@ -56,129 +50,99 @@ abstract class WebService {
     /**
      * WebService constructor.
      *
-     * Define automaticamente qual é o tipo de requisição dependo dos parametros informados.<br>
+     * Define automaticamente qual é o tipo de requisição dependo dos parâmetros informados.<br>
      * <br>
      * Esta classe deve ser chamada apenas em classes listadas no map do manifest.<br>
      * Para utilizar com multiplas apis, a classe controladora deve ser a ultima a ser chamada no map para que a API
      * consiga identificar os descendentes dela.
      *
-     * @param bool $webservice_controller <p>
-     * Este argumento indica que a classe instanciada serve apenas para controlar as suas classes filhas definidas no índice "sub".
-     * Se true, a classe filha será instanciada e o método desejado será executado.
-     * Se false, o script irá procurar o método na própria classe.
-     * </p>
-     * @param string $method_param <p>
-     * Ação padrão para a chamada dos métodos das requisições<br>
-     * A classe API deve possuir um método com o nome enviado pelo parametro<br>
+     * @param array $config <p>Altera o comportamento do WebService.<br>
+     * As configurações também podem ser inseridas no mapa da API no Manifest.<br>
      * <br>
-     * Ex: .../user/?method=show_name<br>
-     * <code>public function showName() {...</code
+     * <b>Índices:</b><br>
+     * * controller - (bool) Default false. Este argumento indica que a classe instanciada serve apenas para controlar as suas classes filhas definidas no índice "sub".<br>
+     *      Se true, a classe filha será instanciada e o método desejado será executado.<br>
+     *      Se false, o script irá procurar o método na própria classe.<br>
+     * * method - (string) Default "method". Ação padrão para a chamada dos métodos das requisições(Não funciona com o padrão RESTful).<br>
+     *      A classe API deve possuir um método com o nome enviado pelo parâmetro.<br>
+     *      Ex: .../user/?method=show_name<br>
+     *      <code>public function showName() {...</code><br>
+     * * inherited - (bool) Default false. Habilitar uso de métodos herdados.<br>
+     * * restful - (bool) Default false. Se deve usar o padrão REST.<br>
+     * * return_info - (bool) Default false. Se true o retorno será um array com os campos: "data", "status" e "error" quando existir.<br>
+     * * long_polling - (bool) Default false. Se true permite que a API seja executada com long polling.<br>
      * </p>
-     * @param bool $inherited_enable Habilitar uso de métodos herdados
-     * @param bool $restful Se deve usar o padrão REST
      */
-    public function __construct(bool $webservice_controller = false,
-                                string $method_param = null,
-                                bool $inherited_enable = null,
-                                bool $restful = null
-    ) {
+    public function __construct(array $config = []) {
         // Evita que 2 Webservices sejam iniciados em uma mesma requisição
         if (self::$started) {
             return;
         }
         self::$started = true;
 
-        $this->webservice_controller = $webservice_controller;
-        $this->method_param = $method_param ?? self::$default_method_param;
-        $this->inherited_enable = $inherited_enable ?? $this->inherited_enable;
-        $this->restful = $restful ?? $this->restful;
-
         $this->current_map = App::current();
         $this->api_map = Manifest::map($this->current_map['route']);
+
+        // Mescla as configurações passadas na instância com as do mapa de classe.
+        // As configurações passadas na instância terão prioridade
+        $config = array_merge($this->api_map, $config);
+
+        $this->method_name = $config['method'] ?? self::$default_method_param;
+        $this->is_controller = ($config['controller'] ?? false) == true;
+        $this->inherited_methods = ($config['inherited'] ?? false) == true;
+        $this->restful = ($config['restful'] ?? false) == true;
+        $this->return_info = ($config['return_info'] ?? false) == true;
+        $this->long_polling = ($config['long_polling'] ?? false) == true;
+
         $this->view = new View();
 
-        $request_data = self::getRequestData();
+        // Pega todos os dados recebidos por GET e POST
+        $request_data = array_merge($_GET, $_POST);
 
         try {
             // Verifica qual tipo de requisição vai acontecer
             if ((!isset($this->api_map['restful']) && $this->restful == true)
                 || (isset($this->api_map['restful']) && $this->api_map['restful'] == true)
             ) {
-                $this->restful();
+                $this->restfulRequest();
             } elseif (isset($request_data['multi_request'])) {
                 $this->multiRequest($request_data);
             } elseif (isset($request_data['long_polling'])) {
-                $this->longPolling($request_data);
-            } elseif (isset($request_data[$this->method_param]) && is_string($request_data[$this->method_param])) {
-                $this->requestCommon($request_data);
+                // Verifica se a API pode ser executada em long_polling
+                if ($this->long_polling) {
+                    $this->longPollingRequest($request_data);
+                } else {
+                    $this->applyResult('This API cannot be run in Long poll', 403);
+                }
+            } elseif (isset($request_data[$this->method_name]) && is_string($request_data[$this->method_name])) {
+                $this->request($request_data);
             } else {
-                $this->result_list = 'Nenhuma ação foi passada para a API';
+                $this->applyResult(null, 405);
             }
-
-            // Aplica os dados gerados pela API na View
-            $this->view->reset($this->result_list);
         } catch (Exception $e) {
             Log::e('Erro no gerenciador de APIs', $e);
-            $this->view->reset('Não foi possível carregar a API');
+            $this->applyResult(null, 500);
         }
 
+        // Aplica os dados gerados pela API na View
+        $this->view->reset($this->result_list);
         $this->view->render();
     }
 
     /**
-     * Define qual será o parâmetro padrão que irá guardar o método a ser chamado nas requisições.
-     *
-     * @param string $default_method_param
-     */
-    public static function setDefaultMethodParam(string $default_method_param): void {
-        self::$default_method_param = $default_method_param;
-    }
-
-    /**
-     * Obtem os dados da requisição passados por post ou get.
-     *
-     * @param bool $merge <p>
-     * Mesclar dados enviados por GET e POST.<br>
-     * Os dados do POST terão prioridade.
-     * </p>
-     *
-     * @return array
-     */
-    protected function getRequestData(bool $merge = true): array {
-        $request_data = [];
-
-        $requests = [];
-        if ($merge === true) {
-            $requests = [$_GET, $_POST];
-        } elseif ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $requests[] = $_POST;
-        } elseif ($_SERVER['REQUEST_METHOD'] == 'GET') {
-            $requests[] = $_GET;
-        }
-
-        foreach ($requests as $request_method) {
-            foreach ($request_method as $index => $value) {
-                $request_data[$index] = $value;
-            }
-        }
-
-        return $request_data;
-    }
-
-    /**
-     * Método de requisição comum.
+     * Método de requisição simples.
      *
      * @param array $request_data
      *
      * @throws Exception
      */
-    private function requestCommon(array $request_data) {
+    private function request(array $request_data) {
         try {
             // Pega o nome do método e remove ele da lista
-            $method = $request_data[$this->method_param];
-            unset($request_data[$this->method_param]);
+            $method = $request_data[$this->method_name];
+            unset($request_data[$this->method_name]);
 
-            if ($this->webservice_controller === false) {
+            if ($this->is_controller === false) {
                 $webservice = null;
 
                 // Procura o método na própria classe
@@ -190,8 +154,7 @@ abstract class WebService {
                 // A classe é apenas um controlador e o método da API está em uma classe filha
                 $api_class = App::next('class');
                 if ($api_class == null || !class_exists($api_class)) {
-                    $this->result_list = 'API não existe';
-
+                    $this->applyResult(null, 404);
                     return;
                 }
 
@@ -202,29 +165,30 @@ abstract class WebService {
             $metodo = $this->param2method($method);
 
             if ($this->methodValidate($api_class, $metodo)) {
-                $this->result_list = call_user_func_array([$api, $metodo], [$request_data, null, $webservice]);
+                $result = call_user_func_array([$api, $metodo], [$request_data, null, $webservice]);
+                $this->applyResult($result, 200);
             } else {
-                $this->result_list = 'Ação não encontrada';
+                $this->applyResult(null, 405);
             }
         } catch (Exception $e) {
             Log::e($e);
-            $this->result_list = 'Não foi possível retornar os dados da API';
+            $this->applyResult(null, 500);
         }
     }
 
     /**
-     * Método de requisição REST.
+     * Requisição no padrão RESTful.
      *
      * @throws Exception
      */
-    private function restful() {
+    private function restfulRequest() {
         try {
             // Pega o tipo da requisição para chamar um método com o mesmo nome dentro da classe
             $method = strtolower($_SERVER['REQUEST_METHOD']);
             $request_types = ['get', 'post', 'put', 'delete', 'head', 'patch', 'connect', 'options', 'trace'];
 
             if (!in_array($method, $request_types)) {
-                $this->result_list = 'Invalid request method';
+                $this->applyResult(null, 405);
                 return;
             }
 
@@ -248,7 +212,7 @@ abstract class WebService {
             }
 
             // Verifica se deve executar apenas os métodos da classe
-            if ($this->webservice_controller === false) {
+            if ($this->is_controller === false) {
                 $webservice = null;
 
                 // Procura o método na própria classe
@@ -260,8 +224,7 @@ abstract class WebService {
                 // A classe é apenas um controlador e o método da API está em uma classe filha
                 $api_class = App::next('class');
                 if ($api_class == null || !class_exists($api_class)) {
-                    $this->result_list = 'API não existe';
-
+                    $this->applyResult(null, 404);
                     return;
                 }
 
@@ -269,18 +232,19 @@ abstract class WebService {
             }
 
             if ($this->methodValidate($api_class, $method)) {
-                $this->result_list = call_user_func_array([$api, $method], [$request_data, null, $webservice]);
+                $result = call_user_func_array([$api, $method], [$request_data, null, $webservice]);
+                $this->applyResult($result, 200);
             } else {
-                $this->result_list = 'Ação não encontrada';
+                $this->applyResult(null, 405);
             }
         } catch (Exception $e) {
             Log::e($e);
-            $this->result_list = 'Não foi possível retornar os dados da API';
+            $this->applyResult(null, 500);
         }
     }
 
     /**
-     * Método de requisição para multiplas APIs.
+     * Requisição para múltiplas APIs.
      *
      * @param $data
      *
@@ -294,13 +258,13 @@ abstract class WebService {
         $data['params'] = json_decode($data['params'], true);
 
         foreach ($data['params'] as $i => $v) {
-            if (isset($v[$this->method_param]) && substr_count($v[$this->method_param], '/') == 1) {
+            if (isset($v[$this->method_name]) && substr_count($v[$this->method_name], '/') == 1) {
                 // Separa a API da ação
-                list($map_name, $method_name) = explode('/', $v[$this->method_param]);
-                unset($v[$this->method_param]);
+                list($map_name, $method_name) = explode('/', $v[$this->method_name]);
+                unset($v[$this->method_name]);
 
                 try {
-                    if ($this->webservice_controller === false) {
+                    if ($this->is_controller === false) {
                         $webservice = null;
 
                         // Procura o método na própria classe
@@ -312,8 +276,7 @@ abstract class WebService {
                         // A classe é apenas um controlador e o método da API está em uma classe filha
                         $api_class = $this->api_map['sub'][$map_name]['class'] ?? null;
                         if ($api_class == null || !class_exists($api_class)) {
-                            $this->result_list[$i] = 'API não existe';
-
+                            $this->applyResult(null, 404, $i);
                             continue;
                         }
 
@@ -324,13 +287,14 @@ abstract class WebService {
                     $method = $this->param2method($method_name);
 
                     if ($this->methodValidate($api_class, $method)) {
-                        $this->result_list[$i] = call_user_func_array([$api, $method], [$v, $this->result_list, $webservice]);
+                        $result = call_user_func_array([$api, $method], [$v, $this->result_list, $webservice]);
+                        $this->applyResult($result, 200, $i);
                     } else {
-                        $this->result_list[$i] = 'Ação não encontrada na API';
+                        $this->applyResult(null, 405, $i);
                     }
                 } catch (Exception $e) {
                     Log::e($e);
-                    $this->result_list[$i] = 'Não foi possível retornar os dados da API';
+                    $this->applyResult(null, 500, $i);
                 }
             }
         }
@@ -343,7 +307,7 @@ abstract class WebService {
      *
      * @throws Exception
      */
-    private function longPolling($data) {
+    private function longPollingRequest($data) {
         if (!isset($data['params']) || !is_array(json_decode($data['params'], true))) {
             return;
         }
@@ -360,13 +324,13 @@ abstract class WebService {
             $atualizacao = false;
 
             foreach ($data['params'] as $i => $v) {
-                if (isset($v[$this->method_param]) && substr_count($v[$this->method_param], '/') == 1) {
+                if (isset($v[$this->method_name]) && substr_count($v[$this->method_name], '/') == 1) {
                     // Separa a API da ação
-                    list($map_name, $method_name) = explode('/', $v[$this->method_param]);
-                    unset($v[$this->method_param]);
+                    list($map_name, $method_name) = explode('/', $v[$this->method_name]);
+                    unset($v[$this->method_name]);
 
                     try {
-                        if ($this->webservice_controller === false) {
+                        if ($this->is_controller === false) {
                             $webservice = null;
 
                             // Procura o método na própria classe
@@ -378,7 +342,7 @@ abstract class WebService {
                             // A classe é apenas um controlador e o método da API está em uma classe filha
                             $api_class = $this->api_map['sub'][$map_name]['class'] ?? null;
                             if ($api_class == null || !class_exists($api_class)) {
-                                $this->result_list[$i] = 'API não existe';
+                                $this->applyResult(null, 404, $i);
 
                                 continue;
                             }
@@ -389,20 +353,20 @@ abstract class WebService {
                         // Transforma a ação no padrão do método
                         $method = $this->param2method($method_name);
 
-                        // TODO colocar um array na classe informando se o método aceita o long pool e que tipo retorno deve ser considerado como atualização
                         if ($this->methodValidate($api_class, $method)) {
-                            $this->result_list[$i] = call_user_func_array([$api, $method], [$v, $this->result_list, $webservice]);
+                            $result = call_user_func_array([$api, $method], [$v, $this->result_list, $webservice]);
+                            $this->applyResult($result, 200, $i);
 
                             // Verifica se existe um dado para ser retornado
-                            if (is_array($this->result_list[$i]) && count($this->result_list[$i]) > 0) {
+                            if (is_array($result) && count($result) > 0) {
                                 $atualizacao = true;
                             }
                         } else {
-                            $this->result_list[$i] = 'Ação não encontrada na API';
+                            $this->applyResult(null, 405, $i);
                         }
                     } catch (Exception $e) {
                         Log::e($e);
-                        $this->result_list[$i] = 'Não foi possível retornar os dados da API';
+                        $this->applyResult(null, 500, $i);
                     }
                 }
             }
@@ -437,7 +401,7 @@ abstract class WebService {
 
             if ($reflection->isPublic() &&
                 $reflection->class !== __CLASS__ &&
-                ($this->inherited_enable || $reflection->class === $class_name)
+                ($this->inherited_methods || $reflection->class === $class_name)
             ) {
                 return true;
             } else {
@@ -462,5 +426,70 @@ abstract class WebService {
         $nome = str_replace(' ', '', $nome);
 
         return lcfirst($nome);
+    }
+
+    /**
+     * Monta a estrutura de resultados
+     *
+     * @param mixed $data
+     * @param int $code
+     * @param string $multi_request_id
+     */
+    private function applyResult($data = null, int $code = 200, $multi_request_id = null) {
+        $error = null;
+
+        // Verifica mensagem de erro
+        // https://www.restapitutorial.com/httpstatuscodes.html
+        switch ($code) {
+            case 403:
+                $error = 'Forbidden';
+
+                break;
+
+            case 404:
+                $error = 'Not Found';
+
+                break;
+
+            case 405:
+                $error = 'Method Not Allowed';
+
+                break;
+
+            case 500:
+                $error = 'Internal Server Error';
+
+                break;
+        }
+
+        if ($this->return_info) {
+            // Retorno com informações
+            $result_list = [
+                'status' => $code,
+                'data' => $data,
+            ];
+
+            if (!empty($error)) {
+                $error = $error . (!empty($data) ? " - $data" : "");
+                $result_list['error'] = $error;
+                $result_list['data'] = null;
+            }
+        } else {
+            // Aplica o resultado direto no retorno
+            if (!empty($error)) {
+                $result_list = $error . (!empty($data) ? " - $data" : "");
+            } else {
+                $result_list = $data;
+            }
+        }
+
+        if (!empty($multi_request_id)) {
+            // Insere os dados no índice do multi request
+            $this->result_list[$multi_request_id] = $result_list;
+        } else {
+            // Retorno padrão das requisições
+            http_response_code($code);
+            $this->result_list = $result_list;
+        }
     }
 }

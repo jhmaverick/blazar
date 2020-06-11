@@ -5,6 +5,7 @@ namespace Blazar\Component\Cli;
 use Blazar\Component\Cli\Composer\Packages;
 use Blazar\Component\Cli\Helpers\Args;
 use Blazar\Component\Cli\Helpers\Console;
+use Blazar\Component\FileSystem\FileSystem;
 use Blazar\Component\TypeRes\JSONRes;
 
 /**
@@ -49,14 +50,22 @@ abstract class CliInterface {
 
                     break;
 
+                case 'clear-cache':
+                    if (is_dir(APP_ROOT . "/.cache")) {
+                        FileSystem::rmdirRecursive(APP_ROOT . "/.cache", [], false);
+                    }
+
+                    break;
+
                 default:
                     Console::println("API não encontrada.", 2);
 
                     Console::println([
                         "Opções:",
-                        "* ng-cli composer <acao> - Executa rotinas do composer.",
-                        "* ng-cli json-read <file> [<index-route>] - Retorna os dados de um JSON. Se \"index-route\" for informando retorna apenas aquele índice.",
-                        "* ng-cli json-save <file> <index-route> [<valor>] - Salva o valor no índice informado.",
+                        "* blazar-cli composer <acao> - Executa rotinas do composer.",
+                        "* blazar-cli clear-cache - Limpa o diretório de cache do Blazar.",
+                        "* blazar-cli json-read <file> [<index-route>] - Retorna os dados de um JSON. Se \"index-route\" for informando retorna apenas aquele índice.",
+                        "* blazar-cli json-save <file> <index-route> [<valor>] - Salva o valor no índice informado.",
                     ]);
             }
         } catch (\Throwable $e) {
