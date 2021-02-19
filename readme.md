@@ -12,9 +12,6 @@ Blazar é um framework PHP com os principais recursos para desenvolver uma aplic
 ### Documentação
 https://github.com/jhmaverick/blazar/wiki
 
-### phpDocumentor
-https://jhmaverick.github.io/blazar/
-
 ## Instalação
 
 ### Utilizando blazar-cli
