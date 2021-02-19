@@ -10,9 +10,9 @@
 
 namespace Blazar\Component\View;
 
+use Blazar\Component\MimeTypes\MimeTypes;
 use Blazar\Core\App;
 use Blazar\Core\Log;
-use BrightNucleus\MimeTypes\MimeTypes;
 use Mustache_Engine;
 
 /**
@@ -338,8 +338,7 @@ class View {
                     $content_type = 'text/html';
                 } elseif ($content_type == null) {
                     // Se o tipo de saida não tiver sido definido tenta descobrir
-                    $mimes = new MimeTypes();
-                    $content_type = $mimes->getTypesForExtension($ext)[0];
+                    $content_type = MimeTypes::getTypesForExtension($ext);
                 }
 
                 $content_type = ($content_type != null) ? 'Content-Type: ' . $content_type . '; ' : '';

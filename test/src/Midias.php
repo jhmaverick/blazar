@@ -12,8 +12,8 @@ namespace TestApp;
 
 use Blazar\Component\Image\Image;
 use Blazar\Component\Image\ImageException;
+use Blazar\Component\MimeTypes\MimeTypes;
 use Blazar\Core\Manifest;
-use BrightNucleus\MimeTypes\MimeTypes;
 
 class Midias {
     public function __construct() {
@@ -27,9 +27,8 @@ class Midias {
             return;
         }
 
-        $mimes = new MimeTypes();
         $ext = pathinfo($local_file, PATHINFO_EXTENSION);
-        $mime = $mimes->getTypesForExtension($ext)[0];
+        $mime = MimeTypes::getTypesForExtension($ext);
 
         try {
             if (isset($_GET['download'])) {
